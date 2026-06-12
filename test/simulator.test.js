@@ -113,6 +113,18 @@ describe("match-by-match analysis", () => {
     assert.equal(analysis.summary.totalMatches, 72);
   });
 
+  it("marks completed matches with scores and post-match analysis", () => {
+    const analysis = buildGroupMatchAnalysis(STARTER_GROUPS);
+    const opener = analysis.matches.find((match) => match.id === "A-1");
+
+    assert.equal(analysis.summary.completedMatches, 2);
+    assert.equal(analysis.summary.totalGoals, 5);
+    assert.equal(opener.result.status, "final");
+    assert.deepEqual(opener.result.score, { teamA: 2, teamB: 0 });
+    assert.equal(opener.postMatch.points.teamA, 3);
+    assert.ok(opener.postMatch.forecastProbability > 0);
+  });
+
   it("keeps each match outcome distribution normalized", () => {
     const analysis = buildGroupMatchAnalysis(STARTER_GROUPS);
     for (const match of analysis.matches) {

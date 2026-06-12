@@ -1183,6 +1183,11 @@ input[type="checkbox"] {
   box-shadow: none;
 }
 
+.match-card.completed {
+  border-color: rgba(25, 145, 95, 0.26);
+  background: #fbfefc;
+}
+
 .match-meta,
 .match-teams,
 .match-probs,
@@ -1205,12 +1210,30 @@ input[type="checkbox"] {
   font-size: 0.78rem;
 }
 
+.match-meta .status-final {
+  border-radius: 999px;
+  padding: 4px 8px;
+  color: #fff;
+  background: var(--green);
+}
+
 .match-teams {
   font-size: 0.92rem;
 }
 
 .match-teams span {
   color: var(--muted);
+}
+
+.match-teams.scoreline span {
+  min-width: 58px;
+  border-radius: 6px;
+  padding: 6px 10px;
+  color: var(--ink);
+  background: var(--gold-soft);
+  text-align: center;
+  font-size: 1.08rem;
+  font-weight: 1000;
 }
 
 .result-bars {
@@ -1233,6 +1256,31 @@ input[type="checkbox"] {
 .match-read {
   flex-wrap: wrap;
   font-variant-numeric: tabular-nums;
+}
+
+.post-match-read {
+  color: var(--ink);
+  font-weight: 900;
+}
+
+.post-match-note {
+  border-radius: 6px;
+  padding: 10px;
+  background: rgba(25, 145, 95, 0.08);
+}
+
+.post-match-note strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--green);
+  font-size: 0.78rem;
+}
+
+.post-match-note p {
+  margin: 0;
+  color: var(--muted-strong);
+  font-size: 0.82rem;
+  line-height: 1.55;
 }
 
 @media (max-width: 1180px) {
@@ -1598,6 +1646,11 @@ input[type="checkbox"] {
   .match-read {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .match-teams.scoreline {
+    align-items: center;
+    flex-direction: row;
   }
 
   #summary,

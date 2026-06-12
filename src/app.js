@@ -307,12 +307,16 @@ function renderMatchAnalysis(groups, options) {
   const analysis = buildGroupMatchAnalysis(groups, options);
   const { summary } = analysis;
 
-  elements.matchAnalysisSummary.textContent = `${summary.totalMatches} 场小组赛，${summary.upsetSensitive} 场爆冷/平局敏感`;
+  elements.matchAnalysisSummary.textContent = `${summary.completedMatches} 场已结束，${
+    summary.totalMatches - summary.completedMatches
+  } 场待赛 · 更新 ${analysis.resultSnapshot.generatedAt}`;
   elements.matchStats.innerHTML = `
-    <div class="stat-card"><strong>${summary.totalMatches}</strong><span>小组赛场次</span></div>
-    <div class="stat-card"><strong>${formatFixture(summary.mostBalanced)}</strong><span>最胶着</span></div>
-    <div class="stat-card"><strong>${countryName(summary.biggestFavorite.favorite.name)}</strong><span>最大优势 ${formatPercent(summary.biggestFavorite.favoriteWinProbability)}</span></div>
-    <div class="stat-card"><strong>${formatFixture(summary.highestDraw)}</strong><span>最高平局 ${formatPercent(summary.highestDraw.probabilities.draw)}</span></div>
+    <div class="stat-card"><strong>${summary.completedMatches}</strong><span>已结束比赛</span></div>
+    <div class="stat-card"><strong>${summary.totalGoals}</strong><span>已结束总进球</span></div>
+    <div class="stat-card"><strong>${summary.completedMatches ? `${summary.modelHits}/${summary.completedMatches}` : "--"}</strong><span>赛前方向命中</span></div>
+    <div class="stat-card"><strong>${summary.biggestDeviation ? formatFixture(summary.biggestDeviation) : formatFixture(summary.mostBalanced)}</strong><span>${
+      summary.biggestDeviation ? "最大赛果偏差" : "最胶着待赛"
+    }</span></div>
   `;
 
   const byGroup = groupBy(analysis.matches, (match) => match.group);
@@ -331,6 +335,8 @@ function renderMatchAnalysis(groups, options) {
 }
 
 function renderMatchCard(match) {
+  if (match.result?.status === "final") return renderCompletedMatchCard(match);
+
   return `
     <article class="match-card">
       <div class="match-meta">
@@ -358,6 +364,56 @@ function renderMatchCard(match) {
       </div>
     </article>
   `;
+}
+
+function renderCompletedMatchCard(match) {
+  const { result, postMatch } = match;
+  const score = `${result.score.teamA}-${result.score.teamB}`;
+  const hitText = postMatch.predictionHit ? "方向命中" : "方向偏离";
+  const winnerText = postMatch.actualWinner ? countryName(postMatch.actualWinner.name) : "平局";
+
+  return `
+    <article class="match-card completed">
+      <div class="match-meta">
+        <span>${result.date} / ${result.venue}</span>
+        <strong class="status-final">已结束</strong>
+      </div>
+      <div class="match-teams scoreline">
+        <strong>${countryName(match.teamA.name)}</strong>
+        <span>${score}</span>
+        <strong>${countryName(match.teamB.name)}</strong>
+      </div>
+      <div class="result-bars" aria-label="${countryName(match.teamA.name)} 对 ${countryName(match.teamB.name)} 赛前概率">
+        <div class="result-segment win-a" style="width: ${match.probabilities.teamA * 100}%"></div>
+        <div class="result-segment draw" style="width: ${match.probabilities.draw * 100}%"></div>
+        <div class="result-segment win-b" style="width: ${match.probabilities.teamB * 100}%"></div>
+      </div>
+      <div class="match-probs">
+        <span>赛前 ${countryName(match.teamA.name)} ${formatPercent(match.probabilities.teamA)}</span>
+        <span>平 ${formatPercent(match.probabilities.draw)}</span>
+        <span>${countryName(match.teamB.name)} ${formatPercent(match.probabilities.teamB)}</span>
+      </div>
+      <div class="match-read post-match-read">
+        <span>实际：${winnerText} · ${hitText}</span>
+        <span>该赛果赛前概率：${formatPercent(postMatch.forecastProbability)}</span>
+      </div>
+      <div class="post-match-note">
+        <strong>赛后分析</strong>
+        <p>${buildPostMatchCopy(match)}</p>
+      </div>
+    </article>
+  `;
+}
+
+function buildPostMatchCopy(match) {
+  const { result, postMatch } = match;
+  const teamA = countryName(match.teamA.name);
+  const teamB = countryName(match.teamB.name);
+  return `${result.note} 模型赛前给到该赛果 ${formatPercent(postMatch.forecastProbability)} 概率；积分影响：${teamA} ${
+    postMatch.points.teamA
+  } 分（净胜球 ${formatSigned(postMatch.goalDifference.teamA)}），${teamB} ${postMatch.points.teamB} 分（净胜球 ${formatSigned(
+    postMatch.goalDifference.teamB
+  )}）。`;
 }
 
 function renderClubStarModel() {
@@ -690,6 +746,10 @@ function formatDashboardTime(date) {
 function formatDelta(value) {
   const sign = value >= 0 ? "+" : "";
   return `${sign}${(value * 100).toFixed(1)}pp`;
+}
+
+function formatSigned(value) {
+  return value > 0 ? `+${value}` : `${value}`;
 }
 
 function formatFixture(match) {

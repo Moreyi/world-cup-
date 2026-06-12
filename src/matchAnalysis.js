@@ -1,4 +1,5 @@
 import { matchProbabilities } from "./simulator.js";
+import { RESULT_SNAPSHOT, resultByMatchId } from "./liveResults.js";
 
 const GROUP_PAIRINGS = [
   { matchday: 1, pair: [0, 1] },
@@ -25,6 +26,7 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
       const favoriteWinProbability = Math.max(probabilities.teamA, probabilities.teamB);
       const underdogWinProbability = Math.min(probabilities.teamA, probabilities.teamB);
       const edge = Math.abs(probabilities.teamA - probabilities.teamB);
+      const result = resultByMatchId(`${group.name}-${index + 1}`);
 
       return {
         id: `${group.name}-${index + 1}`,
@@ -39,14 +41,17 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
         underdogWinProbability,
         upsetOrDrawProbability: underdogWinProbability + probabilities.draw,
         edge,
-        profile: classifyMatch(edge, probabilities.draw)
+        result,
+        postMatch: result ? analyzeResult(result, probabilities, teamA, teamB, favorite) : null,
+        profile: result ? "已结束" : classifyMatch(edge, probabilities.draw)
       };
     })
   );
 
   return {
     matches,
-    summary: summarizeMatches(matches)
+    summary: summarizeMatches(matches),
+    resultSnapshot: RESULT_SNAPSHOT
   };
 }
 
@@ -61,13 +66,56 @@ function summarizeMatches(matches) {
     matches[0]
   );
   const upsetSensitive = matches.filter((match) => match.upsetOrDrawProbability >= 0.46).length;
+  const completed = matches.filter((match) => match.result?.status === "final");
+  const totalGoals = completed.reduce((sum, match) => sum + match.result.score.teamA + match.result.score.teamB, 0);
+  const modelHits = completed.filter((match) => match.postMatch.predictionHit).length;
+  const biggestDeviation = completed.reduce(
+    (best, match) => (!best || match.postMatch.deviationScore > best.postMatch.deviationScore ? match : best),
+    null
+  );
 
   return {
     totalMatches: matches.length,
+    completedMatches: completed.length,
+    totalGoals,
+    modelHits,
+    biggestDeviation,
     mostBalanced,
     biggestFavorite,
     highestDraw,
     upsetSensitive
+  };
+}
+
+function analyzeResult(result, probabilities, teamA, teamB, favorite) {
+  const goalsA = result.score.teamA;
+  const goalsB = result.score.teamB;
+  const actualOutcome = goalsA > goalsB ? "teamA" : goalsB > goalsA ? "teamB" : "draw";
+  const actualWinner = actualOutcome === "teamA" ? teamA : actualOutcome === "teamB" ? teamB : null;
+  const forecastProbability =
+    actualOutcome === "teamA" ? probabilities.teamA : actualOutcome === "teamB" ? probabilities.teamB : probabilities.draw;
+  const predictionHit =
+    (actualOutcome === "teamA" && favorite.name === teamA.name) ||
+    (actualOutcome === "teamB" && favorite.name === teamB.name) ||
+    actualOutcome === "draw";
+  const margin = Math.abs(goalsA - goalsB);
+  const deviationScore = Number((1 - forecastProbability + Math.min(margin, 4) * 0.04).toFixed(4));
+
+  return {
+    actualOutcome,
+    actualWinner,
+    forecastProbability,
+    predictionHit,
+    margin,
+    deviationScore,
+    points: {
+      teamA: goalsA > goalsB ? 3 : goalsA === goalsB ? 1 : 0,
+      teamB: goalsB > goalsA ? 3 : goalsA === goalsB ? 1 : 0
+    },
+    goalDifference: {
+      teamA: goalsA - goalsB,
+      teamB: goalsB - goalsA
+    }
   };
 }
 

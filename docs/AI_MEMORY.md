@@ -20,6 +20,7 @@ The app is meant to be transparent and easy to adjust, not a betting model.
 - `src/clubModel.js` contains post-2022 club events, star form samples, and the national boost model.
 - `src/data.js` contains starter groups and Elo-like ratings.
 - `src/history.js` contains 2002-2022 completed World Cup history plus a separate 2026 context object.
+- `src/liveResults.js` contains a manually verified result snapshot for completed 2026 matches. Keep it narrow: final scores only, source note, and update timestamp.
 - `src/localization.js` contains Chinese display names for national teams, clubs, positions, and score text.
 - `src/matchAnalysis.js` creates group-stage match-by-match probability rows from the current team data and selected model options.
 - `src/nationalStars.js` contains major national-team star-pool profiles for display and explanation.
@@ -90,9 +91,9 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 
 - `src/matchAnalysis.js` currently covers all 72 group-stage matches generated from the 12 groups in `src/data.js`.
 - Pairing order is a stable modeled schedule: 1v2, 3v4, 1v3, 4v2, 4v1, 2v3.
-- Each row shows win/draw/win probabilities, favorite, match profile, and upset-or-draw probability.
+- Each row shows win/draw/win probabilities, favorite, match profile, and upset-or-draw probability. Completed matches from `src/liveResults.js` show final score, model hit/deviation, and points/goal-difference impact.
 - It reflects the currently selected model layers in the UI because `src/app.js` passes boosted groups into `buildGroupMatchAnalysis`.
-- Future real-result tracking should add actual score fields and prediction-error calculations without replacing this forecast mode.
+- Future real-result tracking should continue adding actual score fields and prediction-error calculations without replacing this forecast mode.
 
 ## Forecast Trend Notes
 
@@ -111,6 +112,7 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - Club/star data is a curated current snapshot, not an exhaustive feed. Document source dates and rationale when updating it.
 - National star-pool data is explanatory, not official roster data.
 - Odds data is a market snapshot. It will become stale quickly and should be refreshed before any serious comparison.
+- Real match results must be source-checked before updating `src/liveResults.js`; do not mark a match as final unless the public scoreboard agrees.
 
 ## Maintenance Rules
 
@@ -140,3 +142,4 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - 2026-06-12: Added Chinese display-name localization for teams, clubs, positions, and historical score text.
 - 2026-06-12: Reworked the app shell to match the shared design screenshot more closely: dark green header, module tabs, light dashboard canvas, overview cards, ranking table, model interpretation sidebar, and responsive model settings.
 - 2026-06-12: Tightened the mobile breakpoint so the dashboard is readable on phone widths: compact header, horizontal module tabs, shorter overview cards, denser ranking rows, and single-column controls.
+- 2026-06-12: Added completed-match tracking for the first two Group A matches: final score cards, post-match probability/deviation readout, and completed-match summary stats.
