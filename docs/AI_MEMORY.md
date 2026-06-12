@@ -144,6 +144,16 @@ Prediction accuracy is the revenue model. Standing requirements from the boss:
 - Coach strategy quality matters. `TEAM_TACTICS` covers only 4 teams with real entries (rest fall back to DEFAULT_TACTIC) — expand with real per-team tactical/coach data, scraping free sources first (boss authorized scraping; paid data available on request, but check free sources suffice first).
 - Every finished match gets a post-mortem within 24h (docs/match-reviews/ SOP) comparing model vs market vs actual with running Brier — this is the "model training" loop that tunes marketWeight and factor boosts.
 
+## UI Review Findings (2026-06-13, Claude — measured on live site, 1440px + 375px)
+
+P0 (fix first): (1) Empty dashed ad-placeholder box sits at the very top of the page and eats ~1/4 of the mobile first screen when AdSense has no fill — collapse the slot when unfilled or move it below the fold. (2) Contrast failures measured: header subtitle ~1.1:1 (nearly invisible), "模型在线" badge ~1.1:1, eyebrow labels 3.07:1, ESPN links 3.67:1, green-button text 3.86:1, recent-form list rows 2.92:1 — all below the 4.5:1 WCAG floor; lighten/darken these grays one step. (3) Mobile header (title block + buttons + tab row) consumes ~half the first screen before any content; compress on ≤680px.
+
+P1: nav tabs are 34px tall and detail links 32px (14 targets below the 44px touch minimum); 10.6px/11.5px fonts below the 12px floor; ALL seven modules render stacked in one page (tabs are anchor links, not view switches) so the full 72-match list renders upfront — switch views or lazy-render below-fold modules; the horizontally scrollable tab row clips ("球队数...") with no fade/scroll affordance.
+
+P2: only 3 breakpoints (1180/980/680) — no narrow-phone tier; the upset radar renders as a plain list — the boss wants high-upset matches visually highlighted (badge/color/top placement); use font-variant-numeric: tabular-nums for probability columns.
+
+Good already: token-based CSS (18 vars), zero !important, consistent dark-green identity, clear desktop hero hierarchy, sensible module order.
+
 ## Maintenance Rules
 
 - Keep the app buildless and static unless the user asks for a larger framework.
