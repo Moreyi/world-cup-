@@ -1,9 +1,10 @@
 import { STARTER_GROUPS } from "./data.js";
 import { buildClubStarModel, getCountryBoost } from "./clubModel.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
-import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260612-live";
+import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260612-tactic";
 import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js";
 import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
+import { recentFormForCountry } from "./recentForm.js";
 import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260612-live";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
 import { coachForCountry } from "./teamStaff.js";
@@ -126,6 +127,8 @@ function runSimulation() {
   const options = readOptions();
   const groups = applySelectedBoosts(state.groups, options);
   const analysisOptions = withRealtimeOptions(options);
+  renderMatchAnalysis(groups, analysisOptions);
+  renderMatchup();
   elements.status.textContent = "Running";
   elements.simulateButton.disabled = true;
 
@@ -475,11 +478,16 @@ function renderTodayMatchCard(match) {
       </div>
       <div class="today-match-main">
         <strong>${countryName(match.teamA.name)}</strong>
-        <span>vs</span>
+        <span>预测 ${match.predictedScore.label}</span>
         <strong>${countryName(match.teamB.name)}</strong>
       </div>
       <p>${fixture.venue}</p>
+      ${renderForecastSummary(match)}
       ${marketOdds}
+      ${renderTodayTeamData(match)}
+      ${renderRecentForm(match)}
+      ${renderTacticalPreview(match)}
+      ${renderMatchLinks(match)}
       <div class="today-probs">
         <span>${countryName(match.teamA.name)} ${formatPercent(match.probabilities.teamA)}</span>
         <span>平 ${formatPercent(match.probabilities.draw)}</span>
@@ -491,6 +499,28 @@ function renderTodayMatchCard(match) {
         <div class="result-segment win-b" style="width: ${match.probabilities.teamB * 100}%"></div>
       </div>
     </article>
+  `;
+}
+
+function renderForecastSummary(match) {
+  const lean = match.probabilities.teamA >= match.probabilities.teamB ? match.teamA : match.teamB;
+  const confidence = Math.abs(match.probabilities.teamA - match.probabilities.teamB);
+  const confidenceLabel = confidence >= 0.18 ? "信心中高" : confidence >= 0.08 ? "信心中等" : "谨慎看待";
+  return `
+    <div class="forecast-summary">
+      <div>
+        <span>预测比分</span>
+        <strong>${countryName(match.teamA.name)} ${match.predictedScore.teamA}-${match.predictedScore.teamB} ${countryName(match.teamB.name)}</strong>
+      </div>
+      <div>
+        <span>倾向</span>
+        <strong>${countryName(lean.name)}不败 · ${confidenceLabel}</strong>
+      </div>
+      <div>
+        <span>爆冷/平局</span>
+        <strong>${formatPercent(match.upsetOrDrawProbability)}</strong>
+      </div>
+    </div>
   `;
 }
 
@@ -555,8 +585,10 @@ function renderMatchCard(match) {
       </div>
       <div class="match-read">
         <span>优势：${countryName(match.favorite.name)}</span>
+        <span>预测比分：${match.predictedScore.label}</span>
         <span>爆冷/平局：${formatPercent(match.upsetOrDrawProbability)}</span>
       </div>
+      <div class="match-tactic-mini">${match.tacticalPreview.prediction}</div>
     </article>
   `;
 }
@@ -605,11 +637,101 @@ function buildPostMatchCopy(match) {
   const { result, postMatch } = match;
   const teamA = countryName(match.teamA.name);
   const teamB = countryName(match.teamB.name);
-  return `${result.note} 模型赛前给到该赛果 ${formatPercent(postMatch.forecastProbability)} 概率；积分影响：${teamA} ${
+  return `${result.note} 赛前预测比分 ${match.predictedScore.label}；模型赛前给到该赛果 ${formatPercent(
+    postMatch.forecastProbability
+  )} 概率；积分影响：${teamA} ${
     postMatch.points.teamA
   } 分（净胜球 ${formatSigned(postMatch.goalDifference.teamA)}），${teamB} ${postMatch.points.teamB} 分（净胜球 ${formatSigned(
     postMatch.goalDifference.teamB
   )}）。`;
+}
+
+function renderTodayTeamData(match) {
+  return `
+    <div class="today-data-grid">
+      ${renderTeamDataPanel(match.teamA)}
+      ${renderTeamDataPanel(match.teamB)}
+    </div>
+  `;
+}
+
+function renderTeamDataPanel(team) {
+  const profile = findNationalStarProfile(team.name);
+  const coach = coachForCountry(team.name);
+  const stars = (profile?.stars ?? []).filter((star) => star.shortName && star.chineseName).slice(0, 3);
+  const starLine = stars.length
+    ? stars.map((star) => `${star.shortName}/${star.chineseName}${star.marketValueEurM ? ` ${formatMarketValue(star.marketValueEurM)}` : ""}`).join("、")
+    : "待补核心球员";
+  return `
+    <div class="today-team-data">
+      <strong>${countryName(team.name)} · Elo ${Math.round(team.elo)}</strong>
+      <span>主帅：${coach.chineseName}${coach.name !== "TBD" ? ` / ${coach.name}` : ""}</span>
+      <span>核心：${starLine}</span>
+    </div>
+  `;
+}
+
+function renderRecentForm(match) {
+  return `
+    <div class="recent-form-grid">
+      ${renderRecentFormPanel(match.teamA.name)}
+      ${renderRecentFormPanel(match.teamB.name)}
+    </div>
+  `;
+}
+
+function renderRecentFormPanel(country) {
+  const form = recentFormForCountry(country);
+  const matches = form.matches.slice(0, 3);
+  return `
+    <div class="recent-form-card">
+      <strong>${countryName(country)} 近赛</strong>
+      <span>${form.summary}</span>
+      <ul>
+        ${
+          matches.length
+            ? matches.map((match) => `<li>${match.date} ${match.score} vs ${match.opponent} · ${match.type}</li>`).join("")
+            : "<li>近赛比分待接公开源</li>"
+        }
+      </ul>
+    </div>
+  `;
+}
+
+function renderTacticalPreview(match) {
+  const tactic = match.tacticalPreview;
+  return `
+    <div class="tactic-preview">
+      <div>
+        <strong>${countryName(match.teamA.name)}</strong>
+        <span>${tactic.teamA.shape} · ${tactic.teamA.style}</span>
+      </div>
+      <div>
+        <strong>${countryName(match.teamB.name)}</strong>
+        <span>${tactic.teamB.shape} · ${tactic.teamB.style}</span>
+      </div>
+      <p><b>战术对抗</b>${tactic.duel}</p>
+      <p><b>预测判断</b>${tactic.prediction}</p>
+      <p><b>数据说明</b>${tactic.dataNote}</p>
+    </div>
+  `;
+}
+
+function renderMatchLinks(match) {
+  const links = match.fixture?.links ?? [];
+  if (!links.length) return "";
+  return `
+    <div class="match-links">
+      <strong>线上入口</strong>
+      ${links
+        .map((link) => `<a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.label}</a>`)
+        .join("")}
+    </div>
+  `;
+}
+
+function findNationalStarProfile(country) {
+  return NATIONAL_STAR_PROFILES.find((profile) => profile.country === country) ?? null;
 }
 
 function formatKickoffTime(fixture = {}) {

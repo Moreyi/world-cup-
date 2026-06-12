@@ -36,7 +36,17 @@ export const MATCH_CALENDAR = [
     dateTime: "2026-06-12T19:00:00Z",
     timeET: "15:00",
     venue: "BMO Field, Toronto",
-    status: "scheduled"
+    status: "scheduled",
+    links: [
+      {
+        label: "ESPN 比赛页",
+        url: "https://www.espn.com/soccer/match/_/gameId/760416"
+      },
+      {
+        label: "FIFA Match Centre",
+        url: "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026"
+      }
+    ]
   },
   {
     matchId: "D-1",
@@ -44,7 +54,17 @@ export const MATCH_CALENDAR = [
     dateTime: "2026-06-13T01:00:00Z",
     timeET: "21:00",
     venue: "SoFi Stadium, Los Angeles",
-    status: "scheduled"
+    status: "scheduled",
+    links: [
+      {
+        label: "ESPN 比赛页",
+        url: "https://www.espn.com/soccer/match/_/gameId/760417"
+      },
+      {
+        label: "FIFA Match Centre",
+        url: "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026"
+      }
+    ]
   }
 ];
 

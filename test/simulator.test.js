@@ -15,6 +15,7 @@ import {
 import { eloExpected, matchProbabilities, simulateGroupStage, simulateTournament } from "../src/simulator.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "../src/trendAnalysis.js";
 import { fetchRealtimeFixtures } from "../src/realtimeData.js";
+import { recentFormForCountry } from "../src/recentForm.js";
 import { coachForCountry } from "../src/teamStaff.js";
 
 describe("eloExpected", () => {
@@ -149,6 +150,9 @@ describe("match-by-match analysis", () => {
     );
     assert.equal(analysis.todayMatches[0].teamA.name, "Canada");
     assert.equal(analysis.todayMatches[1].teamA.name, "United States");
+    assert.ok(analysis.todayMatches[0].predictedScore.label.includes("-"));
+    assert.ok(analysis.todayMatches[0].tacticalPreview.duel);
+    assert.ok(analysis.todayMatches[1].tacticalPreview.prediction);
   });
 
   it("keeps each match outcome distribution normalized", () => {
@@ -156,6 +160,8 @@ describe("match-by-match analysis", () => {
     for (const match of analysis.matches) {
       const total = match.probabilities.teamA + match.probabilities.draw + match.probabilities.teamB;
       assert.ok(Math.abs(total - 1) < 1e-12);
+      assert.ok(Number.isInteger(match.predictedScore.teamA));
+      assert.ok(Number.isInteger(match.predictedScore.teamB));
     }
   });
 });
@@ -261,6 +267,14 @@ describe("team staff", () => {
   it("provides coach display data for starter countries", () => {
     assert.equal(coachForCountry("Canada").name, "Jesse Marsch");
     assert.ok(coachForCountry("France").chineseName);
+  });
+});
+
+describe("recent form", () => {
+  it("keeps same-day teams connected to recent match notes", () => {
+    assert.ok(recentFormForCountry("Canada").matches.length >= 3);
+    assert.ok(recentFormForCountry("United States").summary.includes("2026"));
+    assert.equal(recentFormForCountry("Atlantis").matches.length, 0);
   });
 });
 

@@ -1,5 +1,6 @@
 import { matchProbabilities } from "./simulator.js";
-import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260612-live";
+import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260612-tactic";
+import { buildTacticalPreview } from "./teamTactics.js";
 
 const GROUP_PAIRINGS = [
   { matchday: 1, pair: [0, 1] },
@@ -32,6 +33,13 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
       const fixtureOverride = fixtureOverrides.find((entry) => entry.matchId === `${group.name}-${index + 1}`);
       const fixtureInfo = fixtureOverride ? { ...calendarFixture, ...fixtureOverride } : calendarFixture;
       const result = resultOverrides.find((entry) => entry.matchId === `${group.name}-${index + 1}`) ?? resultByMatchId(`${group.name}-${index + 1}`);
+      const predictedScore = predictScore(teamA, teamB, probabilities);
+      const matchShell = {
+        teamA,
+        teamB,
+        probabilities,
+        edge
+      };
 
       return {
         id: `${group.name}-${index + 1}`,
@@ -42,6 +50,8 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
         teamA,
         teamB,
         probabilities,
+        predictedScore,
+        tacticalPreview: buildTacticalPreview(matchShell),
         favorite,
         favoriteWinProbability,
         underdogWinProbability,
@@ -61,6 +71,30 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
     todayMatches: matches.filter((match) => match.fixture?.date === TODAY_DATE),
     upsetMatches: buildUpsetMatches(matches),
     resultSnapshot: RESULT_SNAPSHOT
+  };
+}
+
+function predictScore(teamA, teamB, probabilities) {
+  const baseGoals = 1.15 + (1 - probabilities.draw) * 0.55;
+  const attackA = baseGoals * (0.72 + probabilities.teamA * 1.15) + (teamA.host ? 0.14 : 0);
+  const attackB = baseGoals * (0.72 + probabilities.teamB * 1.15) + (teamB.host ? 0.14 : 0);
+  let goalsA = Math.max(0, Math.min(4, Math.round(attackA - 0.35)));
+  let goalsB = Math.max(0, Math.min(4, Math.round(attackB - 0.35)));
+
+  if (probabilities.draw >= Math.max(probabilities.teamA, probabilities.teamB) - 0.04) {
+    const shared = Math.max(1, Math.round((goalsA + goalsB) / 2));
+    goalsA = shared;
+    goalsB = shared;
+  } else if (probabilities.teamA > probabilities.teamB && goalsA <= goalsB) {
+    goalsA = goalsB + 1;
+  } else if (probabilities.teamB > probabilities.teamA && goalsB <= goalsA) {
+    goalsB = goalsA + 1;
+  }
+
+  return {
+    teamA: goalsA,
+    teamB: goalsB,
+    label: `${goalsA}-${goalsB}`
   };
 }
 

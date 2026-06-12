@@ -27,6 +27,7 @@ The app is meant to be transparent and easy to adjust, not a betting model.
 - `src/policyOddsModel.js` contains external policy/logistics factors and an odds snapshot converted into model boosts.
 - `src/realtimeData.js` fetches the public ESPN soccer scoreboard for same-day fixtures, live/final status, score, venue, and available market odds.
 - `src/teamStaff.js` contains coach display data for teams in the modeled tournament field.
+- `src/teamTactics.js` contains tactical style snapshots and match-level tactical preview text.
 - `src/trendAnalysis.js` compares championship probabilities across model stages.
 - `src/simulator.js` contains deterministic RNG, Elo probability, group-stage simulation, knockout simulation, and tournament aggregation.
 - `src/app.js` wires DOM controls to the simulator.
@@ -103,6 +104,7 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - Each row shows win/draw/win probabilities, favorite, match profile, and upset-or-draw probability. Completed matches from `src/liveResults.js` show final score, model hit/deviation, and points/goal-difference impact. Today's fixtures are also surfaced as a separate homepage rail before the full 72-match list.
 - Champion predictions now apply final group-stage results before simulating remaining group matches, so already-completed games change qualification and title probabilities.
 - The "更新实时数据" button fetches the ESPN scoreboard client-side. Available odds are shown only as public market/odds direction, not as global betting volume or betting advice.
+- Each match now has a model predicted score and tactical preview. Today's match cards show richer team data: Elo, coach, core stars, predicted score, tactical matchup, and forecast explanation.
 - It reflects the currently selected model layers in the UI because `src/app.js` passes boosted groups into `buildGroupMatchAnalysis`.
 - Future real-result tracking should continue adding actual score fields and prediction-error calculations without replacing this forecast mode.
 
@@ -125,6 +127,7 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - Odds data is a market snapshot. It will become stale quickly and should be refreshed before any serious comparison.
 - Real match results must be source-checked before updating `src/liveResults.js`; do not mark a match as final unless the public scoreboard agrees.
 - Do not claim to know "global betting volume" unless a real aggregate source is added. Public odds/market direction is acceptable when the provider and timestamp are visible.
+- Do not fill friendly/recent warmup results until a source is integrated. The current tactical cards explicitly mark this as pending public match-result sourcing.
 
 ## Maintenance Rules
 
@@ -157,3 +160,4 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - 2026-06-12: Added completed-match tracking for the first two Group A matches: final score cards, post-match probability/deviation readout, and completed-match summary stats.
 - 2026-06-12: Added a standalone "今日比赛" rail for Canada vs Bosnia and Herzegovina plus United States vs Paraguay, using the same model probability feed while keeping the full match analysis list below.
 - 2026-06-12: Added live data refresh from ESPN scoreboard, public odds direction display, an upset prediction rail, hour-level ET/Beijing kickoff display, coach data, player Chinese/English display metadata, and current-result-adjusted champion simulation.
+- 2026-06-12: Added model predicted scores and richer tactical previews for each match, with expanded same-day match cards for coach/core-player/model/tactical context.
