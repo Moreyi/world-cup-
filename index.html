@@ -48,6 +48,20 @@
               俱乐部/球星
             </span>
           </label>
+          <label class="toggle-label">
+            政策修正
+            <span>
+              <input id="usePolicyModel" type="checkbox" checked />
+              外部环境
+            </span>
+          </label>
+          <label class="toggle-label">
+            赔率校准
+            <span>
+              <input id="useOddsModel" type="checkbox" checked />
+              市场快照
+            </span>
+          </label>
         </div>
 
         <div class="matchup-panel">
@@ -119,6 +133,41 @@
               <span>状态 x 角色 x 可用性</span>
             </div>
             <div class="star-impact-grid" id="starImpactGrid"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="policy-odds-panel" aria-label="国际政策和赔率模型">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">External Calibration</p>
+            <h2>国际政策 / 赔率校准</h2>
+          </div>
+          <p id="policyOddsSummary">外部环境修正 + 市场隐含概率。</p>
+        </div>
+        <div class="model-stats" id="policyOddsStats"></div>
+        <div class="policy-odds-layout">
+          <article class="analysis-block">
+            <div class="block-head">
+              <h3>政策与外部环境</h3>
+              <span>Elo boost</span>
+            </div>
+            <div class="policy-list" id="policyList"></div>
+          </article>
+          <article class="analysis-block">
+            <div class="block-head">
+              <h3>赔率隐含概率</h3>
+              <span>American odds</span>
+            </div>
+            <div class="odds-list" id="oddsList"></div>
+          </article>
+          <article class="analysis-block wide">
+            <div class="block-head">
+              <h3>综合外部修正</h3>
+              <span>政策 + 赔率</span>
+            </div>
+            <div class="external-boost-grid" id="externalBoostGrid"></div>
+            <p class="model-note" id="oddsDisclaimer"></p>
           </article>
         </div>
       </section>

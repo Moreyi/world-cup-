@@ -46,7 +46,8 @@ select {
 .results-panel,
 .teams-panel,
 .history-panel,
-.club-model-panel {
+.club-model-panel,
+.policy-odds-panel {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -63,13 +64,15 @@ select {
 .results-panel,
 .teams-panel,
 .history-panel,
-.club-model-panel {
+.club-model-panel,
+.policy-odds-panel {
   padding: 18px;
 }
 
 .teams-panel,
 .history-panel,
-.club-model-panel {
+.club-model-panel,
+.policy-odds-panel {
   grid-column: 1 / -1;
 }
 
@@ -392,7 +395,8 @@ button.secondary {
 }
 
 .history-layout,
-.club-model-layout {
+.club-model-layout,
+.policy-odds-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
@@ -541,18 +545,26 @@ button.secondary {
 
 .national-boost-list,
 .club-power-list,
-.star-impact-grid {
+.star-impact-grid,
+.policy-list,
+.odds-list,
+.external-boost-grid {
   display: grid;
   gap: 10px;
 }
 
-.boost-row {
+.boost-row,
+.odds-row {
   display: grid;
   grid-template-columns: minmax(90px, 1fr) minmax(120px, 2fr) 46px;
   align-items: center;
   gap: 10px;
   min-height: 32px;
   font-variant-numeric: tabular-nums;
+}
+
+.odds-row {
+  grid-template-columns: minmax(90px, 1fr) minmax(100px, 1.6fr) 58px 54px;
 }
 
 .boost-track {
@@ -565,6 +577,10 @@ button.secondary {
 .boost-track > div {
   height: 100%;
   background: linear-gradient(90deg, var(--blue), var(--gold));
+}
+
+.boost-track.negative > div {
+  background: linear-gradient(90deg, var(--red), #9b3942);
 }
 
 .club-power-row {
@@ -581,7 +597,10 @@ button.secondary {
 
 .club-power-row span,
 .star-card span,
-.star-card p {
+.star-card p,
+.odds-row em,
+.external-card span,
+.model-note {
   color: var(--muted);
 }
 
@@ -626,6 +645,35 @@ button.secondary {
   background: linear-gradient(90deg, var(--field), var(--red));
 }
 
+.external-boost-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.external-card {
+  display: grid;
+  gap: 8px;
+  min-height: 104px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.external-card > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.external-card b {
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.model-note {
+  margin: 12px 0 0;
+  line-height: 1.5;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -643,8 +691,10 @@ button.secondary {
   .model-stats,
   .history-layout,
   .club-model-layout,
+  .policy-odds-layout,
   .finals-timeline,
-  .star-impact-grid {
+  .star-impact-grid,
+  .external-boost-grid {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -665,11 +715,13 @@ button.secondary {
   .model-stats,
   .history-layout,
   .club-model-layout,
+  .policy-odds-layout,
   .finals-timeline {
     grid-template-columns: 1fr;
   }
 
-  .star-impact-grid {
+  .star-impact-grid,
+  .external-boost-grid {
     grid-template-columns: 1fr;
   }
 
@@ -700,13 +752,20 @@ button.secondary {
     grid-template-columns: 42px minmax(90px, 1fr) 42px;
   }
 
-  .boost-row {
+  .boost-row,
+  .odds-row {
     grid-template-columns: minmax(92px, 1fr) 48px;
   }
 
-  .boost-row .boost-track {
+  .boost-row .boost-track,
+  .odds-row .boost-track {
     grid-column: 1 / -1;
     grid-row: 2;
+  }
+
+  .odds-row em {
+    grid-column: 2;
+    text-align: right;
   }
 
   .goal-row em {

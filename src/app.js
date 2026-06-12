@@ -1,11 +1,13 @@
 import { STARTER_GROUPS } from "./data.js";
 import { buildClubStarModel, getCountryBoost } from "./clubModel.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
+import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
-  clubStarModel: buildClubStarModel()
+  clubStarModel: buildClubStarModel(),
+  policyOddsModel: buildPolicyOddsModel()
 };
 
 const elements = {
@@ -14,6 +16,8 @@ const elements = {
   drawBias: document.querySelector("#drawBias"),
   seed: document.querySelector("#seed"),
   useFormModel: document.querySelector("#useFormModel"),
+  usePolicyModel: document.querySelector("#usePolicyModel"),
+  useOddsModel: document.querySelector("#useOddsModel"),
   teamA: document.querySelector("#teamA"),
   teamB: document.querySelector("#teamB"),
   matchupResult: document.querySelector("#matchupResult"),
@@ -27,6 +31,12 @@ const elements = {
   nationalBoostList: document.querySelector("#nationalBoostList"),
   clubPowerList: document.querySelector("#clubPowerList"),
   starImpactGrid: document.querySelector("#starImpactGrid"),
+  policyOddsSummary: document.querySelector("#policyOddsSummary"),
+  policyOddsStats: document.querySelector("#policyOddsStats"),
+  policyList: document.querySelector("#policyList"),
+  oddsList: document.querySelector("#oddsList"),
+  externalBoostGrid: document.querySelector("#externalBoostGrid"),
+  oddsDisclaimer: document.querySelector("#oddsDisclaimer"),
   historyStats: document.querySelector("#historyStats"),
   goalChart: document.querySelector("#goalChart"),
   confedChart: document.querySelector("#confedChart"),
@@ -41,6 +51,7 @@ renderTeamControls();
 renderSelectors();
 renderMatchup();
 renderClubStarModel();
+renderPolicyOddsModel();
 renderHistoryAnalysis();
 runSimulation();
 
@@ -60,10 +71,18 @@ elements.useFormModel.addEventListener("change", () => {
   renderMatchup();
   runSimulation();
 });
+elements.usePolicyModel.addEventListener("change", () => {
+  renderMatchup();
+  runSimulation();
+});
+elements.useOddsModel.addEventListener("change", () => {
+  renderMatchup();
+  runSimulation();
+});
 
 function runSimulation() {
   const options = readOptions();
-  const groups = options.useFormModel ? applyClubStarBoosts(state.groups, state.clubStarModel) : state.groups;
+  const groups = applySelectedBoosts(state.groups, options);
   elements.status.textContent = "Running";
   elements.simulateButton.disabled = true;
 
@@ -195,6 +214,72 @@ function renderClubStarModel() {
     .join("");
 }
 
+function renderPolicyOddsModel() {
+  const model = state.policyOddsModel;
+  const topPolicy = model.policyScores[0];
+  const topOdds = model.oddsRows[0];
+  const topExternal = model.combinedRows[0];
+  const maxPolicy = Math.max(...model.policyScores.map((entry) => Math.abs(entry.policyBoost)), 1);
+  const maxOdds = Math.max(...model.oddsRows.map((entry) => entry.impliedProbability), 0.01);
+  const maxExternal = Math.max(...model.combinedRows.map((entry) => Math.abs(entry.totalExternalBoost)), 1);
+
+  elements.policyOddsSummary.textContent = `${model.policyFactors.length} 类政策/环境因子，${model.oddsRows.length} 队赔率快照，生成于 ${model.generatedAt}`;
+  elements.policyOddsStats.innerHTML = `
+    <div class="stat-card"><strong>${topPolicy.country}</strong><span>最高政策修正 +${topPolicy.policyBoost}</span></div>
+    <div class="stat-card"><strong>${topOdds.country}</strong><span>最高赔率隐含 ${formatPercent(topOdds.impliedProbability)}</span></div>
+    <div class="stat-card"><strong>${topExternal.country}</strong><span>最高综合外部 +${topExternal.totalExternalBoost}</span></div>
+    <div class="stat-card"><strong>${model.oddsRows.length}</strong><span>赔率样本球队</span></div>
+  `;
+
+  elements.policyList.innerHTML = model.policyScores
+    .slice(0, 14)
+    .map(
+      (entry) => `
+        <div class="boost-row">
+          <span>${entry.country}</span>
+          <div class="boost-track ${entry.policyBoost < 0 ? "negative" : ""}" aria-hidden="true">
+            <div style="width: ${(Math.abs(entry.policyBoost) / maxPolicy) * 100}%"></div>
+          </div>
+          <strong>${signed(entry.policyBoost)}</strong>
+        </div>
+      `
+    )
+    .join("");
+
+  elements.oddsList.innerHTML = model.oddsRows
+    .map(
+      (entry) => `
+        <div class="odds-row">
+          <span>${entry.country}</span>
+          <div class="boost-track" aria-hidden="true"><div style="width: ${(entry.impliedProbability / maxOdds) * 100}%"></div></div>
+          <strong>+${entry.american}</strong>
+          <em>${formatPercent(entry.impliedProbability)}</em>
+        </div>
+      `
+    )
+    .join("");
+
+  elements.externalBoostGrid.innerHTML = model.combinedRows
+    .slice(0, 16)
+    .map(
+      (entry) => `
+        <article class="external-card">
+          <div>
+            <strong>${entry.country}</strong>
+            <span>政策 ${signed(entry.policyBoost)} / 赔率 ${signed(entry.oddsBoost)}</span>
+          </div>
+          <div class="boost-track ${entry.totalExternalBoost < 0 ? "negative" : ""}" aria-hidden="true">
+            <div style="width: ${(Math.abs(entry.totalExternalBoost) / maxExternal) * 100}%"></div>
+          </div>
+          <b>${signed(entry.totalExternalBoost)}</b>
+        </article>
+      `
+    )
+    .join("");
+
+  elements.oddsDisclaimer.textContent = model.note;
+}
+
 function renderHistoryAnalysis() {
   const summary = summarizeHistory(WORLD_CUP_HISTORY);
   const maxGoals = Math.max(...WORLD_CUP_HISTORY.map((cup) => cup.goals));
@@ -283,15 +368,16 @@ function renderSelectors() {
 function renderMatchup() {
   const baseTeamA = findTeam(elements.teamA.value);
   const baseTeamB = findTeam(elements.teamB.value);
-  const teamA = withClubStarBoost(baseTeamA, state.clubStarModel, elements.useFormModel.checked);
-  const teamB = withClubStarBoost(baseTeamB, state.clubStarModel, elements.useFormModel.checked);
+  const options = readOptions();
+  const teamA = withSelectedBoosts(baseTeamA, options);
+  const teamB = withSelectedBoosts(baseTeamB, options);
   const probabilities = matchProbabilities(teamA, teamB, readOptions());
   elements.matchupResult.innerHTML = `
     <div class="prob-card"><strong>${formatPercent(probabilities.teamA)}</strong><span>${teamA.name} 常规时间胜</span></div>
     <div class="prob-card"><strong>${formatPercent(probabilities.draw)}</strong><span>小组赛平局</span></div>
     <div class="prob-card"><strong>${formatPercent(probabilities.teamB)}</strong><span>${teamB.name} 常规时间胜</span></div>
     <div class="prob-card"><strong>${formatPercent(probabilities.knockoutA)}</strong><span>${teamA.name} 淘汰赛晋级</span></div>
-    <div class="prob-card"><strong>${teamA.elo} / ${teamB.elo}</strong><span>${elements.useFormModel.checked ? "修正后 Elo" : "当前 Elo"}</span></div>
+    <div class="prob-card"><strong>${teamA.elo} / ${teamB.elo}</strong><span>${activeBoostLabel(options)}</span></div>
     <div class="prob-card"><strong>${formatPercent(probabilities.knockoutB)}</strong><span>${teamB.name} 淘汰赛晋级</span></div>
   `;
 }
@@ -302,7 +388,9 @@ function readOptions() {
     homeAdvantage: Number(elements.homeAdvantage.value),
     drawBias: Number(elements.drawBias.value),
     seed: Number(elements.seed.value),
-    useFormModel: elements.useFormModel.checked
+    useFormModel: elements.useFormModel.checked,
+    usePolicyModel: elements.usePolicyModel.checked,
+    useOddsModel: elements.useOddsModel.checked
   };
 }
 
@@ -332,21 +420,37 @@ function formatPercent(value) {
   return `${(value * 100).toFixed(value < 0.01 ? 2 : 1)}%`;
 }
 
-function applyClubStarBoosts(groups, model) {
+function applySelectedBoosts(groups, options) {
   return groups.map((group) => ({
     ...group,
-    teams: group.teams.map((team) => withClubStarBoost(team, model, true))
+    teams: group.teams.map((team) => withSelectedBoosts(team, options))
   }));
 }
 
-function withClubStarBoost(team, model, enabled) {
-  if (!enabled) return { ...team };
+function withSelectedBoosts(team, options) {
+  const formBoost = options.useFormModel ? getCountryBoost(state.clubStarModel, team.name) : 0;
+  const policyBoost = options.usePolicyModel ? getPolicyBoost(state.policyOddsModel, team.name) : 0;
+  const oddsBoost = options.useOddsModel ? getOddsBoost(state.policyOddsModel, team.name) : 0;
   return {
     ...team,
-    elo: team.elo + getCountryBoost(model, team.name),
+    elo: team.elo + formBoost + policyBoost + oddsBoost,
     baseElo: team.elo,
-    formBoost: getCountryBoost(model, team.name)
+    formBoost,
+    policyBoost,
+    oddsBoost
   };
+}
+
+function activeBoostLabel(options) {
+  const labels = [];
+  if (options.useFormModel) labels.push("状态");
+  if (options.usePolicyModel) labels.push("政策");
+  if (options.useOddsModel) labels.push("赔率");
+  return labels.length > 0 ? `${labels.join("+")}修正 Elo` : "当前 Elo";
+}
+
+function signed(value) {
+  return value > 0 ? `+${value}` : `${value}`;
 }
 
 function buildHistoryInsights(summary) {

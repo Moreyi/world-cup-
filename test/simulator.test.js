@@ -3,6 +3,12 @@ import { describe, it } from "node:test";
 import { buildClubStarModel, getCountryBoost } from "../src/clubModel.js";
 import { STARTER_GROUPS } from "../src/data.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "../src/history.js";
+import {
+  americanToImpliedProbability,
+  buildPolicyOddsModel,
+  getOddsBoost,
+  getPolicyBoost
+} from "../src/policyOddsModel.js";
 import { eloExpected, matchProbabilities, simulateGroupStage, simulateTournament } from "../src/simulator.js";
 
 describe("eloExpected", () => {
@@ -78,5 +84,20 @@ describe("club and star model", () => {
   it("returns zero boost for countries outside the model sample", () => {
     const model = buildClubStarModel();
     assert.equal(getCountryBoost(model, "Atlantis"), 0);
+  });
+});
+
+describe("policy and odds model", () => {
+  it("converts American odds to implied probability", () => {
+    assert.ok(Math.abs(americanToImpliedProbability(450) - 0.1818181818) < 1e-10);
+    assert.ok(Math.abs(americanToImpliedProbability(-150) - 0.6) < 1e-10);
+  });
+
+  it("builds policy and odds boosts", () => {
+    const model = buildPolicyOddsModel();
+    assert.ok(getPolicyBoost(model, "United States") > 0);
+    assert.ok(getPolicyBoost(model, "Australia") < 0);
+    assert.ok(getOddsBoost(model, "France") > 0);
+    assert.equal(getOddsBoost(model, "Atlantis"), 0);
   });
 });
