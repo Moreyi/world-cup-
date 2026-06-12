@@ -69,6 +69,7 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
         upsetOrDrawProbability: underdogWinProbability + probabilities.draw,
         edge,
         result,
+        darkHorse: result?.status !== "final" && underdogWinProbability + probabilities.draw >= 0.55,
         postMatch: result ? analyzeResult(result, probabilities, teamA, teamB) : null,
         profile: result?.status === "final" ? "已结束" : result?.status === "live" ? "进行中" : classifyMatch(edge, probabilities.draw)
       };

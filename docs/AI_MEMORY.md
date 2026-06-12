@@ -143,6 +143,7 @@ Prediction accuracy is the revenue model. Standing requirements from the boss:
 - When the model produces a standout signal (e.g. high dark-horse/upset probability like D-1 USA-Paraguay at 62.8% upset+draw), it must be highlighted prominently, not buried in a list.
 - Coach strategy quality matters. `TEAM_TACTICS` covers only 4 teams with real entries (rest fall back to DEFAULT_TACTIC) — expand with real per-team tactical/coach data, scraping free sources first (boss authorized scraping; paid data available on request, but check free sources suffice first).
 - Every finished match gets a post-mortem within 24h (docs/match-reviews/ SOP) comparing model vs market vs actual with running Brier — this is the "model training" loop that tunes marketWeight and factor boosts.
+- The site needs a Chinese/English language toggle (boss directive 2026-06-13). Suggested approach: UI chrome strings move into a zh/en string table; team/club/position names already have English keys + `localization.js` for Chinese, so data display just needs the toggle to bypass/apply localization; persist choice in localStorage. Best implemented by whoever owns app.js/index.html at the time.
 
 ## UI Review Findings (2026-06-13, Claude — measured on live site, 1440px + 375px)
 
@@ -153,6 +154,8 @@ P1: nav tabs are 34px tall and detail links 32px (14 targets below the 44px touc
 P2: only 3 breakpoints (1180/980/680) — no narrow-phone tier; the upset radar renders as a plain list — the boss wants high-upset matches visually highlighted (badge/color/top placement); use font-variant-numeric: tabular-nums for probability columns.
 
 Good already: token-based CSS (18 vars), zero !important, consistent dark-green identity, clear desktop hero hierarchy, sensible module order.
+
+Polish status (2026-06-13, Claude): the P0s and quick P1/P2s are live via `styles-polish.css`, loaded after styles.css from index.html. It fixes the muted-token contrast (--muted #8b968d → #5e6d64), header text opacity, button green to 4.5:1 (#11875a), eyebrow size/color, 44px tabs, tabular-nums, collapses unfilled/empty ad slots (`:has` rules), hides the mobile header subtitle, and adds a tab-row fade hint plus a ready-to-use `.upset-alert` dark-horse badge style. Match rows now carry a `darkHorse` boolean (no-result matches with upset+draw ≥ 0.55) — render `.upset-alert` on today cards/upset radar using it. **This file is a temporary layer: whoever finishes the styles.css rework should merge these rules in and delete the file.** Contrast re-measured live after deploy: 4.53–5.46:1 on all previously failing elements. Remaining from the review: view-switching/lazy render for the 7 stacked modules, narrow-phone breakpoint tier.
 
 ## Maintenance Rules
 
