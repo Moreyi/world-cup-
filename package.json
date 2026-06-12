@@ -1,0 +1,16 @@
+{
+  "name": "world-cup-elo-forecast",
+  "version": "0.1.0",
+  "description": "A browser-based 2026 World Cup Elo win-probability and Monte Carlo forecasting tool.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "keywords": [
+    "world-cup",
+    "elo",
+    "monte-carlo",
+    "forecast"
+  ],
+  "license": "MIT"
+}

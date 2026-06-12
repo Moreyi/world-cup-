@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>World Cup Elo Forecast</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="control-panel" aria-label="世界杯胜率预测控制台">
+        <div class="brand-row">
+          <div>
+            <p class="eyebrow">2026 FIFA World Cup</p>
+            <h1>Elo 胜率预测</h1>
+          </div>
+          <div class="status-pill" id="status">Ready</div>
+        </div>
+
+        <div class="pitch" aria-hidden="true">
+          <div class="pitch-line center"></div>
+          <div class="pitch-line box left"></div>
+          <div class="pitch-line box right"></div>
+          <div class="pitch-circle"></div>
+        </div>
+
+        <div class="settings-grid">
+          <label>
+            模拟次数
+            <input id="iterations" type="number" min="100" max="50000" step="100" value="5000" />
+          </label>
+          <label>
+            主场加成 Elo
+            <input id="homeAdvantage" type="number" min="0" max="120" step="5" value="35" />
+          </label>
+          <label>
+            平局倾向
+            <input id="drawBias" type="range" min="0" max="1" step="0.05" value="0.28" />
+          </label>
+          <label>
+            随机种子
+            <input id="seed" type="number" min="1" max="999999" value="2026" />
+          </label>
+        </div>
+
+        <div class="matchup-panel">
+          <label>
+            球队 A
+            <select id="teamA"></select>
+          </label>
+          <label>
+            球队 B
+            <select id="teamB"></select>
+          </label>
+          <div class="matchup-result" id="matchupResult"></div>
+        </div>
+
+        <div class="button-row">
+          <button id="simulateButton" type="button">运行模拟</button>
+          <button id="resetButton" type="button" class="secondary">重置评分</button>
+        </div>
+      </section>
+
+      <section class="results-panel" aria-label="模拟结果">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Monte Carlo</p>
+            <h2>夺冠概率</h2>
+          </div>
+          <p id="summary">调整参数后运行模拟。</p>
+        </div>
+        <div class="top-list" id="topList"></div>
+      </section>
+
+      <section class="teams-panel" aria-label="球队 Elo 编辑">
+        <div class="section-head compact">
+          <div>
+            <p class="eyebrow">Editable Ratings</p>
+            <h2>球队评分</h2>
+          </div>
+        </div>
+        <div class="teams-grid" id="teamsGrid"></div>
+      </section>
+    </main>
+
+    <script type="module" src="src/app.js"></script>
+  </body>
+</html>
