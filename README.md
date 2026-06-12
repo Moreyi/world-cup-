@@ -1,14 +1,78 @@
 # World Cup Elo Forecast
 
+[English](#english) | [中文](#中文)
+
+---
+
+## English
+
+A lightweight 2026 World Cup pre-match data tool: daily fixtures, team profiles, and basic model leans built on per-team Elo ratings, recent form, and pre-match variables.
+
+Live site: [worldcup.renrenrenai.cn](https://worldcup.renrenrenai.cn/)
+
+> The public version shows daily matches, recent team form, head-to-head history, pre-match variables, and a live-data refresh entry. All data is for entertainment and research reference only — nothing here is betting, investment, or financial advice.
+
+![Dashboard preview](assets/dashboard-preview.png)
+
+### Features
+
+- Elo-based head-to-head lean for any two teams
+- Editable starting data for all 48 teams across 12 groups
+- Monte Carlo simulation of the group stage plus the 32-team knockout
+- Post-2022 club-competition and star-form adjustment model
+- Core star pools, star indexes, and trend tags for major nations
+- Chinese display layer for national teams, clubs, and positions
+- International policy / external-environment adjustments and market-heat calibration
+- Four-stage forecast trend analysis: pure Elo, form, policy, market
+- Per-match basic profiles and pre-match variables for all 72 group games
+- Historical trends for completed World Cups 2002–2022 and a 2026 format overview
+- Adjustable simulation count, home advantage, draw bias, and random seed
+- Runs entirely in the browser — no build step, no backend
+
+### Usage
+
+Open `index.html` directly, or serve the directory with any static server:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then visit `http://localhost:8000`.
+
+### Data Notes
+
+- The 12 groups are verified against the official ESPN standings (2026-06-12). Team Elo values are real ratings from eloratings.net (retrieved 2026-06-12). Elo drifts as matches are played — it is not refreshed daily. Ratings are editable in the page; plug in newer or custom values and re-simulate.
+- The history section covers completed tournaments 2002–2022; 2026 appears only as format/timeline context while in progress.
+- Club/star adjustments use post-2022 club-competition milestones and representative star samples to generate temporary national-team Elo boosts. Enabled by default; never overwrites base Elo.
+- Star-pool data is an explanatory sample of core players, not official final squads.
+- The UI displays Chinese team and club names; the underlying model keeps English keys so the Elo, form, policy, and market layers stay joined.
+- Policy / market calibration applies small Elo adjustments from host-organization readiness, regional travel, the expanded format, administrative uncertainty, and public-heat snapshots. Market data varies by source and time; no outcome promises.
+- Per-match profiles cover all 72 group games. The public GitHub version shows only basic info, form, history, and a simple lean; exact score predictions, win/draw/loss probabilities, upset indexes, and model confidence are unlock-only content and stay out of GitHub.
+
+### Model Notes
+
+- Single-match base probability uses the Elo formula `1 / (1 + 10 ^ ((eloB - eloA) / 400))`
+- Group games include a draw probability; ranking uses points, goal difference, then goals scored
+- Knockout games allow no draws; winners are sampled by Elo probability
+- The 32-team bracket uses a stable simplified seeding: 12 group winners, 12 runners-up, and the 8 best third-placed teams interleaved by strength
+- Club/star boosts aggregate club-competition weight, star form, role influence, and availability into a national-team Elo boost
+- Policy/market boosts are toggleable and intentionally small
+- Every per-match chart reuses the currently selected model layers, so toggles update the per-match probabilities
+- Trend analysis always compares the four model stages to explain how each layer moves title odds
+
+This is not a profit model and does not fully cover injuries, travel, lineups, weather, or red cards. The goal is a transparent, adjustable, easy-to-read probability sandbox.
+
+---
+
+## 中文
+
 一个轻量级 2026 世界杯赛前数据工具：基于各队 Elo 实力评分、近期状态和赛前变量，展示每日赛程、球队资料和基础倾向。
 
 线上体验：[worldcup.renrenrenai.cn](https://worldcup.renrenrenai.cn/)
 
 > 公开版展示每日比赛、球队近期状态、历史交锋、赛前变量和实时更新入口。数据用于娱乐和研究参考，不构成任何收益、投资或财务建议。
 
-![世界杯预测控制台预览](assets/dashboard-preview.png)
-
-## 今日免费赛程
+### 今日免费赛程
 
 更新时间：2026-06-12
 
@@ -19,7 +83,7 @@
 
 > 免费公开内容只展示赛程、双方基础信息、近期状态、历史交锋和简单倾向；具体比分预测、胜平负概率、爆冷指数、模型信心值和一句话结论属于解锁内容，不进入 GitHub 公开版。
 
-## 功能
+### 功能
 
 - 任意两队 Elo 对阵基础倾向
 - 48 队、12 个小组的可编辑起始数据
@@ -34,7 +98,7 @@
 - 可调模拟次数、主场加成、平局倾向、随机种子
 - 浏览器本地运行，无构建步骤、无后端依赖
 
-## 使用
+### 使用
 
 直接打开 `index.html`，或用任意静态服务器托管本目录。
 
@@ -44,7 +108,7 @@ python3 -m http.server 8000
 
 然后访问 `http://localhost:8000`。
 
-## 数据说明
+### 数据说明
 
 12 个小组的分组已对照 ESPN 官方积分榜核验（2026-06-12），各队 Elo 采用 eloratings.net 的真实评分（2026-06-12 取数）。Elo 会随比赛进行漂移，不是逐日实时更新；页面里的评分可以直接编辑，如果你有更新的 Elo 或自定义实力评分，把对应数值改掉后重新模拟即可。
 
@@ -62,7 +126,7 @@ python3 -m http.server 8000
 
 预测走势分析比较四个模型阶段：纯 Elo、加入俱乐部/球星状态、加入政策/外部环境、加入市场热度校准。它展示的是模型层变化带来的概率走势，不是实时比分曲线。
 
-## 模型说明
+### 模型说明
 
 - 单场基础胜率使用 Elo 公式：`1 / (1 + 10 ^ ((eloB - eloA) / 400))`
 - 小组赛包含平局概率，并用积分、净胜球、进球数排序
