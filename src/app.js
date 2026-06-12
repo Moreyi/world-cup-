@@ -264,7 +264,7 @@ function renderResults(results, iterations, elapsed) {
     leader.winProbability
   )}），${countryName(runnerUp.name)} 紧随其后（${formatPercent(
     runnerUp.winProbability
-  )}）。信心指数 ${confidence}，主要变量来自 Elo 实力、赔率校准、球星状态与外部环境修正。`;
+  )}）。信心指数 ${confidence}，主要变量来自 Elo 实力、市场热度校准、球星状态与外部环境修正。`;
 
   elements.topList.innerHTML = leaders
     .map(
@@ -468,7 +468,6 @@ function renderTodayMatchCard(match) {
 
   const fixture = match.fixture;
   const kickoff = formatKickoffTime(fixture);
-  const marketOdds = renderMarketOdds(match);
   const statusText = fixture?.status === "live" ? "进行中" : "待开赛";
   return `
     <article class="today-match-card">
@@ -478,47 +477,32 @@ function renderTodayMatchCard(match) {
       </div>
       <div class="today-match-main">
         <strong>${countryName(match.teamA.name)}</strong>
-        <span>预测 ${match.predictedScore.label}</span>
+        <span>vs</span>
         <strong>${countryName(match.teamB.name)}</strong>
       </div>
       <p>${fixture.venue}</p>
-      ${renderForecastSummary(match)}
-      ${marketOdds}
+      ${renderFreeLeanSummary(match)}
       ${renderTodayTeamData(match)}
       ${renderRecentForm(match)}
       ${renderTacticalPreview(match)}
       ${renderMatchLinks(match)}
-      <div class="today-probs">
-        <span>${countryName(match.teamA.name)} ${formatPercent(match.probabilities.teamA)}</span>
-        <span>平 ${formatPercent(match.probabilities.draw)}</span>
-        <span>${countryName(match.teamB.name)} ${formatPercent(match.probabilities.teamB)}</span>
-      </div>
-      <div class="result-bars" aria-label="${countryName(match.teamA.name)} 对 ${countryName(match.teamB.name)} 今日赛前概率">
-        <div class="result-segment win-a" style="width: ${match.probabilities.teamA * 100}%"></div>
-        <div class="result-segment draw" style="width: ${match.probabilities.draw * 100}%"></div>
-        <div class="result-segment win-b" style="width: ${match.probabilities.teamB * 100}%"></div>
-      </div>
     </article>
   `;
 }
 
-function renderForecastSummary(match) {
+function renderFreeLeanSummary(match) {
   const lean = match.probabilities.teamA >= match.probabilities.teamB ? match.teamA : match.teamB;
   const confidence = Math.abs(match.probabilities.teamA - match.probabilities.teamB);
-  const confidenceLabel = confidence >= 0.18 ? "信心中高" : confidence >= 0.08 ? "信心中等" : "谨慎看待";
+  const leanText = confidence >= 0.08 ? `${countryName(lean.name)}不败倾向` : "双方接近，谨慎看待";
   return `
     <div class="forecast-summary">
       <div>
-        <span>预测比分</span>
-        <strong>${countryName(match.teamA.name)} ${match.predictedScore.teamA}-${match.predictedScore.teamB} ${countryName(match.teamB.name)}</strong>
+        <span>简单倾向</span>
+        <strong>${leanText}</strong>
       </div>
       <div>
-        <span>倾向</span>
-        <strong>${countryName(lean.name)}不败 · ${confidenceLabel}</strong>
-      </div>
-      <div>
-        <span>爆冷/平局</span>
-        <strong>${formatPercent(match.upsetOrDrawProbability)}</strong>
+        <span>高级分析</span>
+        <strong>比分、概率、爆冷指数需解锁</strong>
       </div>
     </div>
   `;
@@ -529,7 +513,7 @@ function renderMarketOdds(match) {
   if (!odds?.implied) return "";
   return `
     <div class="market-odds">
-      <span>${odds.provider} 赔率风向</span>
+      <span>${odds.provider} 市场热度</span>
       <strong>${countryName(match.teamA.name)} ${formatPercent(odds.implied.home ?? 0)} · 平 ${formatPercent(
         odds.implied.draw ?? 0
       )} · ${countryName(match.teamB.name)} ${formatPercent(odds.implied.away ?? 0)}</strong>
@@ -545,14 +529,14 @@ function renderUpsetMatches(matches, todayDate) {
         <article class="upset-card">
           <div class="upset-head">
             <span>${match.fixture?.date === todayDate ? "今日重点" : `Group ${match.group}`}</span>
-            <strong>爆冷/平局 ${formatPercent(match.riskScore)}</strong>
+            <strong>高级分析预留</strong>
           </div>
           <div class="upset-main">
             <strong>${countryName(match.underdog.name)}</strong>
             <span>挑战</span>
             <strong>${countryName(match.favorite.name)}</strong>
           </div>
-          <p>弱方赢球 ${formatPercent(match.upsetWinProbability)} · 平局 ${formatPercent(match.probabilities.draw)}</p>
+          <p>免费版仅展示重点观察场次；爆冷指数、概率和一句话结论在解锁版展示。</p>
         </article>
       `
     )
@@ -573,22 +557,11 @@ function renderMatchCard(match) {
         <span>vs</span>
         <strong>${countryName(match.teamB.name)}</strong>
       </div>
-      <div class="result-bars" aria-label="${countryName(match.teamA.name)} 对 ${countryName(match.teamB.name)} 赛果概率">
-        <div class="result-segment win-a" style="width: ${match.probabilities.teamA * 100}%"></div>
-        <div class="result-segment draw" style="width: ${match.probabilities.draw * 100}%"></div>
-        <div class="result-segment win-b" style="width: ${match.probabilities.teamB * 100}%"></div>
-      </div>
-      <div class="match-probs">
-        <span>${countryName(match.teamA.name)} ${formatPercent(match.probabilities.teamA)}</span>
-        <span>平 ${formatPercent(match.probabilities.draw)}</span>
-        <span>${countryName(match.teamB.name)} ${formatPercent(match.probabilities.teamB)}</span>
-      </div>
       <div class="match-read">
-        <span>优势：${countryName(match.favorite.name)}</span>
-        <span>预测比分：${match.predictedScore.label}</span>
-        <span>爆冷/平局：${formatPercent(match.upsetOrDrawProbability)}</span>
+        <span>简单倾向：${simpleLeanLabel(match)}</span>
+        <span>高级分析：比分、概率、爆冷指数需解锁</span>
       </div>
-      <div class="match-tactic-mini">${match.tacticalPreview.prediction}</div>
+      <div class="match-tactic-mini">${match.tacticalPreview.duel}</div>
     </article>
   `;
 }
@@ -611,19 +584,9 @@ function renderCompletedMatchCard(match) {
         <span>${score}</span>
         <strong>${countryName(match.teamB.name)}</strong>
       </div>
-      <div class="result-bars" aria-label="${countryName(match.teamA.name)} 对 ${countryName(match.teamB.name)} 赛前概率">
-        <div class="result-segment win-a" style="width: ${match.probabilities.teamA * 100}%"></div>
-        <div class="result-segment draw" style="width: ${match.probabilities.draw * 100}%"></div>
-        <div class="result-segment win-b" style="width: ${match.probabilities.teamB * 100}%"></div>
-      </div>
-      <div class="match-probs">
-        <span>赛前 ${countryName(match.teamA.name)} ${formatPercent(match.probabilities.teamA)}</span>
-        <span>平 ${formatPercent(match.probabilities.draw)}</span>
-        <span>${countryName(match.teamB.name)} ${formatPercent(match.probabilities.teamB)}</span>
-      </div>
       <div class="match-read post-match-read">
         <span>实际：${winnerText} · ${hitText}</span>
-        <span>该赛果赛前概率：${formatPercent(postMatch.forecastProbability)}</span>
+        <span>高级复盘：预测偏差与赛前概率需解锁</span>
       </div>
       <div class="post-match-note">
         <strong>赛后分析</strong>
@@ -637,13 +600,17 @@ function buildPostMatchCopy(match) {
   const { result, postMatch } = match;
   const teamA = countryName(match.teamA.name);
   const teamB = countryName(match.teamB.name);
-  return `${result.note} 赛前预测比分 ${match.predictedScore.label}；模型赛前给到该赛果 ${formatPercent(
-    postMatch.forecastProbability
-  )} 概率；积分影响：${teamA} ${
+  return `${result.note} 积分影响：${teamA} ${
     postMatch.points.teamA
   } 分（净胜球 ${formatSigned(postMatch.goalDifference.teamA)}），${teamB} ${postMatch.points.teamB} 分（净胜球 ${formatSigned(
     postMatch.goalDifference.teamB
-  )}）。`;
+  )}）。具体预测偏差和概率复盘在解锁版展示。`;
+}
+
+function simpleLeanLabel(match) {
+  const lean = match.probabilities.teamA >= match.probabilities.teamB ? match.teamA : match.teamB;
+  const confidence = Math.abs(match.probabilities.teamA - match.probabilities.teamB);
+  return confidence >= 0.08 ? `${countryName(lean.name)}不败倾向` : "双方接近";
 }
 
 function renderTodayTeamData(match) {
@@ -885,12 +852,12 @@ function renderPolicyOddsModel() {
   const maxOdds = Math.max(...model.oddsRows.map((entry) => entry.impliedProbability), 0.01);
   const maxExternal = Math.max(...model.combinedRows.map((entry) => Math.abs(entry.totalExternalBoost)), 1);
 
-  elements.policyOddsSummary.textContent = `${model.policyFactors.length} 类政策/环境因子，${model.oddsRows.length} 队赔率快照，生成于 ${model.generatedAt}`;
+  elements.policyOddsSummary.textContent = `${model.policyFactors.length} 类政策/环境因子，${model.oddsRows.length} 队市场热度快照，生成于 ${model.generatedAt}`;
   elements.policyOddsStats.innerHTML = `
     <div class="stat-card"><strong>${countryName(topPolicy.country)}</strong><span>最高政策修正 +${topPolicy.policyBoost}</span></div>
-    <div class="stat-card"><strong>${countryName(topOdds.country)}</strong><span>最高赔率隐含 ${formatPercent(topOdds.impliedProbability)}</span></div>
+    <div class="stat-card"><strong>${countryName(topOdds.country)}</strong><span>最高市场热度 ${formatPercent(topOdds.impliedProbability)}</span></div>
     <div class="stat-card"><strong>${countryName(topExternal.country)}</strong><span>最高综合外部 +${topExternal.totalExternalBoost}</span></div>
-    <div class="stat-card"><strong>${model.oddsRows.length}</strong><span>赔率样本球队</span></div>
+    <div class="stat-card"><strong>${model.oddsRows.length}</strong><span>市场样本球队</span></div>
   `;
 
   elements.policyList.innerHTML = model.policyScores
@@ -928,7 +895,7 @@ function renderPolicyOddsModel() {
         <article class="external-card">
           <div>
             <strong>${countryName(entry.country)}</strong>
-            <span>政策 ${signed(entry.policyBoost)} / 赔率 ${signed(entry.oddsBoost)}</span>
+            <span>政策 ${signed(entry.policyBoost)} / 市场 ${signed(entry.oddsBoost)}</span>
           </div>
           <div class="boost-track ${entry.totalExternalBoost < 0 ? "negative" : ""}" aria-hidden="true">
             <div style="width: ${(Math.abs(entry.totalExternalBoost) / maxExternal) * 100}%"></div>
@@ -1143,7 +1110,7 @@ function activeBoostLabel(options) {
   const labels = [];
   if (options.useFormModel) labels.push("状态");
   if (options.usePolicyModel) labels.push("政策");
-  if (options.useOddsModel) labels.push("赔率");
+  if (options.useOddsModel) labels.push("市场");
   return labels.length > 0 ? `${labels.join("+")}修正 Elo` : "当前 Elo";
 }
 

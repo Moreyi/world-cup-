@@ -142,6 +142,7 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 ## Public / Server-Only Boundary
 
 - GitHub is allowed to receive only public/free material: daily match list, basic team information, recent form, head-to-head notes, simple model lean, README screenshots, tests, and shared documentation.
+- GitHub public pages and README screenshots must not reveal exact score predictions, win/draw/loss percentages, upset index, model confidence, or one-line final conclusions for an unplayed match.
 - Paid, ad-unlocked, or commercially sensitive content must stay off GitHub.
 - Real ad IDs, Google Offerwall/Rewarded Ad production config, server IP/SSH/nginx details, tokens, secrets, and private deployment notes must not be committed.
 - Server-only monetization work should load configuration from a non-committed local/server file such as `config.local.js`.
@@ -173,3 +174,4 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - 2026-06-12: Added model predicted scores and richer tactical previews for each match, with expanded same-day match cards for coach/core-player/model/tactical context.
 - 2026-06-12: Tightened completed-match analysis: model-hit stats now use modal-outcome matching, final-result rows carry redundant team keys, and result-to-fixture joins validate team names before attaching scores.
 - 2026-06-12: Documented the public/server-only boundary for Claude and future agents: GitHub may sync free daily data and public screenshots, while ad unlocks, paid content, production ad config, and server details remain server-only.
+- 2026-06-12: Corrected the public README/demo boundary: replaced the single-match prediction screenshot with the provided dashboard screenshot, added the free daily schedule table, and removed exact score/probability/upset readouts from the public match UI.
