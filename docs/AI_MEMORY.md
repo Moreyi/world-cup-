@@ -20,6 +20,7 @@ The app is meant to be transparent and easy to adjust, not a betting model.
 - `src/clubModel.js` contains post-2022 club events, star form samples, and the national boost model.
 - `src/data.js` contains starter groups and Elo-like ratings.
 - `src/history.js` contains 2002-2022 completed World Cup history plus a separate 2026 context object.
+- `src/localization.js` contains Chinese display names for national teams, clubs, positions, and score text.
 - `src/matchAnalysis.js` creates group-stage match-by-match probability rows from the current team data and selected model options.
 - `src/nationalStars.js` contains major national-team star-pool profiles for display and explanation.
 - `src/policyOddsModel.js` contains external policy/logistics factors and an odds snapshot converted into model boosts.
@@ -42,6 +43,7 @@ Run it after changes to `src/policyOddsModel.js`; the test suite checks odds con
 Run it after changes to `src/matchAnalysis.js`; the test suite checks 72 group-stage matches and normalized result distributions.
 Run it after changes to `src/trendAnalysis.js`; the test suite checks stage comparison and riser/faller ranking.
 Run it after changes to `src/nationalStars.js`; the test suite checks profile counts and score ranges.
+Run it after changes to `src/localization.js`; the test suite checks representative Chinese mappings.
 
 ## Model Notes
 
@@ -67,6 +69,13 @@ Run it after changes to `src/nationalStars.js`; the test suite checks profile co
 - `impactScore` is generated from form, national-team influence, and availability.
 - These are not official final World Cup squads. Keep that caveat in user-facing text and docs.
 - When updating clubs or players, prefer current club context and avoid overfitting to a single recent match.
+
+## Localization Notes
+
+- Keep model data keys in English for stable joins across Elo, club/star, policy, odds, match, and trend modules.
+- Use `src/localization.js` only at display boundaries.
+- When adding a new country, club, or position, add the Chinese display name there and update tests if it is a major surface.
+- `localizeCountryText` is used for historical score strings such as finals.
 
 ## Policy / Odds Model Notes
 
@@ -127,3 +136,4 @@ Run it after changes to `src/nationalStars.js`; the test suite checks profile co
 - 2026-06-12: Added match-by-match group-stage result probability charts.
 - 2026-06-12: Added forecast trend analysis across model stages.
 - 2026-06-12: Added major national-team star-pool data and display panel.
+- 2026-06-12: Added Chinese display-name localization for teams, clubs, positions, and historical score text.

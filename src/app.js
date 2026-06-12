@@ -6,6 +6,7 @@ import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.
 import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
+import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
@@ -125,7 +126,7 @@ function renderResults(results, iterations, elapsed) {
       (team, index) => `
         <div class="team-row">
           <div class="rank">${index + 1}</div>
-          <strong>${team.name}</strong>
+          <strong>${countryName(team.name)}</strong>
           <div class="bar" aria-hidden="true"><div style="width: ${(team.winProbability / max) * 100}%"></div></div>
           <div class="pct">${formatPercent(team.winProbability)}</div>
         </div>
@@ -158,10 +159,10 @@ function renderTrendAnalysis(trend) {
   elements.trendSummary.textContent = `${trend.iterations.toLocaleString()} 次/阶段，观察 ${trend.scenarios.length} 个模型阶段`;
   elements.trendScenarioLabels.textContent = trend.scenarios.map((scenario) => scenario.label).join(" / ");
   elements.trendStats.innerHTML = `
-    <div class="stat-card"><strong>${trend.summary.leader.name}</strong><span>全模型最高 ${formatPercent(trend.summary.leader.finalProbability)}</span></div>
-    <div class="stat-card"><strong>${trend.summary.biggestRiser.name}</strong><span>最大上升 ${formatDelta(trend.summary.biggestRiser.delta)}</span></div>
-    <div class="stat-card"><strong>${trend.summary.biggestFaller.name}</strong><span>最大回落 ${formatDelta(trend.summary.biggestFaller.delta)}</span></div>
-    <div class="stat-card"><strong>${trend.summary.mostVolatile.name}</strong><span>波动 ${formatPercent(trend.summary.mostVolatile.volatility)}</span></div>
+    <div class="stat-card"><strong>${countryName(trend.summary.leader.name)}</strong><span>全模型最高 ${formatPercent(trend.summary.leader.finalProbability)}</span></div>
+    <div class="stat-card"><strong>${countryName(trend.summary.biggestRiser.name)}</strong><span>最大上升 ${formatDelta(trend.summary.biggestRiser.delta)}</span></div>
+    <div class="stat-card"><strong>${countryName(trend.summary.biggestFaller.name)}</strong><span>最大回落 ${formatDelta(trend.summary.biggestFaller.delta)}</span></div>
+    <div class="stat-card"><strong>${countryName(trend.summary.mostVolatile.name)}</strong><span>波动 ${formatPercent(trend.summary.mostVolatile.volatility)}</span></div>
   `;
 
   elements.trendTable.innerHTML = trend.leaders
@@ -170,7 +171,7 @@ function renderTrendAnalysis(trend) {
         <article class="trend-row">
           <div class="trend-team">
             <span>${index + 1}</span>
-            <strong>${row.name}</strong>
+            <strong>${countryName(row.name)}</strong>
             <em>${row.direction}</em>
           </div>
           <div class="trend-spark" aria-hidden="true">
@@ -202,7 +203,7 @@ function renderTrendChangeList(rows) {
     .map(
       (row) => `
         <div class="trend-change-row">
-          <span>${row.name}</span>
+          <span>${countryName(row.name)}</span>
           <strong class="${row.delta >= 0 ? "positive" : "negative"}">${formatDelta(row.delta)}</strong>
         </div>
       `
@@ -220,7 +221,7 @@ function renderTeamControls() {
             .map(
               (team) => `
                 <label class="rating-row">
-                  <span title="${team.name}">${team.name}</span>
+                  <span title="${countryName(team.name)}">${countryName(team.name)}</span>
                   <input
                     type="number"
                     min="1200"
@@ -228,7 +229,7 @@ function renderTeamControls() {
                     step="5"
                     value="${team.elo}"
                     data-team="${team.name}"
-                    aria-label="${team.name} Elo"
+                    aria-label="${countryName(team.name)} Elo"
                   />
                 </label>
               `
@@ -256,7 +257,7 @@ function renderMatchAnalysis(groups, options) {
   elements.matchStats.innerHTML = `
     <div class="stat-card"><strong>${summary.totalMatches}</strong><span>小组赛场次</span></div>
     <div class="stat-card"><strong>${formatFixture(summary.mostBalanced)}</strong><span>最胶着</span></div>
-    <div class="stat-card"><strong>${summary.biggestFavorite.favorite.name}</strong><span>最大优势 ${formatPercent(summary.biggestFavorite.favoriteWinProbability)}</span></div>
+    <div class="stat-card"><strong>${countryName(summary.biggestFavorite.favorite.name)}</strong><span>最大优势 ${formatPercent(summary.biggestFavorite.favoriteWinProbability)}</span></div>
     <div class="stat-card"><strong>${formatFixture(summary.highestDraw)}</strong><span>最高平局 ${formatPercent(summary.highestDraw.probabilities.draw)}</span></div>
   `;
 
@@ -283,22 +284,22 @@ function renderMatchCard(match) {
         <strong>${match.profile}</strong>
       </div>
       <div class="match-teams">
-        <strong>${match.teamA.name}</strong>
+        <strong>${countryName(match.teamA.name)}</strong>
         <span>vs</span>
-        <strong>${match.teamB.name}</strong>
+        <strong>${countryName(match.teamB.name)}</strong>
       </div>
-      <div class="result-bars" aria-label="${match.teamA.name} 对 ${match.teamB.name} 赛果概率">
+      <div class="result-bars" aria-label="${countryName(match.teamA.name)} 对 ${countryName(match.teamB.name)} 赛果概率">
         <div class="result-segment win-a" style="width: ${match.probabilities.teamA * 100}%"></div>
         <div class="result-segment draw" style="width: ${match.probabilities.draw * 100}%"></div>
         <div class="result-segment win-b" style="width: ${match.probabilities.teamB * 100}%"></div>
       </div>
       <div class="match-probs">
-        <span>${match.teamA.name} ${formatPercent(match.probabilities.teamA)}</span>
+        <span>${countryName(match.teamA.name)} ${formatPercent(match.probabilities.teamA)}</span>
         <span>平 ${formatPercent(match.probabilities.draw)}</span>
-        <span>${match.teamB.name} ${formatPercent(match.probabilities.teamB)}</span>
+        <span>${countryName(match.teamB.name)} ${formatPercent(match.probabilities.teamB)}</span>
       </div>
       <div class="match-read">
-        <span>优势：${match.favorite.name}</span>
+        <span>优势：${countryName(match.favorite.name)}</span>
         <span>爆冷/平局：${formatPercent(match.upsetOrDrawProbability)}</span>
       </div>
     </article>
@@ -315,8 +316,8 @@ function renderClubStarModel() {
 
   elements.clubModelSummary.textContent = `${model.events.length} 个俱乐部大赛节点，${model.stars.length} 名球星样本，生成于 ${model.generatedAt}`;
   elements.clubModelStats.innerHTML = `
-    <div class="stat-card"><strong>${topNation.country}</strong><span>最高状态修正 +${topNation.eloBoost}</span></div>
-    <div class="stat-card"><strong>${model.clubPower[0].club}</strong><span>最强俱乐部热度</span></div>
+    <div class="stat-card"><strong>${countryName(topNation.country)}</strong><span>最高状态修正 +${topNation.eloBoost}</span></div>
+    <div class="stat-card"><strong>${clubName(model.clubPower[0].club)}</strong><span>最强俱乐部热度</span></div>
     <div class="stat-card"><strong>${model.stars[0].name}</strong><span>最高球星影响</span></div>
     <div class="stat-card"><strong>${latestEvent.label}</strong><span>最新大赛节点</span></div>
   `;
@@ -326,7 +327,7 @@ function renderClubStarModel() {
     .map(
       (entry) => `
         <div class="boost-row">
-          <span>${entry.country}</span>
+      <span>${countryName(entry.country)}</span>
           <div class="boost-track" aria-hidden="true"><div style="width: ${(entry.eloBoost / maxBoost) * 100}%"></div></div>
           <strong>+${entry.eloBoost}</strong>
         </div>
@@ -340,7 +341,7 @@ function renderClubStarModel() {
       (entry) => `
         <div class="club-power-row">
           <div>
-            <strong>${entry.club}</strong>
+            <strong>${clubName(entry.club)}</strong>
             <span>${entry.events.map((event) => `${event.label} ${event.role}`).join(" / ")}</span>
           </div>
           <div class="boost-track" aria-hidden="true"><div style="width: ${(entry.score / maxClub) * 100}%"></div></div>
@@ -356,7 +357,7 @@ function renderClubStarModel() {
         <article class="star-card">
           <div>
             <strong>${star.name}</strong>
-            <span>${star.country} / ${star.club}</span>
+            <span>${countryName(star.country)} / ${clubName(star.club)}</span>
           </div>
           <div class="star-meter" aria-hidden="true"><div style="width: ${(star.impact / maxStar) * 100}%"></div></div>
           <p>${star.note}</p>
@@ -376,9 +377,9 @@ function renderNationalStars() {
 
   elements.nationalStarsSummary.textContent = `${summary.totalCountries} 个重点国家，${summary.totalStars} 名核心球星样本`;
   elements.nationalStarsStats.innerHTML = `
-    <div class="stat-card"><strong>${summary.topProfile.country}</strong><span>最高球星指数 ${summary.topProfile.starIndex}</span></div>
+    <div class="stat-card"><strong>${countryName(summary.topProfile.country)}</strong><span>最高球星指数 ${summary.topProfile.starIndex}</span></div>
     <div class="stat-card"><strong>${summary.topProfile.topStar.name}</strong><span>最高影响球星</span></div>
-    <div class="stat-card"><strong>${topRising.name}</strong><span>${topRising.country} 上升样本</span></div>
+    <div class="stat-card"><strong>${topRising.name}</strong><span>${countryName(topRising.country)} 上升样本</span></div>
     <div class="stat-card"><strong>${summary.totalStars}</strong><span>球星样本数</span></div>
   `;
 
@@ -388,7 +389,7 @@ function renderNationalStars() {
         <article class="national-star-card">
           <div class="national-star-head">
             <div>
-              <strong>${profile.country}</strong>
+              <strong>${countryName(profile.country)}</strong>
               <span>${profile.tier}</span>
             </div>
             <b>${profile.starIndex}</b>
@@ -409,7 +410,7 @@ function renderCountryStar(star) {
     <div class="country-star-row">
       <div>
         <strong>${star.name}</strong>
-        <span>${star.position} / ${star.club}</span>
+        <span>${positionName(star.position)} / ${clubName(star.club)}</span>
       </div>
       <div>
         <b>${star.impactScore}</b>
@@ -430,9 +431,9 @@ function renderPolicyOddsModel() {
 
   elements.policyOddsSummary.textContent = `${model.policyFactors.length} 类政策/环境因子，${model.oddsRows.length} 队赔率快照，生成于 ${model.generatedAt}`;
   elements.policyOddsStats.innerHTML = `
-    <div class="stat-card"><strong>${topPolicy.country}</strong><span>最高政策修正 +${topPolicy.policyBoost}</span></div>
-    <div class="stat-card"><strong>${topOdds.country}</strong><span>最高赔率隐含 ${formatPercent(topOdds.impliedProbability)}</span></div>
-    <div class="stat-card"><strong>${topExternal.country}</strong><span>最高综合外部 +${topExternal.totalExternalBoost}</span></div>
+    <div class="stat-card"><strong>${countryName(topPolicy.country)}</strong><span>最高政策修正 +${topPolicy.policyBoost}</span></div>
+    <div class="stat-card"><strong>${countryName(topOdds.country)}</strong><span>最高赔率隐含 ${formatPercent(topOdds.impliedProbability)}</span></div>
+    <div class="stat-card"><strong>${countryName(topExternal.country)}</strong><span>最高综合外部 +${topExternal.totalExternalBoost}</span></div>
     <div class="stat-card"><strong>${model.oddsRows.length}</strong><span>赔率样本球队</span></div>
   `;
 
@@ -441,7 +442,7 @@ function renderPolicyOddsModel() {
     .map(
       (entry) => `
         <div class="boost-row">
-          <span>${entry.country}</span>
+          <span>${countryName(entry.country)}</span>
           <div class="boost-track ${entry.policyBoost < 0 ? "negative" : ""}" aria-hidden="true">
             <div style="width: ${(Math.abs(entry.policyBoost) / maxPolicy) * 100}%"></div>
           </div>
@@ -455,7 +456,7 @@ function renderPolicyOddsModel() {
     .map(
       (entry) => `
         <div class="odds-row">
-          <span>${entry.country}</span>
+          <span>${countryName(entry.country)}</span>
           <div class="boost-track" aria-hidden="true"><div style="width: ${(entry.impliedProbability / maxOdds) * 100}%"></div></div>
           <strong>+${entry.american}</strong>
           <em>${formatPercent(entry.impliedProbability)}</em>
@@ -470,7 +471,7 @@ function renderPolicyOddsModel() {
       (entry) => `
         <article class="external-card">
           <div>
-            <strong>${entry.country}</strong>
+            <strong>${countryName(entry.country)}</strong>
             <span>政策 ${signed(entry.policyBoost)} / 赔率 ${signed(entry.oddsBoost)}</span>
           </div>
           <div class="boost-track ${entry.totalExternalBoost < 0 ? "negative" : ""}" aria-hidden="true">
@@ -530,18 +531,18 @@ function renderHistoryAnalysis() {
       <article class="final-card">
         <div class="final-year">${cup.year}</div>
         <div>
-          <strong>${cup.champion}</strong>
-          <span>冠军，对 ${cup.runnerUp}</span>
+          <strong>${countryName(cup.champion)}</strong>
+          <span>冠军，对 ${countryName(cup.runnerUp)}</span>
         </div>
         <div>
           <strong>${cup.goals}</strong>
           <span>总进球</span>
         </div>
         <div>
-          <strong>${cup.third}</strong>
+          <strong>${countryName(cup.third)}</strong>
           <span>第三名</span>
         </div>
-        <p>${cup.finalScore}</p>
+        <p>${localizeCountryText(cup.finalScore)}</p>
       </article>
     `
   ).join("");
@@ -549,7 +550,7 @@ function renderHistoryAnalysis() {
   elements.currentCup.innerHTML = `
     <div class="current-badge">${WORLD_CUP_2026_CONTEXT.status}，截至 ${WORLD_CUP_2026_CONTEXT.statusDate}</div>
     <dl>
-      <div><dt>东道主</dt><dd>${WORLD_CUP_2026_CONTEXT.hosts}</dd></div>
+      <div><dt>东道主</dt><dd>${countryListName(WORLD_CUP_2026_CONTEXT.hosts)}</dd></div>
       <div><dt>赛程</dt><dd>${WORLD_CUP_2026_CONTEXT.startDate} - ${WORLD_CUP_2026_CONTEXT.finalDate}</dd></div>
       <div><dt>规模</dt><dd>${WORLD_CUP_2026_CONTEXT.teams} 队，${WORLD_CUP_2026_CONTEXT.matches} 场</dd></div>
       <div><dt>赛制</dt><dd>${WORLD_CUP_2026_CONTEXT.groups} 个小组，${WORLD_CUP_2026_CONTEXT.knockoutStart} 起淘汰赛</dd></div>
@@ -564,8 +565,8 @@ function renderHistoryAnalysis() {
 
 function renderSelectors() {
   const teams = allTeams();
-  elements.teamA.innerHTML = teams.map((team) => `<option>${team.name}</option>`).join("");
-  elements.teamB.innerHTML = teams.map((team) => `<option>${team.name}</option>`).join("");
+  elements.teamA.innerHTML = teams.map((team) => `<option value="${team.name}">${countryName(team.name)}</option>`).join("");
+  elements.teamB.innerHTML = teams.map((team) => `<option value="${team.name}">${countryName(team.name)}</option>`).join("");
   elements.teamA.value = "Argentina";
   elements.teamB.value = "France";
 }
@@ -578,12 +579,12 @@ function renderMatchup() {
   const teamB = withSelectedBoosts(baseTeamB, options);
   const probabilities = matchProbabilities(teamA, teamB, readOptions());
   elements.matchupResult.innerHTML = `
-    <div class="prob-card"><strong>${formatPercent(probabilities.teamA)}</strong><span>${teamA.name} 常规时间胜</span></div>
+    <div class="prob-card"><strong>${formatPercent(probabilities.teamA)}</strong><span>${countryName(teamA.name)} 常规时间胜</span></div>
     <div class="prob-card"><strong>${formatPercent(probabilities.draw)}</strong><span>小组赛平局</span></div>
-    <div class="prob-card"><strong>${formatPercent(probabilities.teamB)}</strong><span>${teamB.name} 常规时间胜</span></div>
-    <div class="prob-card"><strong>${formatPercent(probabilities.knockoutA)}</strong><span>${teamA.name} 淘汰赛晋级</span></div>
+    <div class="prob-card"><strong>${formatPercent(probabilities.teamB)}</strong><span>${countryName(teamB.name)} 常规时间胜</span></div>
+    <div class="prob-card"><strong>${formatPercent(probabilities.knockoutA)}</strong><span>${countryName(teamA.name)} 淘汰赛晋级</span></div>
     <div class="prob-card"><strong>${teamA.elo} / ${teamB.elo}</strong><span>${activeBoostLabel(options)}</span></div>
-    <div class="prob-card"><strong>${formatPercent(probabilities.knockoutB)}</strong><span>${teamB.name} 淘汰赛晋级</span></div>
+    <div class="prob-card"><strong>${formatPercent(probabilities.knockoutB)}</strong><span>${countryName(teamB.name)} 淘汰赛晋级</span></div>
   `;
 }
 
@@ -631,7 +632,7 @@ function formatDelta(value) {
 }
 
 function formatFixture(match) {
-  return `${match.teamA.name} vs ${match.teamB.name}`;
+  return `${countryName(match.teamA.name)} vs ${countryName(match.teamB.name)}`;
 }
 
 function groupBy(items, getKey) {

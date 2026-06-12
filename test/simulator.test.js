@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { buildClubStarModel, getCountryBoost } from "../src/clubModel.js";
 import { STARTER_GROUPS } from "../src/data.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "../src/history.js";
+import { clubName, countryName, localizeCountryText, positionName } from "../src/localization.js";
 import { buildGroupMatchAnalysis } from "../src/matchAnalysis.js";
 import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "../src/nationalStars.js";
 import {
@@ -166,5 +167,14 @@ describe("national star profiles", () => {
         assert.ok(star.impactScore <= 100);
       }
     }
+  });
+});
+
+describe("Chinese localization", () => {
+  it("localizes countries, clubs, positions, and score text", () => {
+    assert.equal(countryName("Brazil"), "巴西");
+    assert.equal(clubName("Paris Saint-Germain"), "巴黎圣日耳曼");
+    assert.equal(positionName("Forward"), "前锋");
+    assert.equal(localizeCountryText("Brazil 2-0 Germany"), "巴西 2-0 德国");
   });
 });
