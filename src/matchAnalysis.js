@@ -1,5 +1,5 @@
 import { matchProbabilities } from "./simulator.js";
-import { RESULT_SNAPSHOT, resultByMatchId } from "./liveResults.js";
+import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260612-live";
 
 const GROUP_PAIRINGS = [
   { matchday: 1, pair: [0, 1] },
@@ -17,6 +17,8 @@ const MATCHDAY_WINDOWS = {
 };
 
 export function buildGroupMatchAnalysis(groups, options = {}) {
+  const resultOverrides = options.resultOverrides ?? [];
+  const fixtureOverrides = options.fixtureOverrides ?? [];
   const matches = groups.flatMap((group) =>
     GROUP_PAIRINGS.map((fixture, index) => {
       const teamA = group.teams[fixture.pair[0]];
@@ -26,13 +28,17 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
       const favoriteWinProbability = Math.max(probabilities.teamA, probabilities.teamB);
       const underdogWinProbability = Math.min(probabilities.teamA, probabilities.teamB);
       const edge = Math.abs(probabilities.teamA - probabilities.teamB);
-      const result = resultByMatchId(`${group.name}-${index + 1}`);
+      const calendarFixture = fixtureByMatchId(`${group.name}-${index + 1}`);
+      const fixtureOverride = fixtureOverrides.find((entry) => entry.matchId === `${group.name}-${index + 1}`);
+      const fixtureInfo = fixtureOverride ? { ...calendarFixture, ...fixtureOverride } : calendarFixture;
+      const result = resultOverrides.find((entry) => entry.matchId === `${group.name}-${index + 1}`) ?? resultByMatchId(`${group.name}-${index + 1}`);
 
       return {
         id: `${group.name}-${index + 1}`,
         group: group.name,
         matchday: fixture.matchday,
-        window: MATCHDAY_WINDOWS[fixture.matchday],
+        window: fixtureInfo?.date ?? MATCHDAY_WINDOWS[fixture.matchday],
+        fixture: fixtureInfo,
         teamA,
         teamB,
         probabilities,
@@ -43,7 +49,7 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
         edge,
         result,
         postMatch: result ? analyzeResult(result, probabilities, teamA, teamB, favorite) : null,
-        profile: result ? "已结束" : classifyMatch(edge, probabilities.draw)
+        profile: result?.status === "final" ? "已结束" : result?.status === "live" ? "进行中" : classifyMatch(edge, probabilities.draw)
       };
     })
   );
@@ -51,6 +57,9 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
   return {
     matches,
     summary: summarizeMatches(matches),
+    todayDate: TODAY_DATE,
+    todayMatches: matches.filter((match) => match.fixture?.date === TODAY_DATE),
+    upsetMatches: buildUpsetMatches(matches),
     resultSnapshot: RESULT_SNAPSHOT
   };
 }
@@ -117,6 +126,27 @@ function analyzeResult(result, probabilities, teamA, teamB, favorite) {
       teamB: goalsB - goalsA
     }
   };
+}
+
+function buildUpsetMatches(matches) {
+  return matches
+    .filter((match) => !match.result || match.result.status !== "final")
+    .map((match) => {
+      const underdogSide = match.probabilities.teamA <= match.probabilities.teamB ? "teamA" : "teamB";
+      const underdog = underdogSide === "teamA" ? match.teamA : match.teamB;
+      const favorite = underdogSide === "teamA" ? match.teamB : match.teamA;
+      const upsetWinProbability = underdogSide === "teamA" ? match.probabilities.teamA : match.probabilities.teamB;
+      const riskScore = upsetWinProbability + match.probabilities.draw * 0.7;
+      return {
+        ...match,
+        underdog,
+        favorite,
+        upsetWinProbability,
+        riskScore
+      };
+    })
+    .sort((a, b) => b.riskScore - a.riskScore || b.upsetWinProbability - a.upsetWinProbability)
+    .slice(0, 6);
 }
 
 function classifyMatch(edge, drawProbability) {

@@ -237,8 +237,12 @@ export function summarizeNationalStars(profiles = NATIONAL_STAR_PROFILES) {
 }
 
 function star(name, position, club, form, influence, availability, trend) {
+  const metadata = starMetadata(name);
   return {
     name,
+    shortName: metadata.shortName ?? name.split(" ").at(-1),
+    chineseName: metadata.chineseName ?? "中文待核",
+    marketValueEurM: metadata.marketValueEurM ?? null,
     position,
     club,
     form,
@@ -247,6 +251,96 @@ function star(name, position, club, form, influence, availability, trend) {
     trend,
     impactScore: Math.round(((form * 0.42 + influence * 0.38 + availability * 0.2) / 100) * 1000) / 10
   };
+}
+
+function starMetadata(name) {
+  const metadata = {
+  "Kylian Mbappe": meta("Mbappe", "姆巴佩"),
+  "Ousmane Dembele": meta("Dembele", "登贝莱"),
+  "Eduardo Camavinga": meta("Camavinga", "卡马文加"),
+  "William Saliba": meta("Saliba", "萨利巴"),
+  "Lionel Messi": meta("Messi", "梅西"),
+  "Lautaro Martinez": meta("Lautaro", "劳塔罗"),
+  "Julian Alvarez": meta("Alvarez", "阿尔瓦雷斯"),
+  "Enzo Fernandez": meta("Enzo", "恩佐·费尔南德斯"),
+  "Vinicius Junior": meta("Vinicius", "维尼修斯"),
+  Rodrygo: meta("Rodrygo", "罗德里戈"),
+  Raphinha: meta("Raphinha", "拉菲尼亚"),
+  Marquinhos: meta("Marquinhos", "马尔基尼奥斯"),
+  "Jude Bellingham": meta("Bellingham", "贝林厄姆"),
+  "Harry Kane": meta("Kane", "凯恩"),
+  "Bukayo Saka": meta("Saka", "萨卡"),
+  "Cole Palmer": meta("Palmer", "帕尔默"),
+  "Lamine Yamal": meta("Yamal", "亚马尔"),
+  Pedri: meta("Pedri", "佩德里"),
+  Rodri: meta("Rodri", "罗德里"),
+  "Nico Williams": meta("Nico", "尼科·威廉斯"),
+  Vitinha: meta("Vitinha", "维蒂尼亚"),
+  "Bruno Fernandes": meta("Bruno", "布鲁诺·费尔南德斯"),
+  "Cristiano Ronaldo": meta("Ronaldo", "C罗"),
+  "Nuno Mendes": meta("Nuno", "努诺·门德斯"),
+  "Jamal Musiala": meta("Musiala", "穆西亚拉"),
+  "Florian Wirtz": meta("Wirtz", "维尔茨"),
+  "Joshua Kimmich": meta("Kimmich", "基米希"),
+  "Kai Havertz": meta("Havertz", "哈弗茨"),
+  "Virgil van Dijk": meta("Van Dijk", "范戴克"),
+  "Frenkie de Jong": meta("F. de Jong", "弗伦基·德容"),
+  "Cody Gakpo": meta("Gakpo", "加克波"),
+  "Xavi Simons": meta("Simons", "哈维·西蒙斯"),
+  "Thibaut Courtois": meta("Courtois", "库尔图瓦"),
+  "Kevin De Bruyne": meta("De Bruyne", "德布劳内"),
+  "Jeremy Doku": meta("Doku", "多库"),
+  "Romelu Lukaku": meta("Lukaku", "卢卡库"),
+  "Luka Modric": meta("Modric", "莫德里奇"),
+  "Josko Gvardiol": meta("Gvardiol", "格瓦迪奥尔"),
+  "Mateo Kovacic": meta("Kovacic", "科瓦契奇"),
+  "Andrej Kramaric": meta("Kramaric", "克拉马里奇"),
+  "Federico Valverde": meta("Valverde", "巴尔韦德"),
+  "Darwin Nunez": meta("Nunez", "努涅斯"),
+  "Ronald Araujo": meta("Araujo", "阿劳霍"),
+  "Manuel Ugarte": meta("Ugarte", "乌加特"),
+  "Achraf Hakimi": meta("Hakimi", "阿什拉夫"),
+  "Brahim Diaz": meta("Brahim", "卜拉欣·迪亚斯"),
+  "Sofyan Amrabat": meta("Amrabat", "阿姆拉巴特"),
+  "Yassine Bounou": meta("Bounou", "布努"),
+  "Christian Pulisic": meta("Pulisic", "普利西奇"),
+  "Weston McKennie": meta("McKennie", "麦肯尼"),
+  "Tyler Adams": meta("Adams", "亚当斯"),
+  "Gio Reyna": meta("Reyna", "雷纳"),
+  "Santiago Gimenez": meta("Gimenez", "圣地亚哥·希门尼斯"),
+  "Edson Alvarez": meta("Edson", "埃德森·阿尔瓦雷斯"),
+  "Hirving Lozano": meta("Lozano", "洛萨诺"),
+  "Guillermo Ochoa": meta("Ochoa", "奥乔亚"),
+  "Alphonso Davies": meta("Davies", "阿方索·戴维斯"),
+  "Jonathan David": meta("David", "乔纳森·戴维"),
+  "Tajon Buchanan": meta("Buchanan", "布坎南"),
+  "Stephen Eustaquio": meta("Eustaquio", "尤斯塔基奥"),
+  "Takefusa Kubo": meta("Kubo", "久保建英"),
+  "Kaoru Mitoma": meta("Mitoma", "三笘薰"),
+  "Wataru Endo": meta("Endo", "远藤航"),
+  "Daichi Kamada": meta("Kamada", "镰田大地"),
+  "Son Heung-min": meta("Son", "孙兴慜"),
+  "Kim Min-jae": meta("Kim", "金玟哉"),
+  "Lee Kang-in": meta("Lee", "李刚仁"),
+  "Hwang Hee-chan": meta("Hwang", "黄喜灿"),
+  "Luis Diaz": meta("Diaz", "路易斯·迪亚斯"),
+  "James Rodriguez": meta("James", "哈梅斯·罗德里格斯"),
+  "Jhon Duran": meta("Duran", "约翰·杜兰"),
+  "Davinson Sanchez": meta("Sanchez", "达文森·桑切斯"),
+  "Erling Haaland": meta("Haaland", "哈兰德"),
+  "Martin Odegaard": meta("Odegaard", "厄德高"),
+  "Alexander Sorloth": meta("Sorloth", "瑟洛特"),
+  "Oscar Bobb": meta("Bobb", "奥斯卡·鲍勃"),
+  "Arda Guler": meta("Guler", "居莱尔"),
+  "Kenan Yildiz": meta("Yildiz", "伊尔迪兹"),
+  "Hakan Calhanoglu": meta("Calhanoglu", "恰尔汗奥卢"),
+  "Ferdi Kadioglu": meta("Kadioglu", "卡迪奥卢")
+  };
+  return metadata[name] ?? {};
+}
+
+function meta(shortName, chineseName, marketValueEurM = null) {
+  return { shortName, chineseName, marketValueEurM };
 }
 
 function calculateStarIndex(stars) {

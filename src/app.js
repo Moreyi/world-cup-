@@ -1,17 +1,25 @@
 import { STARTER_GROUPS } from "./data.js";
 import { buildClubStarModel, getCountryBoost } from "./clubModel.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
-import { buildGroupMatchAnalysis } from "./matchAnalysis.js";
+import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260612-live";
 import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js";
 import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
+import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260612-live";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
+import { coachForCountry } from "./teamStaff.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
 import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
   clubStarModel: buildClubStarModel(),
-  policyOddsModel: buildPolicyOddsModel()
+  policyOddsModel: buildPolicyOddsModel(),
+  realtime: {
+    fetchedAt: null,
+    resultOverrides: [],
+    fixtureOverrides: [],
+    error: null
+  }
 };
 
 const elements = {
@@ -26,6 +34,7 @@ const elements = {
   teamB: document.querySelector("#teamB"),
   matchupResult: document.querySelector("#matchupResult"),
   simulateButton: document.querySelector("#simulateButton"),
+  refreshLiveButton: document.querySelector("#refreshLiveButton"),
   resetButton: document.querySelector("#resetButton"),
   heroFlag: document.querySelector("#heroFlag"),
   heroTeam: document.querySelector("#heroTeam"),
@@ -38,6 +47,10 @@ const elements = {
   dataStatusTime: document.querySelector("#dataStatusTime"),
   lastUpdated: document.querySelector("#lastUpdated"),
   modelReadout: document.querySelector("#modelReadout"),
+  todaySummary: document.querySelector("#todaySummary"),
+  todayMatches: document.querySelector("#todayMatches"),
+  upsetSummary: document.querySelector("#upsetSummary"),
+  upsetMatches: document.querySelector("#upsetMatches"),
   topList: document.querySelector("#topList"),
   summary: document.querySelector("#summary"),
   trendSummary: document.querySelector("#trendSummary"),
@@ -84,6 +97,7 @@ renderHistoryAnalysis();
 runSimulation();
 
 elements.simulateButton.addEventListener("click", runSimulation);
+elements.refreshLiveButton.addEventListener("click", refreshRealtimeData);
 elements.resetButton.addEventListener("click", () => {
   state.groups = cloneGroups(STARTER_GROUPS);
   renderTeamControls();
@@ -111,21 +125,117 @@ elements.useOddsModel.addEventListener("change", () => {
 function runSimulation() {
   const options = readOptions();
   const groups = applySelectedBoosts(state.groups, options);
+  const analysisOptions = withRealtimeOptions(options);
   elements.status.textContent = "Running";
   elements.simulateButton.disabled = true;
 
   requestAnimationFrame(() => {
     const startedAt = performance.now();
-    const results = simulateTournament(groups, options);
-    const trend = runTrendAnalysis(options);
+    const analysis = buildGroupMatchAnalysis(groups, analysisOptions);
+    const simulationOptions = {
+      ...options,
+      matchResults: currentFinalMatchResults(analysis)
+    };
+    const results = simulateTournament(groups, simulationOptions);
+    const trend = runTrendAnalysis(simulationOptions);
     const elapsed = Math.round(performance.now() - startedAt);
     renderResults(results, options.iterations, elapsed);
     renderTrendAnalysis(trend);
-    renderMatchAnalysis(groups, options);
+    renderMatchAnalysis(groups, analysisOptions);
     renderMatchup();
     elements.status.textContent = "Done";
     elements.simulateButton.disabled = false;
   });
+}
+
+async function refreshRealtimeData() {
+  elements.refreshLiveButton.disabled = true;
+  elements.refreshLiveButton.textContent = "更新中";
+  elements.status.textContent = "Syncing";
+  try {
+    const analysis = buildGroupMatchAnalysis(applySelectedBoosts(state.groups, readOptions()), withRealtimeOptions(readOptions()));
+    const live = await fetchRealtimeFixtures({ date: analysis.todayDate });
+    const mapped = mapRealtimeUpdates(live.updates, analysis.matches);
+    state.realtime = {
+      fetchedAt: live.fetchedAt,
+      resultOverrides: mapped.resultOverrides,
+      fixtureOverrides: mapped.fixtureOverrides,
+      error: null
+    };
+    runSimulation();
+  } catch (error) {
+    state.realtime.error = error.message;
+    elements.status.textContent = "更新失败";
+  } finally {
+    elements.refreshLiveButton.disabled = false;
+    elements.refreshLiveButton.textContent = "更新实时数据";
+  }
+}
+
+function withRealtimeOptions(options) {
+  return {
+    ...options,
+    resultOverrides: state.realtime.resultOverrides,
+    fixtureOverrides: state.realtime.fixtureOverrides
+  };
+}
+
+function currentFinalMatchResults(analysis) {
+  return analysis.matches
+    .filter((match) => match.result?.status === "final")
+    .map((match) => ({
+      matchId: match.id,
+      status: "final",
+      score: match.result.score
+    }));
+}
+
+function mapRealtimeUpdates(updates, matches) {
+  const resultOverrides = [];
+  const fixtureOverrides = [];
+
+  for (const update of updates) {
+    const match = matches.find((candidate) => sameFixture(candidate, update));
+    if (!match) continue;
+
+    fixtureOverrides.push({
+      matchId: match.id,
+      dateTime: update.dateTime,
+      status: update.status,
+      venue: formatVenue(update),
+      statusText: update.statusText,
+      broadcasts: update.broadcasts,
+      marketOdds: update.marketOdds
+    });
+
+    if (update.status === "live" || update.status === "final") {
+      const homeIsTeamA = update.homeTeam === match.teamA.name;
+      resultOverrides.push({
+        matchId: match.id,
+        status: update.status,
+        date: match.fixture?.date ?? update.dateTime.slice(0, 10),
+        venue: formatVenue(update),
+        score: {
+          teamA: homeIsTeamA ? update.homeScore : update.awayScore,
+          teamB: homeIsTeamA ? update.awayScore : update.homeScore
+        },
+        note: update.status === "final" ? "实时比分源已标记完赛。" : "实时比分源显示比赛进行中。"
+      });
+    }
+  }
+
+  return { resultOverrides, fixtureOverrides };
+}
+
+function sameFixture(match, update) {
+  const names = [match.teamA.name, match.teamB.name].sort().join("|");
+  const updateNames = [update.homeTeam, update.awayTeam].sort().join("|");
+  return names === updateNames;
+}
+
+function formatVenue(update) {
+  const location = [update.city, update.country].filter(Boolean).join(", ");
+  return location ? `${update.venue}, ${location}` : update.venue;
 }
 
 function renderResults(results, iterations, elapsed) {
@@ -275,7 +385,10 @@ function renderTeamControls() {
             .map(
               (team) => `
                 <label class="rating-row">
-                  <span title="${countryName(team.name)}">${countryName(team.name)}</span>
+                  <span title="${countryName(team.name)}">
+                    ${countryName(team.name)}
+                    <em>主帅：${coachLabel(team.name)}</em>
+                  </span>
                   <input
                     type="number"
                     min="1200"
@@ -303,6 +416,11 @@ function renderTeamControls() {
   });
 }
 
+function coachLabel(country) {
+  const coach = coachForCountry(country);
+  return `${coach.chineseName}${coach.name !== "TBD" ? ` / ${coach.name}` : ""}`;
+}
+
 function renderMatchAnalysis(groups, options) {
   const analysis = buildGroupMatchAnalysis(groups, options);
   const { summary } = analysis;
@@ -310,6 +428,8 @@ function renderMatchAnalysis(groups, options) {
   elements.matchAnalysisSummary.textContent = `${summary.completedMatches} 场已结束，${
     summary.totalMatches - summary.completedMatches
   } 场待赛 · 更新 ${analysis.resultSnapshot.generatedAt}`;
+  renderTodayMatches(analysis.todayMatches, analysis.todayDate);
+  renderUpsetMatches(analysis.upsetMatches, analysis.todayDate);
   elements.matchStats.innerHTML = `
     <div class="stat-card"><strong>${summary.completedMatches}</strong><span>已结束比赛</span></div>
     <div class="stat-card"><strong>${summary.totalGoals}</strong><span>已结束总进球</span></div>
@@ -328,6 +448,81 @@ function renderMatchAnalysis(groups, options) {
           <div class="match-list">
             ${matches.map(renderMatchCard).join("")}
           </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderTodayMatches(matches, todayDate) {
+  const suffix = state.realtime.fetchedAt ? ` · 已实时更新 ${formatDashboardTime(new Date(state.realtime.fetchedAt))}` : "";
+  elements.todaySummary.textContent = `${todayDate} · ${matches.length} 场${suffix}`;
+  elements.todayMatches.innerHTML = matches.map(renderTodayMatchCard).join("");
+}
+
+function renderTodayMatchCard(match) {
+  if (match.result?.status === "final" || match.result?.status === "live") return renderCompletedMatchCard(match);
+
+  const fixture = match.fixture;
+  const kickoff = formatKickoffTime(fixture);
+  const marketOdds = renderMarketOdds(match);
+  const statusText = fixture?.status === "live" ? "进行中" : "待开赛";
+  return `
+    <article class="today-match-card">
+      <div class="today-match-meta">
+        <span>${kickoff}</span>
+        <strong>${statusText}</strong>
+      </div>
+      <div class="today-match-main">
+        <strong>${countryName(match.teamA.name)}</strong>
+        <span>vs</span>
+        <strong>${countryName(match.teamB.name)}</strong>
+      </div>
+      <p>${fixture.venue}</p>
+      ${marketOdds}
+      <div class="today-probs">
+        <span>${countryName(match.teamA.name)} ${formatPercent(match.probabilities.teamA)}</span>
+        <span>平 ${formatPercent(match.probabilities.draw)}</span>
+        <span>${countryName(match.teamB.name)} ${formatPercent(match.probabilities.teamB)}</span>
+      </div>
+      <div class="result-bars" aria-label="${countryName(match.teamA.name)} 对 ${countryName(match.teamB.name)} 今日赛前概率">
+        <div class="result-segment win-a" style="width: ${match.probabilities.teamA * 100}%"></div>
+        <div class="result-segment draw" style="width: ${match.probabilities.draw * 100}%"></div>
+        <div class="result-segment win-b" style="width: ${match.probabilities.teamB * 100}%"></div>
+      </div>
+    </article>
+  `;
+}
+
+function renderMarketOdds(match) {
+  const odds = match.fixture?.marketOdds;
+  if (!odds?.implied) return "";
+  return `
+    <div class="market-odds">
+      <span>${odds.provider} 赔率风向</span>
+      <strong>${countryName(match.teamA.name)} ${formatPercent(odds.implied.home ?? 0)} · 平 ${formatPercent(
+        odds.implied.draw ?? 0
+      )} · ${countryName(match.teamB.name)} ${formatPercent(odds.implied.away ?? 0)}</strong>
+    </div>
+  `;
+}
+
+function renderUpsetMatches(matches, todayDate) {
+  elements.upsetSummary.textContent = `${todayDate} · Top ${matches.length}`;
+  elements.upsetMatches.innerHTML = matches
+    .map(
+      (match) => `
+        <article class="upset-card">
+          <div class="upset-head">
+            <span>${match.fixture?.date === todayDate ? "今日重点" : `Group ${match.group}`}</span>
+            <strong>爆冷/平局 ${formatPercent(match.riskScore)}</strong>
+          </div>
+          <div class="upset-main">
+            <strong>${countryName(match.underdog.name)}</strong>
+            <span>挑战</span>
+            <strong>${countryName(match.favorite.name)}</strong>
+          </div>
+          <p>弱方赢球 ${formatPercent(match.upsetWinProbability)} · 平局 ${formatPercent(match.probabilities.draw)}</p>
         </article>
       `
     )
@@ -371,12 +566,13 @@ function renderCompletedMatchCard(match) {
   const score = `${result.score.teamA}-${result.score.teamB}`;
   const hitText = postMatch.predictionHit ? "方向命中" : "方向偏离";
   const winnerText = postMatch.actualWinner ? countryName(postMatch.actualWinner.name) : "平局";
+  const statusLabel = result.status === "live" ? "进行中" : "已结束";
 
   return `
     <article class="match-card completed">
       <div class="match-meta">
         <span>${result.date} / ${result.venue}</span>
-        <strong class="status-final">已结束</strong>
+        <strong class="status-final">${statusLabel}</strong>
       </div>
       <div class="match-teams scoreline">
         <strong>${countryName(match.teamA.name)}</strong>
@@ -414,6 +610,25 @@ function buildPostMatchCopy(match) {
   } 分（净胜球 ${formatSigned(postMatch.goalDifference.teamA)}），${teamB} ${postMatch.points.teamB} 分（净胜球 ${formatSigned(
     postMatch.goalDifference.teamB
   )}）。`;
+}
+
+function formatKickoffTime(fixture = {}) {
+  if (fixture.dateTime) {
+    const date = new Date(fixture.dateTime);
+    return `${formatTimeZoneHour(date, "America/New_York")} ET / ${formatTimeZoneHour(date, "Asia/Shanghai")} 北京`;
+  }
+  return `今日 ${fixture.timeET} ET`;
+}
+
+function formatTimeZoneHour(date, timeZone) {
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+    timeZone
+  }).format(date);
 }
 
 function renderClubStarModel() {
@@ -519,12 +734,12 @@ function renderCountryStar(star) {
   return `
     <div class="country-star-row">
       <div>
-        <strong>${star.name}</strong>
-        <span>${positionName(star.position)} / ${clubName(star.club)}</span>
+        <strong>${star.shortName} <em>${star.chineseName}</em></strong>
+        <span>${star.name} · ${positionName(star.position)} / ${clubName(star.club)}</span>
       </div>
       <div>
         <b>${star.impactScore}</b>
-        <span>${star.trend}</span>
+        <span>${formatMarketValue(star.marketValueEurM)} · ${star.trend}</span>
       </div>
     </div>
   `;
@@ -750,6 +965,13 @@ function formatDelta(value) {
 
 function formatSigned(value) {
   return value > 0 ? `+${value}` : `${value}`;
+}
+
+function formatMarketValue(value) {
+  if (!Number.isFinite(value)) return "身价待核";
+  if (value >= 100) return `€${Math.round(value)}m`;
+  if (value >= 10) return `€${value.toFixed(value % 1 === 0 ? 0 : 1)}m`;
+  return `€${value.toFixed(1)}m`;
 }
 
 function formatFixture(match) {

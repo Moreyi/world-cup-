@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>World Cup Predictor</title>
-    <link rel="stylesheet" href="styles.css?v=20260612-results" />
+    <link rel="stylesheet" href="styles.css?v=20260612-live" />
   </head>
   <body>
     <header class="dashboard-header">
@@ -23,6 +23,7 @@
         <span class="header-divider"></span>
         <span>最后更新</span>
         <strong id="lastUpdated">6月12日 17:42:33</strong>
+        <button id="refreshLiveButton" type="button" class="secondary">更新实时数据</button>
         <button id="simulateButton" type="button">重新模拟</button>
       </div>
       <nav class="dashboard-tabs" aria-label="世界杯预测模块">
@@ -65,6 +66,28 @@
           <strong><span class="ready-dot"></span> 已就绪</strong>
           <span id="dataStatusTime">6月12日 17:42:33</span>
         </article>
+      </section>
+
+      <section class="today-panel" aria-label="今日比赛">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Today</p>
+            <h2>今日比赛</h2>
+          </div>
+          <p id="todaySummary">读取今日赛程</p>
+        </div>
+        <div class="today-matches" id="todayMatches"></div>
+      </section>
+
+      <section class="upset-panel" aria-label="爆冷预测">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Upset Radar</p>
+            <h2>爆冷预测</h2>
+          </div>
+          <p id="upsetSummary">读取风险场次</p>
+        </div>
+        <div class="upset-matches" id="upsetMatches"></div>
       </section>
 
       <section class="dashboard-grid">
@@ -369,6 +392,6 @@
       </section>
     </main>
 
-    <script type="module" src="src/app.js?v=20260612-results"></script>
+    <script type="module" src="src/app.js?v=20260612-live"></script>
   </body>
 </html>

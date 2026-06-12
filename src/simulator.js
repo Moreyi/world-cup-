@@ -88,6 +88,7 @@ export function simulateGroupStage(groups, options, rng) {
   const first = [];
   const second = [];
   const third = [];
+  const resultByMatchId = new Map((options.matchResults ?? []).map((result) => [result.matchId, result]));
 
   for (const group of groups) {
     const table = group.teams.map((team) => ({
@@ -99,9 +100,15 @@ export function simulateGroupStage(groups, options, rng) {
       tieBreak: rng()
     }));
 
-    for (let i = 0; i < table.length; i += 1) {
-      for (let j = i + 1; j < table.length; j += 1) {
-        playGroupMatch(table[i], table[j], options, rng);
+    for (const fixture of GROUP_FIXTURES) {
+      const teamA = table[fixture.pair[0]];
+      const teamB = table[fixture.pair[1]];
+      const matchId = `${group.name}-${fixture.matchday}`;
+      const knownResult = resultByMatchId.get(matchId);
+      if (knownResult?.status === "final") {
+        applyGroupScore(teamA, teamB, knownResult.score.teamA, knownResult.score.teamB);
+      } else {
+        playGroupMatch(teamA, teamB, options, rng);
       }
     }
 
@@ -114,6 +121,15 @@ export function simulateGroupStage(groups, options, rng) {
   third.sort(compareThirdPlaceRows);
   return [...first, ...second, ...third.slice(0, 8)];
 }
+
+const GROUP_FIXTURES = [
+  { matchday: 1, pair: [0, 1] },
+  { matchday: 2, pair: [2, 3] },
+  { matchday: 3, pair: [0, 2] },
+  { matchday: 4, pair: [3, 1] },
+  { matchday: 5, pair: [3, 0] },
+  { matchday: 6, pair: [1, 2] }
+];
 
 function playGroupMatch(teamA, teamB, options, rng) {
   const probabilities = matchProbabilities(teamA, teamB, options);
@@ -132,6 +148,10 @@ function playGroupMatch(teamA, teamB, options, rng) {
     goalsB = goalsA + 1;
   }
 
+  applyGroupScore(teamA, teamB, goalsA, goalsB);
+}
+
+function applyGroupScore(teamA, teamB, goalsA, goalsB) {
   teamA.goalsFor += goalsA;
   teamA.goalsAgainst += goalsB;
   teamB.goalsFor += goalsB;

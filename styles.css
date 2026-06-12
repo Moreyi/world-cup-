@@ -233,9 +233,14 @@ button.secondary {
 
 .headline-card,
 .overview-card,
+.today-panel,
+.today-match-card,
+.upset-panel,
+.upset-card,
 .results-panel,
 .side-card,
 .control-panel,
+.today-panel,
 .teams-panel,
 .history-panel,
 .club-model-panel,
@@ -308,6 +313,122 @@ button.secondary {
   align-content: center;
   min-height: 150px;
   padding: 24px;
+}
+
+.today-matches {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.today-match-card {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.today-match-meta,
+.today-match-main,
+.today-probs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.today-match-meta {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.today-match-meta strong {
+  border-radius: 999px;
+  padding: 5px 10px;
+  color: var(--green);
+  background: var(--green-soft);
+}
+
+.today-match-main {
+  color: var(--ink);
+  font-size: 1.08rem;
+}
+
+.today-match-main span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.today-match-card p {
+  margin: 0;
+  color: var(--muted-strong);
+  font-size: 0.86rem;
+}
+
+.market-odds {
+  display: grid;
+  gap: 4px;
+  border-radius: 6px;
+  padding: 9px 10px;
+  color: var(--muted-strong);
+  background: #f7faf8;
+  font-size: 0.8rem;
+}
+
+.market-odds strong {
+  color: var(--ink);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.upset-matches {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.upset-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  box-shadow: none;
+}
+
+.upset-head,
+.upset-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.upset-head span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.upset-head strong {
+  color: var(--red);
+  font-size: 0.86rem;
+  white-space: nowrap;
+}
+
+.upset-main strong {
+  font-size: 1.02rem;
+}
+
+.upset-main span,
+.upset-card p {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.today-probs {
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .confidence-card {
@@ -854,8 +975,18 @@ input[type="checkbox"] {
   border-top: 1px solid var(--line);
 }
 
-.rating-row span {
+.rating-row > span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.rating-row > span em {
   overflow: hidden;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1164,6 +1295,14 @@ input[type="checkbox"] {
   font-variant-numeric: tabular-nums;
 }
 
+.country-star-row strong em {
+  display: block;
+  color: var(--muted-strong);
+  font-size: 0.78rem;
+  font-style: normal;
+  font-weight: 800;
+}
+
 .match-groups {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1329,6 +1468,7 @@ input[type="checkbox"] {
   .star-impact-grid,
   .external-boost-grid,
   .match-groups,
+  .upset-matches,
   .national-stars-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -1428,6 +1568,8 @@ input[type="checkbox"] {
   .trend-layout,
   .finals-timeline,
   .match-groups,
+  .today-matches,
+  .upset-matches,
   .star-impact-grid,
   .external-boost-grid,
   .national-stars-grid {
@@ -1438,6 +1580,8 @@ input[type="checkbox"] {
   .overview-card,
   .side-card,
   .control-panel,
+  .today-panel,
+  .upset-panel,
   .teams-panel,
   .history-panel,
   .club-model-panel,
@@ -1450,8 +1594,16 @@ input[type="checkbox"] {
 
   .overview-cards,
   .dashboard-grid,
-  .side-stack {
+  .side-stack,
+  .today-matches,
+  .upset-matches {
     gap: 12px;
+  }
+
+  .today-match-main,
+  .today-probs {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .headline-card {

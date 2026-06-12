@@ -14,6 +14,8 @@ import {
 } from "../src/policyOddsModel.js";
 import { eloExpected, matchProbabilities, simulateGroupStage, simulateTournament } from "../src/simulator.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "../src/trendAnalysis.js";
+import { fetchRealtimeFixtures } from "../src/realtimeData.js";
+import { coachForCountry } from "../src/teamStaff.js";
 
 describe("eloExpected", () => {
   it("returns 50% for equal ratings", () => {
@@ -53,6 +55,19 @@ describe("simulateTournament", () => {
     const totalWins = results.reduce((sum, team) => sum + team.wins, 0);
     assert.equal(totalWins, 200);
     assert.equal(results.length, 48);
+  });
+
+  it("applies completed group results before simulating remaining matches", () => {
+    const base = simulateTournament(STARTER_GROUPS, { iterations: 600, seed: 7 });
+    const adjusted = simulateTournament(STARTER_GROUPS, {
+      iterations: 600,
+      seed: 7,
+      matchResults: [{ matchId: "A-1", status: "final", score: { teamA: 9, teamB: 0 } }]
+    });
+    const baseMexico = base.find((team) => team.name === "Mexico");
+    const adjustedMexico = adjusted.find((team) => team.name === "Mexico");
+
+    assert.ok(adjustedMexico.roundOf32Probability > baseMexico.roundOf32Probability);
   });
 });
 
@@ -125,6 +140,17 @@ describe("match-by-match analysis", () => {
     assert.ok(opener.postMatch.forecastProbability > 0);
   });
 
+  it("surfaces today's matches as a separate feed", () => {
+    const analysis = buildGroupMatchAnalysis(STARTER_GROUPS);
+    assert.equal(analysis.todayDate, "2026-06-12");
+    assert.deepEqual(
+      analysis.todayMatches.map((match) => match.id),
+      ["B-1", "D-1"]
+    );
+    assert.equal(analysis.todayMatches[0].teamA.name, "Canada");
+    assert.equal(analysis.todayMatches[1].teamA.name, "United States");
+  });
+
   it("keeps each match outcome distribution normalized", () => {
     const analysis = buildGroupMatchAnalysis(STARTER_GROUPS);
     for (const match of analysis.matches) {
@@ -177,8 +203,64 @@ describe("national star profiles", () => {
       for (const star of profile.stars) {
         assert.ok(star.impactScore >= 70);
         assert.ok(star.impactScore <= 100);
+        assert.ok(star.shortName);
+        assert.ok(star.chineseName);
       }
     }
+  });
+});
+
+describe("realtime fixtures", () => {
+  it("normalizes ESPN scoreboard matches and market odds", async () => {
+    const fixture = await fetchRealtimeFixtures({
+      date: "2026-06-12",
+      fetcher: async () => ({
+        ok: true,
+        async json() {
+          return {
+            events: [
+              {
+                id: "760416",
+                date: "2026-06-12T19:00Z",
+                competitions: [
+                  {
+                    date: "2026-06-12T19:00Z",
+                    status: { type: { state: "pre", completed: false, detail: "Fri, June 12th at 3:00 PM EDT" } },
+                    venue: { fullName: "BMO Field", address: { city: "Toronto", country: "Canada" } },
+                    competitors: [
+                      { homeAway: "home", score: "0", team: { displayName: "Canada" } },
+                      { homeAway: "away", score: "0", team: { displayName: "Bosnia-Herzegovina" } }
+                    ],
+                    odds: [
+                      {
+                        provider: { displayName: "DraftKings" },
+                        moneyline: {
+                          home: { close: { odds: "-120" } },
+                          draw: { close: { odds: "+250" } },
+                          away: { close: { odds: "+380" } }
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          };
+        }
+      })
+    });
+
+    assert.equal(fixture.updates[0].homeTeam, "Canada");
+    assert.equal(fixture.updates[0].awayTeam, "Bosnia and Herzegovina");
+    assert.equal(fixture.updates[0].marketOdds.provider, "DraftKings");
+    assert.ok(fixture.updates[0].marketOdds.implied.home > fixture.updates[0].marketOdds.implied.away);
+  });
+});
+
+describe("team staff", () => {
+  it("provides coach display data for starter countries", () => {
+    assert.equal(coachForCountry("Canada").name, "Jesse Marsch");
+    assert.ok(coachForCountry("France").chineseName);
   });
 });
 

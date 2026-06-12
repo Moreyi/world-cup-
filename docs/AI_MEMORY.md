@@ -20,11 +20,13 @@ The app is meant to be transparent and easy to adjust, not a betting model.
 - `src/clubModel.js` contains post-2022 club events, star form samples, and the national boost model.
 - `src/data.js` contains starter groups and Elo-like ratings.
 - `src/history.js` contains 2002-2022 completed World Cup history plus a separate 2026 context object.
-- `src/liveResults.js` contains a manually verified result snapshot for completed 2026 matches. Keep it narrow: final scores only, source note, and update timestamp.
+- `src/liveResults.js` contains a manually verified result snapshot and today's fixture snapshot for 2026 matches. Keep it narrow: final scores, today's scheduled matches, source note, and update timestamp.
 - `src/localization.js` contains Chinese display names for national teams, clubs, positions, and score text.
 - `src/matchAnalysis.js` creates group-stage match-by-match probability rows from the current team data and selected model options.
 - `src/nationalStars.js` contains major national-team star-pool profiles for display and explanation.
 - `src/policyOddsModel.js` contains external policy/logistics factors and an odds snapshot converted into model boosts.
+- `src/realtimeData.js` fetches the public ESPN soccer scoreboard for same-day fixtures, live/final status, score, venue, and available market odds.
+- `src/teamStaff.js` contains coach display data for teams in the modeled tournament field.
 - `src/trendAnalysis.js` compares championship probabilities across model stages.
 - `src/simulator.js` contains deterministic RNG, Elo probability, group-stage simulation, knockout simulation, and tournament aggregation.
 - `src/app.js` wires DOM controls to the simulator.
@@ -68,8 +70,15 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - `src/nationalStars.js` is a curated core-player snapshot for major national teams.
 - Each profile has exactly four stars for compact UI comparison.
 - `impactScore` is generated from form, national-team influence, and availability.
+- Star rows display English short name, Chinese name, full English name, club, role, and a market-value field. Market values should remain null/`身价待核` until a source and retrieval date are documented.
 - These are not official final World Cup squads. Keep that caveat in user-facing text and docs.
 - When updating clubs or players, prefer current club context and avoid overfitting to a single recent match.
+
+## Coach / Staff Notes
+
+- `src/teamStaff.js` is display data, not a modeling input yet.
+- Keep coach names source-checkable and mark uncertain items with a note instead of pretending they are verified.
+- If the tournament field is replaced with a current official FIFA field, update this file in the same change.
 
 ## Localization Notes
 
@@ -91,7 +100,9 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 
 - `src/matchAnalysis.js` currently covers all 72 group-stage matches generated from the 12 groups in `src/data.js`.
 - Pairing order is a stable modeled schedule: 1v2, 3v4, 1v3, 4v2, 4v1, 2v3.
-- Each row shows win/draw/win probabilities, favorite, match profile, and upset-or-draw probability. Completed matches from `src/liveResults.js` show final score, model hit/deviation, and points/goal-difference impact.
+- Each row shows win/draw/win probabilities, favorite, match profile, and upset-or-draw probability. Completed matches from `src/liveResults.js` show final score, model hit/deviation, and points/goal-difference impact. Today's fixtures are also surfaced as a separate homepage rail before the full 72-match list.
+- Champion predictions now apply final group-stage results before simulating remaining group matches, so already-completed games change qualification and title probabilities.
+- The "更新实时数据" button fetches the ESPN scoreboard client-side. Available odds are shown only as public market/odds direction, not as global betting volume or betting advice.
 - It reflects the currently selected model layers in the UI because `src/app.js` passes boosted groups into `buildGroupMatchAnalysis`.
 - Future real-result tracking should continue adding actual score fields and prediction-error calculations without replacing this forecast mode.
 
@@ -113,6 +124,7 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - National star-pool data is explanatory, not official roster data.
 - Odds data is a market snapshot. It will become stale quickly and should be refreshed before any serious comparison.
 - Real match results must be source-checked before updating `src/liveResults.js`; do not mark a match as final unless the public scoreboard agrees.
+- Do not claim to know "global betting volume" unless a real aggregate source is added. Public odds/market direction is acceptable when the provider and timestamp are visible.
 
 ## Maintenance Rules
 
@@ -143,3 +155,5 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - 2026-06-12: Reworked the app shell to match the shared design screenshot more closely: dark green header, module tabs, light dashboard canvas, overview cards, ranking table, model interpretation sidebar, and responsive model settings.
 - 2026-06-12: Tightened the mobile breakpoint so the dashboard is readable on phone widths: compact header, horizontal module tabs, shorter overview cards, denser ranking rows, and single-column controls.
 - 2026-06-12: Added completed-match tracking for the first two Group A matches: final score cards, post-match probability/deviation readout, and completed-match summary stats.
+- 2026-06-12: Added a standalone "今日比赛" rail for Canada vs Bosnia and Herzegovina plus United States vs Paraguay, using the same model probability feed while keeping the full match analysis list below.
+- 2026-06-12: Added live data refresh from ESPN scoreboard, public odds direction display, an upset prediction rail, hour-level ET/Beijing kickoff display, coach data, player Chinese/English display metadata, and current-result-adjusted champion simulation.
