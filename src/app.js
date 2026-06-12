@@ -1,9 +1,11 @@
 import { STARTER_GROUPS } from "./data.js";
+import { buildClubStarModel, getCountryBoost } from "./clubModel.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
 
 const state = {
-  groups: cloneGroups(STARTER_GROUPS)
+  groups: cloneGroups(STARTER_GROUPS),
+  clubStarModel: buildClubStarModel()
 };
 
 const elements = {
@@ -11,6 +13,7 @@ const elements = {
   homeAdvantage: document.querySelector("#homeAdvantage"),
   drawBias: document.querySelector("#drawBias"),
   seed: document.querySelector("#seed"),
+  useFormModel: document.querySelector("#useFormModel"),
   teamA: document.querySelector("#teamA"),
   teamB: document.querySelector("#teamB"),
   matchupResult: document.querySelector("#matchupResult"),
@@ -19,6 +22,11 @@ const elements = {
   topList: document.querySelector("#topList"),
   summary: document.querySelector("#summary"),
   teamsGrid: document.querySelector("#teamsGrid"),
+  clubModelSummary: document.querySelector("#clubModelSummary"),
+  clubModelStats: document.querySelector("#clubModelStats"),
+  nationalBoostList: document.querySelector("#nationalBoostList"),
+  clubPowerList: document.querySelector("#clubPowerList"),
+  starImpactGrid: document.querySelector("#starImpactGrid"),
   historyStats: document.querySelector("#historyStats"),
   goalChart: document.querySelector("#goalChart"),
   confedChart: document.querySelector("#confedChart"),
@@ -32,6 +40,7 @@ const elements = {
 renderTeamControls();
 renderSelectors();
 renderMatchup();
+renderClubStarModel();
 renderHistoryAnalysis();
 runSimulation();
 
@@ -47,15 +56,20 @@ elements.teamA.addEventListener("change", renderMatchup);
 elements.teamB.addEventListener("change", renderMatchup);
 elements.homeAdvantage.addEventListener("input", renderMatchup);
 elements.drawBias.addEventListener("input", renderMatchup);
+elements.useFormModel.addEventListener("change", () => {
+  renderMatchup();
+  runSimulation();
+});
 
 function runSimulation() {
   const options = readOptions();
+  const groups = options.useFormModel ? applyClubStarBoosts(state.groups, state.clubStarModel) : state.groups;
   elements.status.textContent = "Running";
   elements.simulateButton.disabled = true;
 
   requestAnimationFrame(() => {
     const startedAt = performance.now();
-    const results = simulateTournament(state.groups, options);
+    const results = simulateTournament(groups, options);
     const elapsed = Math.round(performance.now() - startedAt);
     renderResults(results, options.iterations, elapsed);
     renderMatchup();
@@ -118,6 +132,67 @@ function renderTeamControls() {
       renderMatchup();
     });
   });
+}
+
+function renderClubStarModel() {
+  const model = state.clubStarModel;
+  const topNation = model.nationalBoosts[0];
+  const latestEvent = model.events[model.events.length - 1];
+  const maxBoost = Math.max(...model.nationalBoosts.map((entry) => entry.eloBoost), 1);
+  const maxClub = Math.max(...model.clubPower.map((entry) => entry.score), 1);
+  const maxStar = Math.max(...model.stars.map((entry) => entry.impact), 1);
+
+  elements.clubModelSummary.textContent = `${model.events.length} 个俱乐部大赛节点，${model.stars.length} 名球星样本，生成于 ${model.generatedAt}`;
+  elements.clubModelStats.innerHTML = `
+    <div class="stat-card"><strong>${topNation.country}</strong><span>最高状态修正 +${topNation.eloBoost}</span></div>
+    <div class="stat-card"><strong>${model.clubPower[0].club}</strong><span>最强俱乐部热度</span></div>
+    <div class="stat-card"><strong>${model.stars[0].name}</strong><span>最高球星影响</span></div>
+    <div class="stat-card"><strong>${latestEvent.label}</strong><span>最新大赛节点</span></div>
+  `;
+
+  elements.nationalBoostList.innerHTML = model.nationalBoosts
+    .slice(0, 14)
+    .map(
+      (entry) => `
+        <div class="boost-row">
+          <span>${entry.country}</span>
+          <div class="boost-track" aria-hidden="true"><div style="width: ${(entry.eloBoost / maxBoost) * 100}%"></div></div>
+          <strong>+${entry.eloBoost}</strong>
+        </div>
+      `
+    )
+    .join("");
+
+  elements.clubPowerList.innerHTML = model.clubPower
+    .slice(0, 10)
+    .map(
+      (entry) => `
+        <div class="club-power-row">
+          <div>
+            <strong>${entry.club}</strong>
+            <span>${entry.events.map((event) => `${event.label} ${event.role}`).join(" / ")}</span>
+          </div>
+          <div class="boost-track" aria-hidden="true"><div style="width: ${(entry.score / maxClub) * 100}%"></div></div>
+        </div>
+      `
+    )
+    .join("");
+
+  elements.starImpactGrid.innerHTML = model.stars
+    .slice(0, 12)
+    .map(
+      (star) => `
+        <article class="star-card">
+          <div>
+            <strong>${star.name}</strong>
+            <span>${star.country} / ${star.club}</span>
+          </div>
+          <div class="star-meter" aria-hidden="true"><div style="width: ${(star.impact / maxStar) * 100}%"></div></div>
+          <p>${star.note}</p>
+        </article>
+      `
+    )
+    .join("");
 }
 
 function renderHistoryAnalysis() {
@@ -206,15 +281,17 @@ function renderSelectors() {
 }
 
 function renderMatchup() {
-  const teamA = findTeam(elements.teamA.value);
-  const teamB = findTeam(elements.teamB.value);
+  const baseTeamA = findTeam(elements.teamA.value);
+  const baseTeamB = findTeam(elements.teamB.value);
+  const teamA = withClubStarBoost(baseTeamA, state.clubStarModel, elements.useFormModel.checked);
+  const teamB = withClubStarBoost(baseTeamB, state.clubStarModel, elements.useFormModel.checked);
   const probabilities = matchProbabilities(teamA, teamB, readOptions());
   elements.matchupResult.innerHTML = `
     <div class="prob-card"><strong>${formatPercent(probabilities.teamA)}</strong><span>${teamA.name} 常规时间胜</span></div>
     <div class="prob-card"><strong>${formatPercent(probabilities.draw)}</strong><span>小组赛平局</span></div>
     <div class="prob-card"><strong>${formatPercent(probabilities.teamB)}</strong><span>${teamB.name} 常规时间胜</span></div>
     <div class="prob-card"><strong>${formatPercent(probabilities.knockoutA)}</strong><span>${teamA.name} 淘汰赛晋级</span></div>
-    <div class="prob-card"><strong>${teamA.elo} / ${teamB.elo}</strong><span>当前 Elo</span></div>
+    <div class="prob-card"><strong>${teamA.elo} / ${teamB.elo}</strong><span>${elements.useFormModel.checked ? "修正后 Elo" : "当前 Elo"}</span></div>
     <div class="prob-card"><strong>${formatPercent(probabilities.knockoutB)}</strong><span>${teamB.name} 淘汰赛晋级</span></div>
   `;
 }
@@ -224,7 +301,8 @@ function readOptions() {
     iterations: Number(elements.iterations.value),
     homeAdvantage: Number(elements.homeAdvantage.value),
     drawBias: Number(elements.drawBias.value),
-    seed: Number(elements.seed.value)
+    seed: Number(elements.seed.value),
+    useFormModel: elements.useFormModel.checked
   };
 }
 
@@ -252,6 +330,23 @@ function cloneGroups(groups) {
 
 function formatPercent(value) {
   return `${(value * 100).toFixed(value < 0.01 ? 2 : 1)}%`;
+}
+
+function applyClubStarBoosts(groups, model) {
+  return groups.map((group) => ({
+    ...group,
+    teams: group.teams.map((team) => withClubStarBoost(team, model, true))
+  }));
+}
+
+function withClubStarBoost(team, model, enabled) {
+  if (!enabled) return { ...team };
+  return {
+    ...team,
+    elo: team.elo + getCountryBoost(model, team.name),
+    baseElo: team.elo,
+    formBoost: getCountryBoost(model, team.name)
+  };
 }
 
 function buildHistoryInsights(summary) {

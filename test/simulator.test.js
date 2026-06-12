@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { buildClubStarModel, getCountryBoost } from "../src/clubModel.js";
 import { STARTER_GROUPS } from "../src/data.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "../src/history.js";
 import { eloExpected, matchProbabilities, simulateGroupStage, simulateTournament } from "../src/simulator.js";
@@ -61,5 +62,21 @@ describe("world cup history summary", () => {
     assert.equal(WORLD_CUP_2026_CONTEXT.teams, 48);
     assert.equal(WORLD_CUP_2026_CONTEXT.matches, 104);
     assert.equal(WORLD_CUP_2026_CONTEXT.status, "进行中");
+  });
+});
+
+describe("club and star model", () => {
+  it("builds national Elo boosts from club events and star form", () => {
+    const model = buildClubStarModel();
+    assert.ok(model.events.length >= 6);
+    assert.ok(model.clubPower[0].score > 0);
+    assert.ok(model.stars[0].impact > 0);
+    assert.ok(getCountryBoost(model, "France") > 0);
+    assert.ok(getCountryBoost(model, "England") > 0);
+  });
+
+  it("returns zero boost for countries outside the model sample", () => {
+    const model = buildClubStarModel();
+    assert.equal(getCountryBoost(model, "Atlantis"), 0);
   });
 });

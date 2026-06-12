@@ -17,6 +17,7 @@ The app is meant to be transparent and easy to adjust, not a betting model.
 
 - `index.html` defines the single-page app shell.
 - `styles.css` contains responsive layout and visual design.
+- `src/clubModel.js` contains post-2022 club events, star form samples, and the national boost model.
 - `src/data.js` contains starter groups and Elo-like ratings.
 - `src/history.js` contains 2002-2022 completed World Cup history plus a separate 2026 context object.
 - `src/simulator.js` contains deterministic RNG, Elo probability, group-stage simulation, knockout simulation, and tournament aggregation.
@@ -32,6 +33,7 @@ python3 -m http.server 8000
 
 Use `npm test` after changes to `src/simulator.js`, `src/data.js`, or any data contract consumed by the UI.
 Also run it after changes to `src/history.js`; the test suite verifies key historical totals.
+Run it after changes to `src/clubModel.js`; the test suite checks model shape and country boost behavior.
 
 ## Model Notes
 
@@ -41,6 +43,15 @@ Also run it after changes to `src/history.js`; the test suite verifies key histo
 - Group ranking uses points, goal difference, goals for, Elo, then random tie-break.
 - The 32-team knockout bracket is a stable simplified seed rule based on team strength after selecting 12 group winners, 12 runners-up, and 8 best third-place teams.
 
+## Club / Star Model Notes
+
+- `src/clubModel.js` covers a curated sample from the 2022 World Cup aftermath through 2026-06-12.
+- Club events award points to winners and runners-up, adjusted by competition importance and recency.
+- Club points flow to national teams through `CLUB_COUNTRY_LINKS`, which approximates how strongly a club's current cycle maps to national-team player pools.
+- Star impact = form x influence x availability x position weight.
+- National `eloBoost` is capped at 55 and applied only when the UI checkbox is enabled.
+- This is a transparent heuristic, not a full player-level database. If adding richer data, preserve this file's readability and update tests.
+
 ## Data Caveats
 
 - Starter teams, groups, and ratings are demonstration data.
@@ -48,6 +59,7 @@ Also run it after changes to `src/history.js`; the test suite verifies key histo
 - If replacing with official fixtures or a current Elo source, document the source, retrieval date, and transformation rules here.
 - Historical chart data covers completed tournaments from 2002 through 2022.
 - The 2026 context is intentionally separate because the tournament is in progress as of 2026-06-12.
+- Club/star data is a curated current snapshot, not an exhaustive feed. Document source dates and rationale when updating it.
 
 ## Maintenance Rules
 
@@ -68,3 +80,4 @@ Also run it after changes to `src/history.js`; the test suite verifies key histo
 - 2026-06-12: Created initial static World Cup Elo forecast app with tests.
 - 2026-06-12: Added shared AI memory files for Claude/Codex co-maintenance.
 - 2026-06-12: Added 2002-2022 World Cup historical chart analysis and separate 2026 context panel.
+- 2026-06-12: Added post-2022 club/star form model and optional Elo boost switch.

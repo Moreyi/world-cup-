@@ -45,7 +45,8 @@ select {
 .control-panel,
 .results-panel,
 .teams-panel,
-.history-panel {
+.history-panel,
+.club-model-panel {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -61,12 +62,14 @@ select {
 
 .results-panel,
 .teams-panel,
-.history-panel {
+.history-panel,
+.club-model-panel {
   padding: 18px;
 }
 
 .teams-panel,
-.history-panel {
+.history-panel,
+.club-model-panel {
   grid-column: 1 / -1;
 }
 
@@ -209,6 +212,20 @@ input[type="range"] {
   padding: 0;
 }
 
+.toggle-label span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.toggle-label input {
+  width: 18px;
+  min-height: 18px;
+}
+
 .matchup-panel {
   margin-top: 14px;
 }
@@ -338,7 +355,8 @@ button.secondary {
   text-align: right;
 }
 
-.history-stats {
+.history-stats,
+.model-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
@@ -373,7 +391,8 @@ button.secondary {
   color: var(--muted);
 }
 
-.history-layout {
+.history-layout,
+.club-model-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
@@ -520,6 +539,93 @@ button.secondary {
   line-height: 1.55;
 }
 
+.national-boost-list,
+.club-power-list,
+.star-impact-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.boost-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) minmax(120px, 2fr) 46px;
+  align-items: center;
+  gap: 10px;
+  min-height: 32px;
+  font-variant-numeric: tabular-nums;
+}
+
+.boost-track {
+  overflow: hidden;
+  height: 12px;
+  border-radius: 999px;
+  background: #e7ece9;
+}
+
+.boost-track > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--gold));
+}
+
+.club-power-row {
+  display: grid;
+  gap: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.club-power-row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.club-power-row span,
+.star-card span,
+.star-card p {
+  color: var(--muted);
+}
+
+.club-power-row > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.star-impact-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.star-card {
+  display: grid;
+  gap: 8px;
+  min-height: 150px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.star-card > div:first-child {
+  display: grid;
+  gap: 3px;
+}
+
+.star-card p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.star-meter {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: #e7ece9;
+}
+
+.star-meter > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--field), var(--red));
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -534,8 +640,11 @@ button.secondary {
   }
 
   .history-stats,
+  .model-stats,
   .history-layout,
-  .finals-timeline {
+  .club-model-layout,
+  .finals-timeline,
+  .star-impact-grid {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -553,8 +662,14 @@ button.secondary {
   .matchup-panel,
   .teams-grid,
   .history-stats,
+  .model-stats,
   .history-layout,
+  .club-model-layout,
   .finals-timeline {
+    grid-template-columns: 1fr;
+  }
+
+  .star-impact-grid {
     grid-template-columns: 1fr;
   }
 
@@ -583,6 +698,15 @@ button.secondary {
 
   .goal-row {
     grid-template-columns: 42px minmax(90px, 1fr) 42px;
+  }
+
+  .boost-row {
+    grid-template-columns: minmax(92px, 1fr) 48px;
+  }
+
+  .boost-row .boost-track {
+    grid-column: 1 / -1;
+    grid-row: 2;
   }
 
   .goal-row em {

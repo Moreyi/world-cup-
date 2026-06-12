@@ -41,6 +41,13 @@
             随机种子
             <input id="seed" type="number" min="1" max="999999" value="2026" />
           </label>
+          <label class="toggle-label">
+            状态修正
+            <span>
+              <input id="useFormModel" type="checkbox" checked />
+              俱乐部/球星
+            </span>
+          </label>
         </div>
 
         <div class="matchup-panel">
@@ -80,6 +87,40 @@
           </div>
         </div>
         <div class="teams-grid" id="teamsGrid"></div>
+      </section>
+
+      <section class="club-model-panel" aria-label="俱乐部和球星状态模型">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Post Qatar 2022</p>
+            <h2>俱乐部 / 球星状态模型</h2>
+          </div>
+          <p id="clubModelSummary">从 2022 世界杯后到 2026-06-12 的状态修正。</p>
+        </div>
+        <div class="model-stats" id="clubModelStats"></div>
+        <div class="club-model-layout">
+          <article class="analysis-block">
+            <div class="block-head">
+              <h3>国家队状态修正</h3>
+              <span>Elo boost</span>
+            </div>
+            <div class="national-boost-list" id="nationalBoostList"></div>
+          </article>
+          <article class="analysis-block">
+            <div class="block-head">
+              <h3>俱乐部热度</h3>
+              <span>大赛权重</span>
+            </div>
+            <div class="club-power-list" id="clubPowerList"></div>
+          </article>
+          <article class="analysis-block wide">
+            <div class="block-head">
+              <h3>球星影响力</h3>
+              <span>状态 x 角色 x 可用性</span>
+            </div>
+            <div class="star-impact-grid" id="starImpactGrid"></div>
+          </article>
+        </div>
       </section>
 
       <section class="history-panel" aria-label="2002 至今世界杯全图分析">
