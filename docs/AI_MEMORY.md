@@ -21,6 +21,7 @@ The app is meant to be transparent and easy to adjust, not a betting model.
 - `src/data.js` contains starter groups and Elo-like ratings.
 - `src/history.js` contains 2002-2022 completed World Cup history plus a separate 2026 context object.
 - `src/matchAnalysis.js` creates group-stage match-by-match probability rows from the current team data and selected model options.
+- `src/nationalStars.js` contains major national-team star-pool profiles for display and explanation.
 - `src/policyOddsModel.js` contains external policy/logistics factors and an odds snapshot converted into model boosts.
 - `src/trendAnalysis.js` compares championship probabilities across model stages.
 - `src/simulator.js` contains deterministic RNG, Elo probability, group-stage simulation, knockout simulation, and tournament aggregation.
@@ -40,6 +41,7 @@ Run it after changes to `src/clubModel.js`; the test suite checks model shape an
 Run it after changes to `src/policyOddsModel.js`; the test suite checks odds conversion and boost lookup behavior.
 Run it after changes to `src/matchAnalysis.js`; the test suite checks 72 group-stage matches and normalized result distributions.
 Run it after changes to `src/trendAnalysis.js`; the test suite checks stage comparison and riser/faller ranking.
+Run it after changes to `src/nationalStars.js`; the test suite checks profile counts and score ranges.
 
 ## Model Notes
 
@@ -57,6 +59,14 @@ Run it after changes to `src/trendAnalysis.js`; the test suite checks stage comp
 - Star impact = form x influence x availability x position weight.
 - National `eloBoost` is capped at 55 and applied only when the UI checkbox is enabled.
 - This is a transparent heuristic, not a full player-level database. If adding richer data, preserve this file's readability and update tests.
+
+## National Star Pool Notes
+
+- `src/nationalStars.js` is a curated core-player snapshot for major national teams.
+- Each profile has exactly four stars for compact UI comparison.
+- `impactScore` is generated from form, national-team influence, and availability.
+- These are not official final World Cup squads. Keep that caveat in user-facing text and docs.
+- When updating clubs or players, prefer current club context and avoid overfitting to a single recent match.
 
 ## Policy / Odds Model Notes
 
@@ -90,6 +100,7 @@ Run it after changes to `src/trendAnalysis.js`; the test suite checks stage comp
 - Historical chart data covers completed tournaments from 2002 through 2022.
 - The 2026 context is intentionally separate because the tournament is in progress as of 2026-06-12.
 - Club/star data is a curated current snapshot, not an exhaustive feed. Document source dates and rationale when updating it.
+- National star-pool data is explanatory, not official roster data.
 - Odds data is a market snapshot. It will become stale quickly and should be refreshed before any serious comparison.
 
 ## Maintenance Rules
@@ -115,3 +126,4 @@ Run it after changes to `src/trendAnalysis.js`; the test suite checks stage comp
 - 2026-06-12: Added international policy/external environment model and odds calibration switch.
 - 2026-06-12: Added match-by-match group-stage result probability charts.
 - 2026-06-12: Added forecast trend analysis across model stages.
+- 2026-06-12: Added major national-team star-pool data and display panel.

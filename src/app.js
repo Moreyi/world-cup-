@@ -2,6 +2,7 @@ import { STARTER_GROUPS } from "./data.js";
 import { buildClubStarModel, getCountryBoost } from "./clubModel.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
 import { buildGroupMatchAnalysis } from "./matchAnalysis.js";
+import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js";
 import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
@@ -42,6 +43,9 @@ const elements = {
   nationalBoostList: document.querySelector("#nationalBoostList"),
   clubPowerList: document.querySelector("#clubPowerList"),
   starImpactGrid: document.querySelector("#starImpactGrid"),
+  nationalStarsSummary: document.querySelector("#nationalStarsSummary"),
+  nationalStarsStats: document.querySelector("#nationalStarsStats"),
+  nationalStarsGrid: document.querySelector("#nationalStarsGrid"),
   policyOddsSummary: document.querySelector("#policyOddsSummary"),
   policyOddsStats: document.querySelector("#policyOddsStats"),
   policyList: document.querySelector("#policyList"),
@@ -62,6 +66,7 @@ renderTeamControls();
 renderSelectors();
 renderMatchup();
 renderClubStarModel();
+renderNationalStars();
 renderPolicyOddsModel();
 renderHistoryAnalysis();
 runSimulation();
@@ -359,6 +364,59 @@ function renderClubStarModel() {
       `
     )
     .join("");
+}
+
+function renderNationalStars() {
+  const summary = summarizeNationalStars(NATIONAL_STAR_PROFILES);
+  const maxIndex = Math.max(...summary.profiles.map((profile) => profile.starIndex), 1);
+  const topRising = summary.profiles
+    .flatMap((profile) => profile.stars.map((star) => ({ ...star, country: profile.country })))
+    .filter((star) => star.trend.includes("上升"))
+    .sort((a, b) => b.impactScore - a.impactScore)[0];
+
+  elements.nationalStarsSummary.textContent = `${summary.totalCountries} 个重点国家，${summary.totalStars} 名核心球星样本`;
+  elements.nationalStarsStats.innerHTML = `
+    <div class="stat-card"><strong>${summary.topProfile.country}</strong><span>最高球星指数 ${summary.topProfile.starIndex}</span></div>
+    <div class="stat-card"><strong>${summary.topProfile.topStar.name}</strong><span>最高影响球星</span></div>
+    <div class="stat-card"><strong>${topRising.name}</strong><span>${topRising.country} 上升样本</span></div>
+    <div class="stat-card"><strong>${summary.totalStars}</strong><span>球星样本数</span></div>
+  `;
+
+  elements.nationalStarsGrid.innerHTML = summary.profiles
+    .map(
+      (profile) => `
+        <article class="national-star-card">
+          <div class="national-star-head">
+            <div>
+              <strong>${profile.country}</strong>
+              <span>${profile.tier}</span>
+            </div>
+            <b>${profile.starIndex}</b>
+          </div>
+          <div class="star-index-track" aria-hidden="true"><div style="width: ${(profile.starIndex / maxIndex) * 100}%"></div></div>
+          <p>${profile.outlook}</p>
+          <div class="country-star-list">
+            ${profile.stars.map(renderCountryStar).join("")}
+          </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderCountryStar(star) {
+  return `
+    <div class="country-star-row">
+      <div>
+        <strong>${star.name}</strong>
+        <span>${star.position} / ${star.club}</span>
+      </div>
+      <div>
+        <b>${star.impactScore}</b>
+        <span>${star.trend}</span>
+      </div>
+    </div>
+  `;
 }
 
 function renderPolicyOddsModel() {

@@ -4,6 +4,7 @@ import { buildClubStarModel, getCountryBoost } from "../src/clubModel.js";
 import { STARTER_GROUPS } from "../src/data.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "../src/history.js";
 import { buildGroupMatchAnalysis } from "../src/matchAnalysis.js";
+import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "../src/nationalStars.js";
 import {
   americanToImpliedProbability,
   buildPolicyOddsModel,
@@ -145,5 +146,25 @@ describe("forecast trend analysis", () => {
     assert.equal(trend.summary.biggestRiser.name, "France");
     assert.equal(trend.summary.biggestFaller.name, "Argentina");
     assert.equal(trend.rows.length, 2);
+  });
+});
+
+describe("national star profiles", () => {
+  it("loads major national-team star pools", () => {
+    const summary = summarizeNationalStars(NATIONAL_STAR_PROFILES);
+    assert.ok(summary.totalCountries >= 18);
+    assert.ok(summary.totalStars >= 72);
+    assert.equal(summary.profiles[0].stars.length, 4);
+    assert.ok(summary.topProfile.starIndex > 80);
+  });
+
+  it("keeps every star impact score in a displayable range", () => {
+    for (const profile of NATIONAL_STAR_PROFILES) {
+      assert.equal(profile.stars.length, 4);
+      for (const star of profile.stars) {
+        assert.ok(star.impactScore >= 70);
+        assert.ok(star.impactScore <= 100);
+      }
+    }
   });
 });

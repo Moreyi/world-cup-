@@ -49,7 +49,8 @@ select {
 .club-model-panel,
 .policy-odds-panel,
 .match-analysis-panel,
-.trend-panel {
+.trend-panel,
+.national-stars-panel {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -69,7 +70,8 @@ select {
 .club-model-panel,
 .policy-odds-panel,
 .match-analysis-panel,
-.trend-panel {
+.trend-panel,
+.national-stars-panel {
   padding: 18px;
 }
 
@@ -78,7 +80,8 @@ select {
 .club-model-panel,
 .policy-odds-panel,
 .match-analysis-panel,
-.trend-panel {
+.trend-panel,
+.national-stars-panel {
   grid-column: 1 / -1;
 }
 
@@ -772,6 +775,79 @@ button.secondary {
   background: #fff;
 }
 
+.national-stars-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.national-star-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfb;
+}
+
+.national-star-head,
+.country-star-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.national-star-head > div,
+.country-star-row > div {
+  display: grid;
+  gap: 3px;
+}
+
+.national-star-head span,
+.national-star-card p,
+.country-star-row span {
+  color: var(--muted);
+}
+
+.national-star-head b {
+  color: var(--blue);
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.national-star-card p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.star-index-track {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: #e7ece9;
+}
+
+.star-index-track > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--field), var(--blue));
+}
+
+.country-star-list {
+  display: grid;
+  gap: 8px;
+}
+
+.country-star-row {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.country-star-row b {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
 .model-note {
   margin: 12px 0 0;
   line-height: 1.5;
@@ -892,7 +968,8 @@ button.secondary {
   .finals-timeline,
   .star-impact-grid,
   .external-boost-grid,
-  .match-groups {
+  .match-groups,
+  .national-stars-grid {
     grid-template-columns: 1fr 1fr;
   }
 
@@ -923,7 +1000,8 @@ button.secondary {
   }
 
   .star-impact-grid,
-  .external-boost-grid {
+  .external-boost-grid,
+  .national-stars-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1005,5 +1083,10 @@ button.secondary {
   .match-read {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .national-star-head,
+  .country-star-row {
+    align-items: flex-start;
   }
 }
