@@ -20,6 +20,7 @@ The app is meant to be transparent and easy to adjust, not a betting model.
 - `src/clubModel.js` contains post-2022 club events, star form samples, and the national boost model.
 - `src/data.js` contains starter groups and Elo-like ratings.
 - `src/history.js` contains 2002-2022 completed World Cup history plus a separate 2026 context object.
+- `src/matchAnalysis.js` creates group-stage match-by-match probability rows from the current team data and selected model options.
 - `src/policyOddsModel.js` contains external policy/logistics factors and an odds snapshot converted into model boosts.
 - `src/simulator.js` contains deterministic RNG, Elo probability, group-stage simulation, knockout simulation, and tournament aggregation.
 - `src/app.js` wires DOM controls to the simulator.
@@ -36,6 +37,7 @@ Use `npm test` after changes to `src/simulator.js`, `src/data.js`, or any data c
 Also run it after changes to `src/history.js`; the test suite verifies key historical totals.
 Run it after changes to `src/clubModel.js`; the test suite checks model shape and country boost behavior.
 Run it after changes to `src/policyOddsModel.js`; the test suite checks odds conversion and boost lookup behavior.
+Run it after changes to `src/matchAnalysis.js`; the test suite checks 72 group-stage matches and normalized result distributions.
 
 ## Model Notes
 
@@ -62,6 +64,14 @@ Run it after changes to `src/policyOddsModel.js`; the test suite checks odds con
 - Odds boosts are intentionally small and capped; they calibrate the model toward market consensus without replacing Elo or simulation logic.
 - The odds snapshot is not live and must not be described as betting advice. If updated, document the source, bookmaker/market type, timestamp, and region if available.
 - Keep policy factors explainable. Avoid broad political claims; model only concrete tournament-preparation effects.
+
+## Match Analysis Notes
+
+- `src/matchAnalysis.js` currently covers all 72 group-stage matches generated from the 12 groups in `src/data.js`.
+- Pairing order is a stable modeled schedule: 1v2, 3v4, 1v3, 4v2, 4v1, 2v3.
+- Each row shows win/draw/win probabilities, favorite, match profile, and upset-or-draw probability.
+- It reflects the currently selected model layers in the UI because `src/app.js` passes boosted groups into `buildGroupMatchAnalysis`.
+- Future real-result tracking should add actual score fields and prediction-error calculations without replacing this forecast mode.
 
 ## Data Caveats
 
@@ -94,3 +104,4 @@ Run it after changes to `src/policyOddsModel.js`; the test suite checks odds con
 - 2026-06-12: Added 2002-2022 World Cup historical chart analysis and separate 2026 context panel.
 - 2026-06-12: Added post-2022 club/star form model and optional Elo boost switch.
 - 2026-06-12: Added international policy/external environment model and odds calibration switch.
+- 2026-06-12: Added match-by-match group-stage result probability charts.

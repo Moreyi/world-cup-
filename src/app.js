@@ -1,6 +1,7 @@
 import { STARTER_GROUPS } from "./data.js";
 import { buildClubStarModel, getCountryBoost } from "./clubModel.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
+import { buildGroupMatchAnalysis } from "./matchAnalysis.js";
 import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
 
@@ -25,6 +26,9 @@ const elements = {
   resetButton: document.querySelector("#resetButton"),
   topList: document.querySelector("#topList"),
   summary: document.querySelector("#summary"),
+  matchAnalysisSummary: document.querySelector("#matchAnalysisSummary"),
+  matchStats: document.querySelector("#matchStats"),
+  matchGroups: document.querySelector("#matchGroups"),
   teamsGrid: document.querySelector("#teamsGrid"),
   clubModelSummary: document.querySelector("#clubModelSummary"),
   clubModelStats: document.querySelector("#clubModelStats"),
@@ -91,6 +95,7 @@ function runSimulation() {
     const results = simulateTournament(groups, options);
     const elapsed = Math.round(performance.now() - startedAt);
     renderResults(results, options.iterations, elapsed);
+    renderMatchAnalysis(groups, options);
     renderMatchup();
     elements.status.textContent = "Done";
     elements.simulateButton.disabled = false;
@@ -151,6 +156,63 @@ function renderTeamControls() {
       renderMatchup();
     });
   });
+}
+
+function renderMatchAnalysis(groups, options) {
+  const analysis = buildGroupMatchAnalysis(groups, options);
+  const { summary } = analysis;
+
+  elements.matchAnalysisSummary.textContent = `${summary.totalMatches} 场小组赛，${summary.upsetSensitive} 场爆冷/平局敏感`;
+  elements.matchStats.innerHTML = `
+    <div class="stat-card"><strong>${summary.totalMatches}</strong><span>小组赛场次</span></div>
+    <div class="stat-card"><strong>${formatFixture(summary.mostBalanced)}</strong><span>最胶着</span></div>
+    <div class="stat-card"><strong>${summary.biggestFavorite.favorite.name}</strong><span>最大优势 ${formatPercent(summary.biggestFavorite.favoriteWinProbability)}</span></div>
+    <div class="stat-card"><strong>${formatFixture(summary.highestDraw)}</strong><span>最高平局 ${formatPercent(summary.highestDraw.probabilities.draw)}</span></div>
+  `;
+
+  const byGroup = groupBy(analysis.matches, (match) => match.group);
+  elements.matchGroups.innerHTML = Object.entries(byGroup)
+    .map(
+      ([groupName, matches]) => `
+        <article class="match-group-card">
+          <div class="match-group-title">Group ${groupName}</div>
+          <div class="match-list">
+            ${matches.map(renderMatchCard).join("")}
+          </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderMatchCard(match) {
+  return `
+    <article class="match-card">
+      <div class="match-meta">
+        <span>MD${match.matchday} / ${match.window}</span>
+        <strong>${match.profile}</strong>
+      </div>
+      <div class="match-teams">
+        <strong>${match.teamA.name}</strong>
+        <span>vs</span>
+        <strong>${match.teamB.name}</strong>
+      </div>
+      <div class="result-bars" aria-label="${match.teamA.name} 对 ${match.teamB.name} 赛果概率">
+        <div class="result-segment win-a" style="width: ${match.probabilities.teamA * 100}%"></div>
+        <div class="result-segment draw" style="width: ${match.probabilities.draw * 100}%"></div>
+        <div class="result-segment win-b" style="width: ${match.probabilities.teamB * 100}%"></div>
+      </div>
+      <div class="match-probs">
+        <span>${match.teamA.name} ${formatPercent(match.probabilities.teamA)}</span>
+        <span>平 ${formatPercent(match.probabilities.draw)}</span>
+        <span>${match.teamB.name} ${formatPercent(match.probabilities.teamB)}</span>
+      </div>
+      <div class="match-read">
+        <span>优势：${match.favorite.name}</span>
+        <span>爆冷/平局：${formatPercent(match.upsetOrDrawProbability)}</span>
+      </div>
+    </article>
+  `;
 }
 
 function renderClubStarModel() {
@@ -418,6 +480,19 @@ function cloneGroups(groups) {
 
 function formatPercent(value) {
   return `${(value * 100).toFixed(value < 0.01 ? 2 : 1)}%`;
+}
+
+function formatFixture(match) {
+  return `${match.teamA.name} vs ${match.teamB.name}`;
+}
+
+function groupBy(items, getKey) {
+  return items.reduce((groups, item) => {
+    const key = getKey(item);
+    groups[key] = groups[key] ?? [];
+    groups[key].push(item);
+    return groups;
+  }, {});
 }
 
 function applySelectedBoosts(groups, options) {

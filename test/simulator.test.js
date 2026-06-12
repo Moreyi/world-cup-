@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { buildClubStarModel, getCountryBoost } from "../src/clubModel.js";
 import { STARTER_GROUPS } from "../src/data.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "../src/history.js";
+import { buildGroupMatchAnalysis } from "../src/matchAnalysis.js";
 import {
   americanToImpliedProbability,
   buildPolicyOddsModel,
@@ -99,5 +100,21 @@ describe("policy and odds model", () => {
     assert.ok(getPolicyBoost(model, "Australia") < 0);
     assert.ok(getOddsBoost(model, "France") > 0);
     assert.equal(getOddsBoost(model, "Atlantis"), 0);
+  });
+});
+
+describe("match-by-match analysis", () => {
+  it("builds one chart row for every group-stage match", () => {
+    const analysis = buildGroupMatchAnalysis(STARTER_GROUPS);
+    assert.equal(analysis.matches.length, 72);
+    assert.equal(analysis.summary.totalMatches, 72);
+  });
+
+  it("keeps each match outcome distribution normalized", () => {
+    const analysis = buildGroupMatchAnalysis(STARTER_GROUPS);
+    for (const match of analysis.matches) {
+      const total = match.probabilities.teamA + match.probabilities.draw + match.probabilities.teamB;
+      assert.ok(Math.abs(total - 1) < 1e-12);
+    }
   });
 });
