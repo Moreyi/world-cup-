@@ -125,6 +125,7 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - Local git commits exist in this workspace.
 - Pushing to `Moreyi/world-cup-` failed from this environment because SSH and HTTPS git credentials were unavailable.
 - GitHub connector metadata access worked, but contents API writes returned `403 Resource not accessible by integration`.
+- The Claude Design share link for the visual refresh returned Claude's region-unavailable page from this environment, so the 2026-06-12 style pass was implemented as a local full visual refresh rather than a 1:1 extraction from the shared design HTML.
 
 ## Change Log
 
@@ -137,3 +138,4 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - 2026-06-12: Added forecast trend analysis across model stages.
 - 2026-06-12: Added major national-team star-pool data and display panel.
 - 2026-06-12: Added Chinese display-name localization for teams, clubs, positions, and historical score text.
+- 2026-06-12: Reworked the app stylesheet into a dark World Cup data-console theme with responsive glass panels, tournament colors, and mobile list fixes.

@@ -1,16 +1,22 @@
 :root {
-  color-scheme: light;
-  --ink: #17211f;
-  --muted: #66736f;
-  --panel: #ffffff;
-  --line: #d9e1dd;
-  --field: #1e7a52;
-  --field-dark: #176244;
-  --gold: #d99a24;
-  --red: #c94c4c;
-  --blue: #2f6fbd;
-  --bg: #f4f7f5;
-  --shadow: 0 18px 40px rgba(28, 48, 42, 0.1);
+  color-scheme: dark;
+  --ink: #f7f3e8;
+  --muted: #aeb9aa;
+  --muted-strong: #d7dece;
+  --panel: rgba(15, 28, 22, 0.88);
+  --panel-solid: #15241d;
+  --panel-soft: rgba(255, 255, 255, 0.055);
+  --line: rgba(247, 243, 232, 0.14);
+  --line-strong: rgba(247, 243, 232, 0.24);
+  --field: #1f8a5f;
+  --field-dark: #0f4d39;
+  --gold: #f2c14e;
+  --red: #e05d56;
+  --blue: #56a6e8;
+  --cream: #fff7df;
+  --bg: #0a1511;
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.38);
+  --radius: 8px;
 }
 
 * {
@@ -21,10 +27,27 @@ body {
   margin: 0;
   min-height: 100vh;
   color: var(--ink);
-  background: var(--bg);
+  background:
+    linear-gradient(rgba(242, 193, 78, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(242, 193, 78, 0.04) 1px, transparent 1px),
+    radial-gradient(circle at 16% 8%, rgba(31, 138, 95, 0.46), transparent 34%),
+    radial-gradient(circle at 88% 18%, rgba(224, 93, 86, 0.22), transparent 30%),
+    linear-gradient(145deg, #06100d 0%, #10261d 48%, #090d0c 100%);
+  background-size: 34px 34px, 34px 34px, auto, auto, auto;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(90deg, transparent 0 49.88%, rgba(255, 247, 223, 0.08) 49.88% 50.12%, transparent 50.12%),
+    linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
 }
 
 button,
@@ -35,9 +58,9 @@ select {
 
 .app-shell {
   display: grid;
-  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  grid-template-columns: minmax(320px, 430px) minmax(0, 1fr);
   gap: 18px;
-  width: min(1440px, 100%);
+  width: min(1460px, 100%);
   margin: 0 auto;
   padding: 18px;
 }
@@ -51,10 +74,29 @@ select {
 .match-analysis-panel,
 .trend-panel,
 .national-stars-panel {
+  position: relative;
+  overflow: hidden;
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.control-panel::before,
+.results-panel::before,
+.teams-panel::before,
+.history-panel::before,
+.club-model-panel::before,
+.policy-odds-panel::before,
+.match-analysis-panel::before,
+.trend-panel::before,
+.national-stars-panel::before {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  content: "";
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.09), transparent 140px);
 }
 
 .control-panel {
@@ -89,6 +131,7 @@ select {
 .section-head,
 .button-row,
 .matchup-panel {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -97,6 +140,8 @@ select {
 
 .section-head {
   margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--line);
 }
 
 .section-head.compact {
@@ -104,10 +149,10 @@ select {
 }
 
 .eyebrow {
-  margin: 0 0 4px;
-  color: var(--muted);
-  font-size: 0.76rem;
-  font-weight: 700;
+  margin: 0 0 5px;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -119,48 +164,58 @@ h2 {
 }
 
 h1 {
+  color: var(--cream);
   font-size: 2rem;
+  line-height: 1.05;
 }
 
 h2 {
+  color: var(--cream);
   font-size: 1.35rem;
+  line-height: 1.15;
 }
 
 h3 {
   margin: 0;
+  color: var(--cream);
   font-size: 1rem;
   letter-spacing: 0;
 }
 
 .status-pill {
   min-width: 86px;
-  padding: 8px 10px;
-  border: 1px solid var(--line);
+  padding: 8px 12px;
+  border: 1px solid rgba(242, 193, 78, 0.38);
   border-radius: 999px;
-  color: var(--muted);
+  color: var(--gold);
+  background: rgba(242, 193, 78, 0.11);
   text-align: center;
   white-space: nowrap;
+  font-weight: 800;
 }
 
 .pitch {
   position: relative;
   overflow: hidden;
-  height: 132px;
+  height: 144px;
   margin: 18px 0;
-  border-radius: 8px;
+  border: 1px solid rgba(255, 247, 223, 0.18);
+  border-radius: var(--radius);
   background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.09), transparent 18%, transparent 82%, rgba(255, 255, 255, 0.08)),
     repeating-linear-gradient(
       90deg,
-      var(--field),
-      var(--field) 48px,
+      var(--field-dark),
       var(--field-dark) 48px,
-      var(--field-dark) 96px
+      var(--field) 48px,
+      var(--field) 96px
     );
+  box-shadow: inset 0 0 42px rgba(0, 0, 0, 0.22);
 }
 
 .pitch-line {
   position: absolute;
-  border: 2px solid rgba(255, 255, 255, 0.68);
+  border: 2px solid rgba(255, 247, 223, 0.72);
 }
 
 .pitch-line.center {
@@ -171,9 +226,9 @@ h3 {
 }
 
 .pitch-line.box {
-  top: 30px;
-  width: 54px;
-  height: 72px;
+  top: 31px;
+  width: 58px;
+  height: 82px;
 }
 
 .pitch-line.box.left {
@@ -186,11 +241,11 @@ h3 {
 
 .pitch-circle {
   position: absolute;
-  top: 37px;
-  left: calc(50% - 29px);
-  width: 58px;
-  height: 58px;
-  border: 2px solid rgba(255, 255, 255, 0.68);
+  top: 39px;
+  left: calc(50% - 33px);
+  width: 66px;
+  height: 66px;
+  border: 2px solid rgba(255, 247, 223, 0.72);
   border-radius: 50%;
 }
 
@@ -206,7 +261,7 @@ label {
   gap: 6px;
   color: var(--muted);
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 input,
@@ -217,11 +272,41 @@ select {
   border-radius: 6px;
   padding: 8px 10px;
   color: var(--ink);
-  background: #fff;
+  background: rgba(255, 247, 223, 0.08);
+  outline: none;
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+input:focus,
+select:focus {
+  border-color: rgba(242, 193, 78, 0.72);
+  background: rgba(255, 247, 223, 0.12);
+  box-shadow: 0 0 0 3px rgba(242, 193, 78, 0.14);
+}
+
+select {
+  color: var(--cream);
+}
+
+option {
+  color: #17211f;
+}
+
+input[type="number"] {
+  font-variant-numeric: tabular-nums;
 }
 
 input[type="range"] {
+  min-height: 42px;
   padding: 0;
+  accent-color: var(--gold);
+}
+
+input[type="checkbox"] {
+  accent-color: var(--gold);
 }
 
 .toggle-label span {
@@ -229,8 +314,12 @@ input[type="range"] {
   align-items: center;
   gap: 8px;
   min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
   color: var(--ink);
-  font-weight: 700;
+  background: rgba(255, 247, 223, 0.06);
+  font-weight: 800;
 }
 
 .toggle-label input {
@@ -250,16 +339,18 @@ input[type="range"] {
 }
 
 .prob-card {
-  min-height: 70px;
+  min-height: 74px;
   padding: 10px;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fbfcfb;
+  border-radius: var(--radius);
+  background: rgba(255, 247, 223, 0.075);
 }
 
 .prob-card strong {
   display: block;
+  color: var(--cream);
   font-size: 1.35rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .prob-card span {
@@ -273,20 +364,45 @@ input[type="range"] {
 
 button {
   min-height: 44px;
-  border: 0;
+  border: 1px solid rgba(242, 193, 78, 0.42);
   border-radius: 6px;
   padding: 10px 14px;
-  color: #fff;
-  background: var(--blue);
+  color: #241a07;
+  background: linear-gradient(180deg, #ffe28a, var(--gold));
   cursor: pointer;
+  font-weight: 900;
+  box-shadow: 0 12px 26px rgba(242, 193, 78, 0.2);
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    filter 0.16s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: saturate(1.08);
+  box-shadow: 0 16px 32px rgba(242, 193, 78, 0.27);
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.68;
 }
 
 button.secondary {
   color: var(--ink);
-  background: #eef3f0;
+  background: rgba(255, 247, 223, 0.08);
+  border-color: var(--line);
+  box-shadow: none;
 }
 
-#summary {
+#summary,
+#trendSummary,
+#matchAnalysisSummary,
+#clubModelSummary,
+#nationalStarsSummary,
+#policyOddsSummary,
+#historySummary {
   margin: 0;
   color: var(--muted);
   text-align: right;
@@ -302,27 +418,50 @@ button.secondary {
   grid-template-columns: 36px minmax(130px, 1fr) minmax(130px, 2fr) 70px;
   align-items: center;
   gap: 12px;
-  min-height: 44px;
+  min-height: 48px;
+  padding: 4px 0;
+}
+
+.team-row strong,
+.trend-team strong,
+.trend-change-row span,
+.rating-row span,
+.match-teams strong,
+.national-star-head strong,
+.country-star-row strong {
+  color: var(--cream);
 }
 
 .rank {
-  color: var(--muted);
+  color: var(--gold);
+  font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
-.bar {
+.bar,
+.goal-track,
+.confed-track,
+.boost-track,
+.star-meter,
+.star-index-track,
+.result-bars {
   overflow: hidden;
-  height: 12px;
   border-radius: 999px;
-  background: #e7ece9;
+  background: rgba(255, 247, 223, 0.1);
+}
+
+.bar {
+  height: 12px;
 }
 
 .bar > div {
   height: 100%;
   background: linear-gradient(90deg, var(--gold), var(--red));
+  box-shadow: 0 0 18px rgba(242, 193, 78, 0.32);
 }
 
 .pct {
+  color: var(--cream);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -333,17 +472,33 @@ button.secondary {
   gap: 12px;
 }
 
-.group-card {
+.group-card,
+.match-group-card,
+.stat-card,
+.analysis-block,
+.national-star-card,
+.trend-row,
+.trend-change-row,
+.final-card,
+.star-card,
+.external-card,
+.match-card {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--radius);
+  background: rgba(255, 247, 223, 0.065);
+}
+
+.group-card,
+.match-group-card {
   overflow: hidden;
 }
 
-.group-title {
+.group-title,
+.match-group-title {
   padding: 10px 12px;
-  color: #fff;
-  background: #21342f;
-  font-weight: 800;
+  color: #241a07;
+  background: linear-gradient(90deg, var(--gold), #f07d4c);
+  font-weight: 900;
 }
 
 .rating-row {
@@ -377,13 +532,6 @@ button.secondary {
   margin-bottom: 14px;
 }
 
-.stat-card,
-.analysis-block {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fbfcfb;
-}
-
 .stat-card {
   min-height: 88px;
   padding: 14px;
@@ -391,7 +539,9 @@ button.secondary {
 
 .stat-card strong {
   display: block;
-  font-size: 1.7rem;
+  color: var(--cream);
+  font-size: 1.55rem;
+  line-height: 1.15;
 }
 
 .stat-card span,
@@ -401,7 +551,16 @@ button.secondary {
 .current-cup p,
 .current-cup dd,
 .current-cup dt,
-.goal-row em {
+.goal-row em,
+.national-star-head span,
+.national-star-card p,
+.country-star-row span,
+.club-power-row span,
+.star-card span,
+.star-card p,
+.odds-row em,
+.external-card span,
+.model-note {
   color: var(--muted);
 }
 
@@ -434,7 +593,16 @@ button.secondary {
 .confed-chart,
 .finals-timeline,
 .insight-list,
-.current-cup dl {
+.current-cup dl,
+.national-boost-list,
+.club-power-list,
+.star-impact-grid,
+.policy-list,
+.odds-list,
+.external-boost-grid,
+.trend-table,
+.trend-change-list,
+.country-star-list {
   display: grid;
   gap: 10px;
 }
@@ -445,15 +613,14 @@ button.secondary {
   align-items: center;
   gap: 10px;
   min-height: 30px;
+  color: var(--cream);
   font-variant-numeric: tabular-nums;
 }
 
 .goal-track,
-.confed-track {
-  overflow: hidden;
+.confed-track,
+.boost-track {
   height: 12px;
-  border-radius: 999px;
-  background: #e7ece9;
 }
 
 .goal-track > div {
@@ -488,9 +655,6 @@ button.secondary {
   gap: 10px;
   min-height: 124px;
   padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
 }
 
 .final-card > div {
@@ -507,9 +671,9 @@ button.secondary {
 
 .final-year {
   grid-row: 1 / span 3;
-  color: var(--blue);
+  color: var(--gold);
   font-size: 1.05rem;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .current-badge {
@@ -518,10 +682,10 @@ button.secondary {
   margin-bottom: 12px;
   padding: 7px 10px;
   border-radius: 999px;
-  color: #fff;
-  background: var(--field);
+  color: #0a1511;
+  background: var(--gold);
   font-size: 0.84rem;
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .current-cup dl {
@@ -537,7 +701,7 @@ button.secondary {
 }
 
 .current-cup dt {
-  font-weight: 800;
+  font-weight: 900;
 }
 
 .current-cup dd {
@@ -552,17 +716,8 @@ button.secondary {
 .insight-list {
   margin: 0;
   padding-left: 18px;
+  color: var(--ink);
   line-height: 1.55;
-}
-
-.national-boost-list,
-.club-power-list,
-.star-impact-grid,
-.policy-list,
-.odds-list,
-.external-boost-grid {
-  display: grid;
-  gap: 10px;
 }
 
 .boost-row,
@@ -572,18 +727,12 @@ button.secondary {
   align-items: center;
   gap: 10px;
   min-height: 32px;
+  color: var(--cream);
   font-variant-numeric: tabular-nums;
 }
 
 .odds-row {
   grid-template-columns: minmax(90px, 1fr) minmax(100px, 1.6fr) 58px 54px;
-}
-
-.boost-track {
-  overflow: hidden;
-  height: 12px;
-  border-radius: 999px;
-  background: #e7ece9;
 }
 
 .boost-track > div {
@@ -592,7 +741,7 @@ button.secondary {
 }
 
 .boost-track.negative > div {
-  background: linear-gradient(90deg, var(--red), #9b3942);
+  background: linear-gradient(90deg, var(--red), #a93f58);
 }
 
 .club-power-row {
@@ -605,15 +754,6 @@ button.secondary {
 .club-power-row:last-child {
   padding-bottom: 0;
   border-bottom: 0;
-}
-
-.club-power-row span,
-.star-card span,
-.star-card p,
-.odds-row em,
-.external-card span,
-.model-note {
-  color: var(--muted);
 }
 
 .club-power-row > div:first-child {
@@ -630,9 +770,6 @@ button.secondary {
   gap: 8px;
   min-height: 150px;
   padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
 }
 
 .star-card > div:first-child {
@@ -645,11 +782,9 @@ button.secondary {
   line-height: 1.45;
 }
 
-.star-meter {
-  overflow: hidden;
+.star-meter,
+.star-index-track {
   height: 10px;
-  border-radius: 999px;
-  background: #e7ece9;
 }
 
 .star-meter > div {
@@ -666,9 +801,6 @@ button.secondary {
   gap: 8px;
   min-height: 104px;
   padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
 }
 
 .external-card > div:first-child {
@@ -677,14 +809,9 @@ button.secondary {
 }
 
 .external-card b {
+  color: var(--cream);
   font-size: 1.2rem;
   font-variant-numeric: tabular-nums;
-}
-
-.trend-table,
-.trend-change-list {
-  display: grid;
-  gap: 10px;
 }
 
 .trend-row {
@@ -694,9 +821,6 @@ button.secondary {
   gap: 12px;
   min-height: 72px;
   padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
 }
 
 .trend-team {
@@ -707,7 +831,7 @@ button.secondary {
 }
 
 .trend-team span {
-  color: var(--muted);
+  color: var(--gold);
   font-variant-numeric: tabular-nums;
 }
 
@@ -731,7 +855,7 @@ button.secondary {
   align-items: end;
   height: 100%;
   border-radius: 999px;
-  background: #e7ece9;
+  background: rgba(255, 247, 223, 0.1);
 }
 
 .trend-point > div {
@@ -757,7 +881,7 @@ button.secondary {
 }
 
 .positive {
-  color: var(--field);
+  color: #5fd38d;
 }
 
 .negative {
@@ -770,9 +894,6 @@ button.secondary {
   align-items: center;
   gap: 10px;
   padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
 }
 
 .national-stars-grid {
@@ -785,9 +906,6 @@ button.secondary {
   display: grid;
   gap: 10px;
   padding: 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fbfcfb;
 }
 
 .national-star-head,
@@ -804,14 +922,8 @@ button.secondary {
   gap: 3px;
 }
 
-.national-star-head span,
-.national-star-card p,
-.country-star-row span {
-  color: var(--muted);
-}
-
 .national-star-head b {
-  color: var(--blue);
+  color: var(--gold);
   font-size: 1.25rem;
   font-variant-numeric: tabular-nums;
 }
@@ -821,21 +933,9 @@ button.secondary {
   line-height: 1.45;
 }
 
-.star-index-track {
-  overflow: hidden;
-  height: 10px;
-  border-radius: 999px;
-  background: #e7ece9;
-}
-
 .star-index-track > div {
   height: 100%;
   background: linear-gradient(90deg, var(--field), var(--blue));
-}
-
-.country-star-list {
-  display: grid;
-  gap: 8px;
 }
 
 .country-star-row {
@@ -844,6 +944,7 @@ button.secondary {
 }
 
 .country-star-row b {
+  color: var(--cream);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
@@ -859,20 +960,6 @@ button.secondary {
   gap: 12px;
 }
 
-.match-group-card {
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fbfcfb;
-}
-
-.match-group-title {
-  padding: 10px 12px;
-  color: #fff;
-  background: #21342f;
-  font-weight: 800;
-}
-
 .match-list {
   display: grid;
   gap: 10px;
@@ -883,9 +970,6 @@ button.secondary {
   display: grid;
   gap: 8px;
   padding: 10px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fff;
 }
 
 .match-meta,
@@ -906,7 +990,7 @@ button.secondary {
 }
 
 .match-meta strong {
-  color: var(--blue);
+  color: var(--gold);
   font-size: 0.78rem;
 }
 
@@ -920,10 +1004,7 @@ button.secondary {
 
 .result-bars {
   display: flex;
-  overflow: hidden;
   height: 13px;
-  border-radius: 999px;
-  background: #e7ece9;
 }
 
 .result-segment.win-a {
@@ -983,6 +1064,18 @@ button.secondary {
     padding: 10px;
   }
 
+  .control-panel,
+  .results-panel,
+  .teams-panel,
+  .history-panel,
+  .club-model-panel,
+  .policy-odds-panel,
+  .match-analysis-panel,
+  .trend-panel,
+  .national-stars-panel {
+    padding: 14px;
+  }
+
   .settings-grid,
   .matchup-panel,
   .teams-grid,
@@ -995,10 +1088,7 @@ button.secondary {
   .policy-odds-layout,
   .trend-layout,
   .finals-timeline,
-  .match-groups {
-    grid-template-columns: 1fr;
-  }
-
+  .match-groups,
   .star-impact-grid,
   .external-boost-grid,
   .national-stars-grid {
@@ -1015,10 +1105,22 @@ button.secondary {
 
   .team-row .bar {
     grid-column: 2 / -1;
+    grid-row: 2;
     width: 100%;
   }
 
-  #summary {
+  .team-row .pct {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  #summary,
+  #trendSummary,
+  #matchAnalysisSummary,
+  #clubModelSummary,
+  #nationalStarsSummary,
+  #policyOddsSummary,
+  #historySummary {
     text-align: left;
   }
 
