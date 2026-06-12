@@ -27,6 +27,17 @@ const elements = {
   matchupResult: document.querySelector("#matchupResult"),
   simulateButton: document.querySelector("#simulateButton"),
   resetButton: document.querySelector("#resetButton"),
+  heroFlag: document.querySelector("#heroFlag"),
+  heroTeam: document.querySelector("#heroTeam"),
+  heroProbability: document.querySelector("#heroProbability"),
+  heroMeta: document.querySelector("#heroMeta"),
+  confidenceScore: document.querySelector("#confidenceScore"),
+  confidenceLabel: document.querySelector("#confidenceLabel"),
+  confidenceNote: document.querySelector("#confidenceNote"),
+  simulationScale: document.querySelector("#simulationScale"),
+  dataStatusTime: document.querySelector("#dataStatusTime"),
+  lastUpdated: document.querySelector("#lastUpdated"),
+  modelReadout: document.querySelector("#modelReadout"),
   topList: document.querySelector("#topList"),
   summary: document.querySelector("#summary"),
   trendSummary: document.querySelector("#trendSummary"),
@@ -120,12 +131,34 @@ function runSimulation() {
 function renderResults(results, iterations, elapsed) {
   const leaders = results.slice(0, 16);
   const max = Math.max(...leaders.map((team) => team.winProbability), 0.01);
-  elements.summary.textContent = `${iterations.toLocaleString()} 次模拟，用时 ${elapsed} ms`;
+  const leader = leaders[0];
+  const runnerUp = leaders[1];
+  const confidence = Math.round(Math.min(94, Math.max(54, leader.winProbability * 230 + (leader.winProbability - runnerUp.winProbability) * 280)));
+  const nowText = formatDashboardTime(new Date());
+
+  elements.summary.textContent = `蒙特卡洛 ${iterations.toLocaleString()} 次模拟频率`;
+  elements.simulationScale.textContent = iterations.toLocaleString();
+  elements.lastUpdated.textContent = nowText;
+  elements.dataStatusTime.textContent = nowText;
+  elements.heroTeam.textContent = countryName(leader.name);
+  elements.heroProbability.textContent = formatPercent(leader.winProbability);
+  elements.heroMeta.textContent = `夺冠概率 · 实力分 ${Math.round(leader.elo)}`;
+  elements.heroFlag.className = `flag ${flagClass(leader.name)}`;
+  elements.confidenceScore.textContent = confidence;
+  elements.confidenceLabel.textContent = confidence >= 74 ? "高 · 格局清晰" : confidence >= 62 ? "中 · 竞争开放" : "低 · 变数较大";
+  elements.confidenceNote.textContent = confidence >= 74 ? "基于冠军分布集中度" : "热门队差距仍需观察";
+  elements.modelReadout.textContent = `当前模型以 ${countryName(leader.name)} 为夺冠头号热门（${formatPercent(
+    leader.winProbability
+  )}），${countryName(runnerUp.name)} 紧随其后（${formatPercent(
+    runnerUp.winProbability
+  )}）。信心指数 ${confidence}，主要变量来自 Elo 实力、赔率校准、球星状态与外部环境修正。`;
+
   elements.topList.innerHTML = leaders
     .map(
       (team, index) => `
         <div class="team-row">
           <div class="rank">${index + 1}</div>
+          ${flagMarkup(team.name)}
           <strong>${countryName(team.name)}</strong>
           <div class="bar" aria-hidden="true"><div style="width: ${(team.winProbability / max) * 100}%"></div></div>
           <div class="pct">${formatPercent(team.winProbability)}</div>
@@ -133,6 +166,27 @@ function renderResults(results, iterations, elapsed) {
       `
     )
     .join("");
+}
+
+function flagMarkup(country) {
+  return `<span class="flag ${flagClass(country)}" aria-hidden="true"></span>`;
+}
+
+function flagClass(country) {
+  const classes = {
+    Argentina: "flag-argentina",
+    France: "flag-france",
+    Spain: "flag-spain",
+    England: "flag-england",
+    Brazil: "flag-brazil",
+    Portugal: "flag-portugal",
+    Netherlands: "flag-netherlands",
+    Germany: "flag-germany",
+    Belgium: "flag-belgium",
+    Uruguay: "flag-uruguay",
+    Colombia: "flag-colombia"
+  };
+  return classes[country] || "flag-generic";
 }
 
 function runTrendAnalysis(options) {
@@ -624,6 +678,13 @@ function cloneGroups(groups) {
 
 function formatPercent(value) {
   return `${(value * 100).toFixed(value < 0.01 ? 2 : 1)}%`;
+}
+
+function formatDashboardTime(date) {
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const time = [date.getHours(), date.getMinutes(), date.getSeconds()].map((part) => String(part).padStart(2, "0")).join(":");
+  return `${month}月${day}日 ${time}`;
 }
 
 function formatDelta(value) {

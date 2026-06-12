@@ -3,25 +3,128 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>World Cup Elo Forecast</title>
+    <title>World Cup Predictor</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <main class="app-shell">
-      <section class="control-panel" aria-label="世界杯胜率预测控制台">
-        <div class="brand-row">
+    <header class="dashboard-header">
+      <div class="header-main">
+        <div class="product-mark" aria-hidden="true">
+          <span></span>
+        </div>
+        <div>
+          <h1>世界杯预测控制台</h1>
+          <p>FIFA WORLD CUP 2026 · 蒙特卡洛情报驾驶舱</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <span class="online-dot"></span>
+        <span>模型在线</span>
+        <span class="header-divider"></span>
+        <span>最后更新</span>
+        <strong id="lastUpdated">6月12日 17:42:33</strong>
+        <button id="simulateButton" type="button">重新模拟</button>
+      </div>
+      <nav class="dashboard-tabs" aria-label="世界杯预测模块">
+        <a class="active" href="#overview"><span></span>赛事总览</a>
+        <a href="#match-analysis"><span></span>对阵预测</a>
+        <a href="#history"><span></span>历史分析</a>
+        <a href="#teams"><span></span>球队数据库</a>
+        <a href="#policy"><span></span>赔率与外因</a>
+        <a href="#settings"><span></span>模型设置</a>
+        <a href="#club-model"><span></span>数据更新中心</a>
+      </nav>
+    </header>
+
+    <main class="app-shell" id="overview">
+      <section class="overview-cards" aria-label="赛事总览">
+        <article class="headline-card">
+          <p>夺冠头号热门</p>
+          <div class="headline-team">
+            <span class="flag flag-generic" id="heroFlag" aria-hidden="true"></span>
+            <strong id="heroTeam">计算中</strong>
+          </div>
+          <b id="heroProbability">--</b>
+          <span id="heroMeta">夺冠概率 · 实力分 --</span>
+        </article>
+        <article class="overview-card confidence-card">
+          <div class="ring" aria-hidden="true"><span id="confidenceScore">76</span></div>
           <div>
-            <p class="eyebrow">2026 FIFA World Cup</p>
-            <h1>Elo 胜率预测</h1>
+            <p>模型信心指数</p>
+            <strong id="confidenceLabel">高 · 格局清晰</strong>
+            <span id="confidenceNote">基于冠军分布集中度</span>
+          </div>
+        </article>
+        <article class="overview-card">
+          <p>模拟规模</p>
+          <strong id="simulationScale">5,000</strong>
+          <span>12 个小组 · 强度前 32 队</span>
+        </article>
+        <article class="overview-card">
+          <p>数据状态</p>
+          <strong><span class="ready-dot"></span> 已就绪</strong>
+          <span id="dataStatusTime">6月12日 17:42:33</span>
+        </article>
+      </section>
+
+      <section class="dashboard-grid">
+        <section class="results-panel" aria-label="模拟结果">
+          <div class="ranking-head">
+            <div>
+              <h2>2026 冠军概率排行</h2>
+              <p id="summary">蒙特卡洛模拟频率</p>
+            </div>
+            <b>TOP 10</b>
+          </div>
+          <div class="top-list" id="topList"></div>
+        </section>
+
+        <aside class="side-stack" aria-label="模型侧栏">
+          <article class="side-card">
+            <h3>模型解读</h3>
+            <p id="modelReadout">
+              当前模型正在计算冠军头号热门、信心指数和主要变量。
+            </p>
+          </article>
+          <article class="side-card">
+            <h3>关键变量权重</h3>
+            <div class="weight-list">
+              <div class="weight-row">
+                <div><strong>Elo 实力权重</strong><span>1.00</span></div>
+                <div class="weight-track"><span style="width: 100%"></span></div>
+              </div>
+              <div class="weight-row">
+                <div><strong>赔率修正权重</strong><span>0.55</span></div>
+                <div class="weight-track blue"><span style="width: 55%"></span></div>
+              </div>
+              <div class="weight-row">
+                <div><strong>球星状态权重</strong><span>0.50</span></div>
+                <div class="weight-track gold"><span style="width: 50%"></span></div>
+              </div>
+              <div class="weight-row">
+                <div><strong>历史底蕴权重</strong><span>0.40</span></div>
+                <div class="weight-track purple"><span style="width: 40%"></span></div>
+              </div>
+            </div>
+          </article>
+          <article class="side-card">
+            <h3>数据更新记录</h3>
+            <ul class="update-list">
+              <li><span></span>初始化模型并完成首轮模拟</li>
+              <li><span></span>接入球队评分、赔率与外部因素</li>
+              <li><span></span>生成冠军概率排行与模型解读</li>
+            </ul>
+          </article>
+        </aside>
+      </section>
+
+      <section class="control-panel" id="settings" aria-label="世界杯胜率预测控制台">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Model Settings</p>
+            <h2>模型设置</h2>
           </div>
           <div class="status-pill" id="status">Ready</div>
-        </div>
-
-        <div class="pitch" aria-hidden="true">
-          <div class="pitch-line center"></div>
-          <div class="pitch-line box left"></div>
-          <div class="pitch-line box right"></div>
-          <div class="pitch-circle"></div>
         </div>
 
         <div class="settings-grid">
@@ -62,6 +165,9 @@
               市场快照
             </span>
           </label>
+          <div class="button-row">
+            <button id="resetButton" type="button" class="secondary">重置评分</button>
+          </div>
         </div>
 
         <div class="matchup-panel">
@@ -75,22 +181,6 @@
           </label>
           <div class="matchup-result" id="matchupResult"></div>
         </div>
-
-        <div class="button-row">
-          <button id="simulateButton" type="button">运行模拟</button>
-          <button id="resetButton" type="button" class="secondary">重置评分</button>
-        </div>
-      </section>
-
-      <section class="results-panel" aria-label="模拟结果">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">Monte Carlo</p>
-            <h2>夺冠概率</h2>
-          </div>
-          <p id="summary">调整参数后运行模拟。</p>
-        </div>
-        <div class="top-list" id="topList"></div>
       </section>
 
       <section class="trend-panel" aria-label="预测走势分析">
@@ -127,7 +217,7 @@
         </div>
       </section>
 
-      <section class="match-analysis-panel" aria-label="每场比赛结果图分析">
+      <section class="match-analysis-panel" id="match-analysis" aria-label="每场比赛结果图分析">
         <div class="section-head">
           <div>
             <p class="eyebrow">Match By Match</p>
@@ -139,17 +229,17 @@
         <div class="match-groups" id="matchGroups"></div>
       </section>
 
-      <section class="teams-panel" aria-label="球队 Elo 编辑">
+      <section class="teams-panel" id="teams" aria-label="球队 Elo 编辑">
         <div class="section-head compact">
           <div>
             <p class="eyebrow">Editable Ratings</p>
-            <h2>球队评分</h2>
+            <h2>球队数据库</h2>
           </div>
         </div>
         <div class="teams-grid" id="teamsGrid"></div>
       </section>
 
-      <section class="club-model-panel" aria-label="俱乐部和球星状态模型">
+      <section class="club-model-panel" id="club-model" aria-label="俱乐部和球星状态模型">
         <div class="section-head">
           <div>
             <p class="eyebrow">Post Qatar 2022</p>
@@ -195,7 +285,7 @@
         <div class="national-stars-grid" id="nationalStarsGrid"></div>
       </section>
 
-      <section class="policy-odds-panel" aria-label="国际政策和赔率模型">
+      <section class="policy-odds-panel" id="policy" aria-label="国际政策和赔率模型">
         <div class="section-head">
           <div>
             <p class="eyebrow">External Calibration</p>
@@ -230,7 +320,7 @@
         </div>
       </section>
 
-      <section class="history-panel" aria-label="2002 至今世界杯全图分析">
+      <section class="history-panel" id="history" aria-label="2002 至今世界杯全图分析">
         <div class="section-head">
           <div>
             <p class="eyebrow">2002 - Now</p>
