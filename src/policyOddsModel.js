@@ -23,7 +23,7 @@ export const POLICY_FACTORS = [
       { country: "Paraguay", boost: 4 },
       { country: "Uruguay", boost: 4 },
       { country: "Panama", boost: 6 },
-      { country: "Jamaica", boost: 5 }
+      { country: "Curacao", boost: 5 }
     ]
   },
   {
@@ -78,7 +78,7 @@ export const POLICY_FACTORS = [
 export const ODDS_SNAPSHOT = {
   generatedAt: "2026-06-12",
   format: "american",
-  note: "赔率为示例市场快照，用于模型校准演示；不同机构、地区和时间会变化。不是投注建议。",
+  note: "市场热度为示例快照，用于模型校准演示；不同机构、地区和时间会变化。仅供娱乐和数据研究参考。",
   entries: [
     { country: "France", american: 450 },
     { country: "Spain", american: 450 },

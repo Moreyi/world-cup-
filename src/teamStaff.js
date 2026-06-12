@@ -16,6 +16,8 @@ export const TEAM_STAFF = {
   Australia: coach("Tony Popovic", "托尼·波波维奇"),
   Turkey: coach("Vincenzo Montella", "文森佐·蒙特拉"),
   Germany: coach("Julian Nagelsmann", "尤利安·纳格尔斯曼"),
+  Curacao: coach("Dick Advocaat", "迪克·阿德沃卡特", "需按官方参赛名单复核"),
+  Egypt: coach("Hossam Hassan", "胡萨姆·哈桑", "需按官方参赛名单复核"),
   "New Zealand": coach("Darren Bazeley", "达伦·巴泽利"),
   "Ivory Coast": coach("Emerse Faé", "埃梅尔斯·法埃"),
   Ecuador: coach("Sebastián Beccacece", "塞巴斯蒂安·贝卡塞塞"),

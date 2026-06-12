@@ -26,8 +26,8 @@ export const MATCH_CALENDAR = [
   {
     matchId: "A-2",
     date: "2026-06-11",
-    timeET: "21:00",
-    venue: "Estadio Guadalajara",
+    timeET: "22:00",
+    venue: "Estadio Akron, Guadalajara",
     status: "final"
   },
   {
@@ -83,7 +83,7 @@ export const MATCH_RESULTS = [
     teams: { teamA: "South Korea", teamB: "Czechia" },
     status: "final",
     date: "2026-06-11",
-    venue: "Estadio Azteca, Mexico City",
+    venue: "Estadio Akron, Guadalajara",
     score: { teamA: 2, teamB: 1 },
     note: "韩国赢下小组首战，捷克暂时 0 分。"
   }

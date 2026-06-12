@@ -119,9 +119,10 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 
 ## Data Caveats
 
-- Starter teams, groups, and ratings are demonstration data.
-- Do not describe the built-in ratings as official or live.
-- If replacing with official fixtures or a current Elo source, document the source, retrieval date, and transformation rules here.
+- Groups in `src/data.js` were verified against the ESPN FIFA World Cup standings API (`site.api.espn.com/apis/v2/sports/soccer/fifa.world/standings?season=2026`, retrieved 2026-06-12). The earlier demo groups E/G/L were wrong (had Serbia and Jamaica, missed Egypt and Curacao) and were corrected.
+- Team Elo values in `src/data.js` are real ratings from eloratings.net (`World.tsv` + `en.teams.tsv` for code mapping, retrieved 2026-06-12), used as-is with no transformation. They drift as matches are played; refresh from the same source and update this date when refreshing.
+- Team order inside each group follows the real matchday-1 pairing (1v2, 3v4), verified against the ESPN scoreboard for 2026-06-11 through 2026-06-17.
+- Beware eloratings.net team codes: they are not ISO (Scotland=SQ, South Africa=ZA, Saudi Arabia=SA). Always join through `en.teams.tsv`, never assume ISO codes.
 - Historical chart data covers completed tournaments from 2002 through 2022.
 - The 2026 context is intentionally separate because the tournament is in progress as of 2026-06-12.
 - Club/star data is a curated current snapshot, not an exhaustive feed. Document source dates and rationale when updating it.
@@ -175,3 +176,4 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - 2026-06-12: Tightened completed-match analysis: model-hit stats now use modal-outcome matching, final-result rows carry redundant team keys, and result-to-fixture joins validate team names before attaching scores.
 - 2026-06-12: Documented the public/server-only boundary for Claude and future agents: GitHub may sync free daily data and public screenshots, while ad unlocks, paid content, production ad config, and server details remain server-only.
 - 2026-06-12: Corrected the public README/demo boundary: replaced the single-match prediction screenshot with the provided dashboard screenshot, added the free daily schedule table, and removed exact score/probability/upset readouts from the public match UI.
+- 2026-06-12: Data accuracy pass (Claude). Fixed groups E/G/L to the real draw (E: Germany/Curacao/Ivory Coast/Ecuador, G: Belgium/Egypt/Iran/New Zealand, L: England/Croatia/Ghana/Panama; removed Serbia and Jamaica, added Egypt and Curacao localization/coach/policy entries). Replaced all 48 demo Elo values with real eloratings.net ratings (old demo values averaged ~61 points absolute error; worst: Qatar +184, Jordan -180). Fixed A-2 result venue (Estadio Akron, Guadalajara — was wrongly Estadio Azteca) and A-2 kickoff ET (22:00, was 21:00). Verified both finished scores and today's two fixtures (incl. gameIds) against ESPN. All 25 tests pass.
