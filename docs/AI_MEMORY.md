@@ -134,6 +134,16 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - Do not claim to know "global betting volume" unless a real aggregate source is added. Public odds/market direction is acceptable when the provider and timestamp are visible.
 - Do not fill friendly/recent warmup results until a source is integrated. The current tactical cards explicitly mark this as pending public match-result sourcing.
 
+## Boss Product Directives (2026-06-13)
+
+Prediction accuracy is the revenue model. Standing requirements from the boss:
+
+- Same-day match predictions must be multi-factor (Elo + form + coach/tactics + market odds + venue factors), not single-model.
+- Each same-day match needs a very detailed head-to-head presentation: our predicted score, our win/draw/loss probabilities, AND a comparison against market/bookmaker odds. The data layer for this is ready (each match row carries `probabilities` (published, fused), `modelProbabilities`, `marketProbabilities`, `predictedScore`); the unlock-view UI should render the three-way comparison.
+- When the model produces a standout signal (e.g. high dark-horse/upset probability like D-1 USA-Paraguay at 62.8% upset+draw), it must be highlighted prominently, not buried in a list.
+- Coach strategy quality matters. `TEAM_TACTICS` covers only 4 teams with real entries (rest fall back to DEFAULT_TACTIC) — expand with real per-team tactical/coach data, scraping free sources first (boss authorized scraping; paid data available on request, but check free sources suffice first).
+- Every finished match gets a post-mortem within 24h (docs/match-reviews/ SOP) comparing model vs market vs actual with running Brier — this is the "model training" loop that tunes marketWeight and factor boosts.
+
 ## Maintenance Rules
 
 - Keep the app buildless and static unless the user asks for a larger framework.
