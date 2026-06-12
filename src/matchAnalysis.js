@@ -1,6 +1,7 @@
 import { matchProbabilities } from "./simulator.js";
 import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260612-tactic";
 import { buildTacticalPreview } from "./teamTactics.js";
+import { fuseProbabilities, marketProbabilitiesForMatch } from "./marketFusion.js";
 
 const GROUP_PAIRINGS = [
   { matchday: 1, pair: [0, 1] },
@@ -24,15 +25,21 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
     GROUP_PAIRINGS.map((fixture, index) => {
       const teamA = group.teams[fixture.pair[0]];
       const teamB = group.teams[fixture.pair[1]];
-      const probabilities = matchProbabilities(teamA, teamB, options);
+      const matchId = `${group.name}-${index + 1}`;
+      const modelProbabilities = matchProbabilities(teamA, teamB, options);
+      const marketProbabilities = marketProbabilitiesForMatch(matchId);
+      // Published probabilities fuse real market odds when we have them;
+      // modelProbabilities stays pure for review/Brier tracking.
+      const probabilities = marketProbabilities
+        ? { ...modelProbabilities, ...fuseProbabilities(modelProbabilities, marketProbabilities, options.marketWeight ?? 0.5) }
+        : modelProbabilities;
       const favorite = probabilities.teamA >= probabilities.teamB ? teamA : teamB;
       const favoriteWinProbability = Math.max(probabilities.teamA, probabilities.teamB);
       const underdogWinProbability = Math.min(probabilities.teamA, probabilities.teamB);
       const edge = Math.abs(probabilities.teamA - probabilities.teamB);
-      const calendarFixture = fixtureByMatchId(`${group.name}-${index + 1}`);
-      const fixtureOverride = fixtureOverrides.find((entry) => entry.matchId === `${group.name}-${index + 1}`);
+      const calendarFixture = fixtureByMatchId(matchId);
+      const fixtureOverride = fixtureOverrides.find((entry) => entry.matchId === matchId);
       const fixtureInfo = fixtureOverride ? { ...calendarFixture, ...fixtureOverride } : calendarFixture;
-      const matchId = `${group.name}-${index + 1}`;
       const result = resultOverrides.find((entry) => entry.matchId === matchId) ?? resultByMatchId(matchId);
       validateResultTeams(result, matchId, teamA, teamB);
       const predictedScore = predictScore(teamA, teamB, probabilities);
@@ -52,6 +59,8 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
         teamA,
         teamB,
         probabilities,
+        modelProbabilities,
+        marketProbabilities,
         predictedScore,
         tacticalPreview: buildTacticalPreview(matchShell),
         favorite,
