@@ -10,6 +10,7 @@ import { matchProbabilities, simulateTournament } from "./simulator.js";
 import { coachForCountry } from "./teamStaff.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
 import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
+import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-storage";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
@@ -96,9 +97,11 @@ renderNationalStars();
 renderPolicyOddsModel();
 renderHistoryAnalysis();
 runSimulation();
+renderDisplayAds();
 
 elements.simulateButton.addEventListener("click", runSimulation);
 elements.refreshLiveButton.addEventListener("click", refreshRealtimeData);
+document.addEventListener("click", handleAdUnlockClick);
 elements.resetButton.addEventListener("click", () => {
   state.groups = cloneGroups(STARTER_GROUPS);
   renderTeamControls();
@@ -455,6 +458,7 @@ function renderMatchAnalysis(groups, options) {
       `
     )
     .join("");
+  renderDisplayAds();
 }
 
 function renderTodayMatches(matches, todayDate) {
@@ -482,6 +486,7 @@ function renderTodayMatchCard(match) {
       </div>
       <p>${fixture.venue}</p>
       ${renderFreeLeanSummary(match)}
+      ${renderPremiumAnalysis(match, { showDetailAd: true })}
       ${renderTodayTeamData(match)}
       ${renderRecentForm(match)}
       ${renderTacticalPreview(match)}
@@ -506,6 +511,61 @@ function renderFreeLeanSummary(match) {
       </div>
     </div>
   `;
+}
+
+function renderPremiumAnalysis(match, options = {}) {
+  if (isMatchUnlocked(match.id)) {
+    return `
+      <div class="premium-panel unlocked">
+        <div class="premium-head">
+          <span>高级分析已解锁</span>
+          <strong>${simpleLeanLabel(match)}</strong>
+        </div>
+        <div class="forecast-summary">
+          <div>
+            <span>最终比分预测</span>
+            <strong>${countryName(match.teamA.name)} ${match.predictedScore.teamA}-${match.predictedScore.teamB} ${countryName(match.teamB.name)}</strong>
+          </div>
+          <div>
+            <span>胜平负概率</span>
+            <strong>${countryName(match.teamA.name)} ${formatPercent(match.probabilities.teamA)} · 平 ${formatPercent(
+              match.probabilities.draw
+            )} · ${countryName(match.teamB.name)} ${formatPercent(match.probabilities.teamB)}</strong>
+          </div>
+          <div>
+            <span>爆冷指数</span>
+            <strong>${formatPercent(match.upsetOrDrawProbability)}</strong>
+          </div>
+          <div>
+            <span>模型信心值</span>
+            <strong>${premiumConfidence(match)}</strong>
+          </div>
+        </div>
+        <p>${match.tacticalPreview.prediction}</p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="premium-panel locked">
+      <div>
+        <strong>高级分析</strong>
+        <span>包含最终比分预测、胜平负概率、爆冷指数、模型信心值和一句话结论。</span>
+      </div>
+      <button type="button" class="unlock-button" data-ad-unlock-match="${match.id}">观看激励广告查看</button>
+      <p class="unlock-message" data-unlock-message="${match.id}" aria-live="polite"></p>
+      ${options.showDetailAd ? renderDetailAdSlot(match) : ""}
+    </div>
+  `;
+}
+
+function renderDetailAdSlot(match) {
+  return `<div class="ad-slot ad-slot-detail" data-ad-slot="detail" data-match-id="${match.id}" aria-label="比赛详情页信息流广告"><span>广告</span><strong>信息流展示广告位</strong></div>`;
+}
+
+function premiumConfidence(match) {
+  const confidence = Math.abs(match.probabilities.teamA - match.probabilities.teamB);
+  return confidence >= 0.18 ? "中高" : confidence >= 0.08 ? "中等" : "谨慎";
 }
 
 function renderMarketOdds(match) {
@@ -561,6 +621,7 @@ function renderMatchCard(match) {
         <span>简单倾向：${simpleLeanLabel(match)}</span>
         <span>高级分析：比分、概率、爆冷指数需解锁</span>
       </div>
+      ${renderPremiumAnalysis(match)}
       <div class="match-tactic-mini">${match.tacticalPreview.duel}</div>
     </article>
   `;
@@ -588,11 +649,37 @@ function renderCompletedMatchCard(match) {
         <span>实际：${winnerText} · ${hitText}</span>
         <span>高级复盘：预测偏差与赛前概率需解锁</span>
       </div>
+      ${renderPremiumPostMatch(match)}
       <div class="post-match-note">
         <strong>赛后分析</strong>
         <p>${buildPostMatchCopy(match)}</p>
       </div>
     </article>
+  `;
+}
+
+function renderPremiumPostMatch(match) {
+  if (!isMatchUnlocked(match.id)) {
+    return `
+      <div class="premium-panel locked">
+        <div>
+          <strong>高级复盘</strong>
+          <span>包含赛前概率、预测偏差和赛后模型对比。</span>
+        </div>
+        <button type="button" class="unlock-button" data-ad-unlock-match="${match.id}">观看激励广告查看</button>
+        <p class="unlock-message" data-unlock-message="${match.id}" aria-live="polite"></p>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="premium-panel unlocked">
+      <div class="premium-head">
+        <span>高级复盘已解锁</span>
+        <strong>${match.postMatch.predictionHit ? "方向命中" : "方向偏离"}</strong>
+      </div>
+      <p>模型赛前给到该赛果 ${formatPercent(match.postMatch.forecastProbability)}，预测比分为 ${match.predictedScore.label}。</p>
+    </div>
   `;
 }
 
@@ -611,6 +698,76 @@ function simpleLeanLabel(match) {
   const lean = match.probabilities.teamA >= match.probabilities.teamB ? match.teamA : match.teamB;
   const confidence = Math.abs(match.probabilities.teamA - match.probabilities.teamB);
   return confidence >= 0.08 ? `${countryName(lean.name)}不败倾向` : "双方接近";
+}
+
+async function handleAdUnlockClick(event) {
+  const button = event.target.closest("[data-ad-unlock-match]");
+  if (!button) return;
+
+  const matchId = button.dataset.adUnlockMatch;
+  const message = document.querySelector(`[data-unlock-message="${matchId}"]`);
+  button.disabled = true;
+  if (message) message.textContent = "正在准备激励广告...";
+
+  try {
+    const unlocked = await requestRewardedUnlock(matchId);
+    if (unlocked) {
+      if (message) message.textContent = "已解锁。";
+      runSimulation();
+      return;
+    }
+    if (message) message.textContent = "高级分析暂不可用，请稍后再试。";
+  } catch (error) {
+    if (message) message.textContent = "高级分析暂不可用，请稍后再试。";
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function renderDisplayAds() {
+  const config = window.WorldCupAdConfig ?? {};
+  const client = config.adsenseClient;
+  ensureAdSenseScript(client);
+  document.querySelectorAll(".ad-slot[data-ad-slot]").forEach((slot) => {
+    const placement = slot.dataset.adSlot;
+    const adSlot = config.displaySlots?.[placement];
+    const adFormat = config.displayFormats?.[placement] || "auto";
+    if (!client || !adSlot) {
+      slot.classList.add("ad-slot-placeholder");
+      return;
+    }
+
+    slot.innerHTML = `
+      <ins class="adsbygoogle"
+        style="display:block;width:100%;min-width:250px"
+        data-ad-client="${escapeAttribute(client)}"
+        data-ad-slot="${escapeAttribute(adSlot)}"
+        data-ad-format="${escapeAttribute(adFormat)}"
+        data-full-width-responsive="true"></ins>
+    `;
+    window.requestAnimationFrame(() => {
+      try {
+        window.adsbygoogle = window.adsbygoogle || [];
+        window.adsbygoogle.push({});
+      } catch (error) {
+        slot.classList.add("ad-slot-placeholder");
+      }
+    });
+  });
+}
+
+function ensureAdSenseScript(client) {
+  if (!client || document.querySelector("#worldcup-adsense-loader")) return;
+  const script = document.createElement("script");
+  script.id = "worldcup-adsense-loader";
+  script.async = true;
+  script.crossOrigin = "anonymous";
+  script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(client)}`;
+  document.head.appendChild(script);
+}
+
+function escapeAttribute(value) {
+  return String(value).replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
 }
 
 function renderTodayTeamData(match) {

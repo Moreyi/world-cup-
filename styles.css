@@ -219,10 +219,10 @@ button.secondary {
 
 .app-shell {
   display: grid;
-  gap: 18px;
+  gap: 24px;
   width: min(1440px, 100%);
   margin: 0 auto;
-  padding: 28px;
+  padding: 36px 28px 32px;
 }
 
 .overview-cards {
@@ -323,8 +323,8 @@ button.secondary {
 
 .today-match-card {
   display: grid;
-  gap: 14px;
-  padding: 18px 20px;
+  gap: 18px;
+  padding: 24px 28px 26px;
 }
 
 .today-match-meta,
@@ -390,15 +390,15 @@ button.secondary {
 .forecast-summary {
   display: grid;
   grid-template-columns: 1.3fr 1fr 0.8fr;
-  gap: 10px;
+  gap: 14px;
 }
 
 .forecast-summary div {
   display: grid;
-  gap: 5px;
+  gap: 8px;
   border: 1px solid #edf2ee;
   border-radius: 6px;
-  padding: 11px 12px;
+  padding: 16px 18px;
   background: #fbfdfb;
 }
 
@@ -412,6 +412,96 @@ button.secondary {
   color: var(--ink);
   font-size: 0.98rem;
   line-height: 1.35;
+}
+
+.premium-panel {
+  display: grid;
+  gap: 14px;
+  border: 1px solid #dfe8e2;
+  border-radius: 8px;
+  padding: 18px 20px;
+  background: #fbfdfb;
+}
+
+.premium-panel.locked {
+  background: #f7faf8;
+}
+
+.premium-panel.unlocked {
+  border-color: rgba(25, 145, 95, 0.34);
+  background: #f4fbf6;
+}
+
+.premium-panel > div:first-child,
+.premium-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.premium-panel strong {
+  color: var(--ink);
+}
+
+.premium-panel span,
+.premium-panel p {
+  color: var(--muted-strong);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.unlock-button {
+  width: fit-content;
+  border: 0;
+  border-radius: 6px;
+  padding: 12px 18px;
+  color: #fff;
+  background: #15945f;
+  font-weight: 1000;
+  cursor: pointer;
+}
+
+.unlock-button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.unlock-message {
+  min-height: 1.2em;
+}
+
+.ad-slot {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 86px;
+  border: 1px dashed #cfd9d2;
+  border-radius: 8px;
+  padding: 16px;
+  color: var(--muted-strong);
+  background: #f8fbf9;
+  box-sizing: border-box;
+}
+
+.ad-slot .adsbygoogle {
+  width: 100%;
+  min-width: 250px;
+  min-height: 72px;
+}
+
+.ad-slot span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.ad-slot strong {
+  color: var(--ink);
+}
+
+.ad-slot-detail {
+  min-height: 72px;
 }
 
 .upset-matches {
@@ -1749,11 +1839,23 @@ input[type="checkbox"] {
     gap: 12px;
   }
 
+  .today-match-card {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .forecast-summary div,
+  .premium-panel {
+    padding: 14px;
+  }
+
   .today-match-main,
   .today-probs,
   .today-data-grid,
   .recent-form-grid,
-  .forecast-summary {
+  .forecast-summary,
+  .premium-panel > div:first-child,
+  .premium-head {
     align-items: flex-start;
     flex-direction: column;
   }

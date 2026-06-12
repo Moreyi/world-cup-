@@ -68,7 +68,7 @@ function parseMarketOdds(odds) {
   const drawOdds = moneyline.draw?.close?.odds ?? moneyline.draw?.open?.odds ?? odds.drawOdds?.moneyLine ?? null;
 
   return {
-    provider: odds.provider?.displayName ?? odds.provider?.name ?? "公开赔率源",
+    provider: odds.provider?.displayName ?? odds.provider?.name ?? "公开市场源",
     detail: odds.details ?? "",
     overUnder: odds.overUnder ?? null,
     moneyline: {
