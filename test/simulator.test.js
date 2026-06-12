@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { STARTER_GROUPS } from "../src/data.js";
+import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "../src/history.js";
 import { eloExpected, matchProbabilities, simulateGroupStage, simulateTournament } from "../src/simulator.js";
 
 describe("eloExpected", () => {
@@ -41,5 +42,24 @@ describe("simulateTournament", () => {
     const totalWins = results.reduce((sum, team) => sum + team.wins, 0);
     assert.equal(totalWins, 200);
     assert.equal(results.length, 48);
+  });
+});
+
+describe("world cup history summary", () => {
+  it("summarizes completed tournaments from 2002 through 2022", () => {
+    const summary = summarizeHistory(WORLD_CUP_HISTORY);
+    assert.equal(summary.editions, 6);
+    assert.equal(summary.totalGoals, 965);
+    assert.equal(summary.totalMatches, 384);
+    assert.equal(summary.highestScoring.year, 2022);
+    assert.equal(summary.lowestScoring.year, 2010);
+    assert.equal(summary.confederationTitles.UEFA, 4);
+    assert.equal(summary.confederationTitles.CONMEBOL, 2);
+  });
+
+  it("keeps 2026 separate because it is not complete", () => {
+    assert.equal(WORLD_CUP_2026_CONTEXT.teams, 48);
+    assert.equal(WORLD_CUP_2026_CONTEXT.matches, 104);
+    assert.equal(WORLD_CUP_2026_CONTEXT.status, "进行中");
   });
 });

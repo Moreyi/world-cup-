@@ -18,6 +18,7 @@ The app is meant to be transparent and easy to adjust, not a betting model.
 - `index.html` defines the single-page app shell.
 - `styles.css` contains responsive layout and visual design.
 - `src/data.js` contains starter groups and Elo-like ratings.
+- `src/history.js` contains 2002-2022 completed World Cup history plus a separate 2026 context object.
 - `src/simulator.js` contains deterministic RNG, Elo probability, group-stage simulation, knockout simulation, and tournament aggregation.
 - `src/app.js` wires DOM controls to the simulator.
 - `test/simulator.test.js` covers probability invariants and tournament flow.
@@ -30,6 +31,7 @@ python3 -m http.server 8000
 ```
 
 Use `npm test` after changes to `src/simulator.js`, `src/data.js`, or any data contract consumed by the UI.
+Also run it after changes to `src/history.js`; the test suite verifies key historical totals.
 
 ## Model Notes
 
@@ -44,6 +46,8 @@ Use `npm test` after changes to `src/simulator.js`, `src/data.js`, or any data c
 - Starter teams, groups, and ratings are demonstration data.
 - Do not describe the built-in ratings as official or live.
 - If replacing with official fixtures or a current Elo source, document the source, retrieval date, and transformation rules here.
+- Historical chart data covers completed tournaments from 2002 through 2022.
+- The 2026 context is intentionally separate because the tournament is in progress as of 2026-06-12.
 
 ## Maintenance Rules
 
@@ -63,4 +67,4 @@ Use `npm test` after changes to `src/simulator.js`, `src/data.js`, or any data c
 
 - 2026-06-12: Created initial static World Cup Elo forecast app with tests.
 - 2026-06-12: Added shared AI memory files for Claude/Codex co-maintenance.
-
+- 2026-06-12: Added 2002-2022 World Cup historical chart analysis and separate 2026 context panel.

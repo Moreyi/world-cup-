@@ -44,7 +44,8 @@ select {
 
 .control-panel,
 .results-panel,
-.teams-panel {
+.teams-panel,
+.history-panel {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -59,11 +60,13 @@ select {
 }
 
 .results-panel,
-.teams-panel {
+.teams-panel,
+.history-panel {
   padding: 18px;
 }
 
-.teams-panel {
+.teams-panel,
+.history-panel {
   grid-column: 1 / -1;
 }
 
@@ -106,6 +109,12 @@ h1 {
 
 h2 {
   font-size: 1.35rem;
+}
+
+h3 {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0;
 }
 
 .status-pill {
@@ -329,6 +338,188 @@ button.secondary {
   text-align: right;
 }
 
+.history-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.stat-card,
+.analysis-block {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfb;
+}
+
+.stat-card {
+  min-height: 88px;
+  padding: 14px;
+}
+
+.stat-card strong {
+  display: block;
+  font-size: 1.7rem;
+}
+
+.stat-card span,
+.block-head span,
+.final-card span,
+.confed-row span,
+.current-cup p,
+.current-cup dd,
+.current-cup dt,
+.goal-row em {
+  color: var(--muted);
+}
+
+.history-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.analysis-block {
+  padding: 14px;
+}
+
+.analysis-block.wide {
+  grid-column: 1 / -1;
+}
+
+.block-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.goal-chart,
+.confed-chart,
+.finals-timeline,
+.insight-list,
+.current-cup dl {
+  display: grid;
+  gap: 10px;
+}
+
+.goal-row {
+  display: grid;
+  grid-template-columns: 46px minmax(120px, 1fr) 44px 46px;
+  align-items: center;
+  gap: 10px;
+  min-height: 30px;
+  font-variant-numeric: tabular-nums;
+}
+
+.goal-track,
+.confed-track {
+  overflow: hidden;
+  height: 12px;
+  border-radius: 999px;
+  background: #e7ece9;
+}
+
+.goal-track > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--field));
+}
+
+.confed-row {
+  display: grid;
+  gap: 8px;
+}
+
+.confed-row > div:first-child {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.confed-track > div {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--red));
+}
+
+.finals-timeline {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.final-card {
+  display: grid;
+  grid-template-columns: 54px minmax(100px, 1fr) 64px;
+  gap: 10px;
+  min-height: 124px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.final-card > div {
+  display: grid;
+  gap: 2px;
+}
+
+.final-card p {
+  grid-column: 2 / -1;
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+
+.final-year {
+  grid-row: 1 / span 3;
+  color: var(--blue);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.current-badge {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 12px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--field);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.current-cup dl {
+  margin: 0;
+}
+
+.current-cup dl > div {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.current-cup dt {
+  font-weight: 800;
+}
+
+.current-cup dd {
+  margin: 0;
+}
+
+.current-cup p {
+  margin: 12px 0 0;
+  line-height: 1.5;
+}
+
+.insight-list {
+  margin: 0;
+  padding-left: 18px;
+  line-height: 1.55;
+}
+
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
@@ -341,6 +532,16 @@ button.secondary {
   .teams-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .history-stats,
+  .history-layout,
+  .finals-timeline {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .analysis-block.wide {
+    grid-column: auto;
+  }
 }
 
 @media (max-width: 620px) {
@@ -350,7 +551,10 @@ button.secondary {
 
   .settings-grid,
   .matchup-panel,
-  .teams-grid {
+  .teams-grid,
+  .history-stats,
+  .history-layout,
+  .finals-timeline {
     grid-template-columns: 1fr;
   }
 
@@ -375,5 +579,27 @@ button.secondary {
   .brand-row {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .goal-row {
+    grid-template-columns: 42px minmax(90px, 1fr) 42px;
+  }
+
+  .goal-row em {
+    grid-column: 2 / -1;
+  }
+
+  .confed-row > div:first-child,
+  .block-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .final-card {
+    grid-template-columns: 52px 1fr;
+  }
+
+  .final-card p {
+    grid-column: 2 / -1;
   }
 }

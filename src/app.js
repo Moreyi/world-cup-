@@ -1,4 +1,5 @@
 import { STARTER_GROUPS } from "./data.js";
+import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
 
 const state = {
@@ -18,12 +19,20 @@ const elements = {
   topList: document.querySelector("#topList"),
   summary: document.querySelector("#summary"),
   teamsGrid: document.querySelector("#teamsGrid"),
+  historyStats: document.querySelector("#historyStats"),
+  goalChart: document.querySelector("#goalChart"),
+  confedChart: document.querySelector("#confedChart"),
+  finalsTimeline: document.querySelector("#finalsTimeline"),
+  currentCup: document.querySelector("#currentCup"),
+  historyInsights: document.querySelector("#historyInsights"),
+  historySummary: document.querySelector("#historySummary"),
   status: document.querySelector("#status")
 };
 
 renderTeamControls();
 renderSelectors();
 renderMatchup();
+renderHistoryAnalysis();
 runSimulation();
 
 elements.simulateButton.addEventListener("click", runSimulation);
@@ -111,6 +120,83 @@ function renderTeamControls() {
   });
 }
 
+function renderHistoryAnalysis() {
+  const summary = summarizeHistory(WORLD_CUP_HISTORY);
+  const maxGoals = Math.max(...WORLD_CUP_HISTORY.map((cup) => cup.goals));
+  const titleEntries = Object.entries(summary.confederationTitles).sort((a, b) => b[1] - a[1]);
+
+  elements.historySummary.textContent = `${summary.editions} 届完赛世界杯，${summary.totalGoals} 球，场均 ${summary.goalsPerMatch.toFixed(2)} 球`;
+  elements.historyStats.innerHTML = `
+    <div class="stat-card"><strong>${summary.editions}</strong><span>完赛届数</span></div>
+    <div class="stat-card"><strong>${summary.totalGoals}</strong><span>总进球</span></div>
+    <div class="stat-card"><strong>${summary.goalsPerMatch.toFixed(2)}</strong><span>场均进球</span></div>
+    <div class="stat-card"><strong>${WORLD_CUP_2026_CONTEXT.teams}</strong><span>2026 扩军球队</span></div>
+  `;
+
+  elements.goalChart.innerHTML = WORLD_CUP_HISTORY.map((cup) => {
+    const width = (cup.goals / maxGoals) * 100;
+    return `
+      <div class="goal-row">
+        <span>${cup.year}</span>
+        <div class="goal-track" aria-hidden="true"><div style="width: ${width}%"></div></div>
+        <strong>${cup.goals}</strong>
+        <em>${(cup.goals / cup.matches).toFixed(2)}</em>
+      </div>
+    `;
+  }).join("");
+
+  elements.confedChart.innerHTML = titleEntries
+    .map(([confederation, titles]) => {
+      const width = (titles / summary.editions) * 100;
+      return `
+        <div class="confed-row">
+          <div>
+            <strong>${confederation}</strong>
+            <span>${titles} 次冠军，${summary.finalistConfederations[confederation] ?? 0} 次决赛席位</span>
+          </div>
+          <div class="confed-track" aria-hidden="true"><div style="width: ${width}%"></div></div>
+        </div>
+      `;
+    })
+    .join("");
+
+  elements.finalsTimeline.innerHTML = WORLD_CUP_HISTORY.map(
+    (cup) => `
+      <article class="final-card">
+        <div class="final-year">${cup.year}</div>
+        <div>
+          <strong>${cup.champion}</strong>
+          <span>冠军，对 ${cup.runnerUp}</span>
+        </div>
+        <div>
+          <strong>${cup.goals}</strong>
+          <span>总进球</span>
+        </div>
+        <div>
+          <strong>${cup.third}</strong>
+          <span>第三名</span>
+        </div>
+        <p>${cup.finalScore}</p>
+      </article>
+    `
+  ).join("");
+
+  elements.currentCup.innerHTML = `
+    <div class="current-badge">${WORLD_CUP_2026_CONTEXT.status}，截至 ${WORLD_CUP_2026_CONTEXT.statusDate}</div>
+    <dl>
+      <div><dt>东道主</dt><dd>${WORLD_CUP_2026_CONTEXT.hosts}</dd></div>
+      <div><dt>赛程</dt><dd>${WORLD_CUP_2026_CONTEXT.startDate} - ${WORLD_CUP_2026_CONTEXT.finalDate}</dd></div>
+      <div><dt>规模</dt><dd>${WORLD_CUP_2026_CONTEXT.teams} 队，${WORLD_CUP_2026_CONTEXT.matches} 场</dd></div>
+      <div><dt>赛制</dt><dd>${WORLD_CUP_2026_CONTEXT.groups} 个小组，${WORLD_CUP_2026_CONTEXT.knockoutStart} 起淘汰赛</dd></div>
+    </dl>
+    <p>${WORLD_CUP_2026_CONTEXT.note}</p>
+  `;
+
+  elements.historyInsights.innerHTML = buildHistoryInsights(summary)
+    .map((insight) => `<li>${insight}</li>`)
+    .join("");
+}
+
 function renderSelectors() {
   const teams = allTeams();
   elements.teamA.innerHTML = teams.map((team) => `<option>${team.name}</option>`).join("");
@@ -166,4 +252,17 @@ function cloneGroups(groups) {
 
 function formatPercent(value) {
   return `${(value * 100).toFixed(value < 0.01 ? 2 : 1)}%`;
+}
+
+function buildHistoryInsights(summary) {
+  const [mostFinalsTeam, mostFinalsCount] = summary.mostFinals[0];
+  const uefaTitles = summary.confederationTitles.UEFA ?? 0;
+  const conmebolTitles = summary.confederationTitles.CONMEBOL ?? 0;
+  return [
+    `2002-2022 的 ${summary.editions} 届里，UEFA 拿到 ${uefaTitles} 冠，CONMEBOL 拿到 ${conmebolTitles} 冠。`,
+    `${summary.highestScoring.year} 是这一段最高产的一届，共 ${summary.highestScoring.goals} 球。`,
+    `${summary.lowestScoring.year} 是这一段最低产的一届，共 ${summary.lowestScoring.goals} 球。`,
+    `${mostFinalsTeam} 是这段样本里决赛出现最多的球队之一，共 ${mostFinalsCount} 次。`,
+    "2026 扩军到 48 队和 104 场后，历史总量指标需要单独比较，不能直接和 32 队时代等比例对照。"
+  ];
 }
