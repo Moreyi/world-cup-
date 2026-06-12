@@ -29,10 +29,63 @@ export function matchProbabilities(teamA, teamB, options = {}) {
   };
 }
 
+// eloratings.net goal-difference multiplier: 1 for a 0/1-goal margin,
+// 1.5 for two goals, (11 + margin) / 8 for three or more.
+export function goalDifferenceMultiplier(margin) {
+  const absMargin = Math.abs(margin);
+  if (absMargin < 2) return 1;
+  if (absMargin === 2) return 1.5;
+  return (11 + absMargin) / 8;
+}
+
+// Applies finished real results to team Elo using the eloratings.net update
+// rule (K=60 for World Cup finals). Returns new group objects; never mutates
+// the input. Adjustments are returned for display/debugging.
+export function applyMatchResultsToElo(groups, matchResults = [], options = {}) {
+  const kFactor = Number(options.kFactor ?? 60);
+  const updated = groups.map((group) => ({
+    ...group,
+    teams: group.teams.map((team) => ({ ...team }))
+  }));
+  const byName = new Map(
+    updated.flatMap((group) => group.teams.map((team) => [team.name, team]))
+  );
+  const adjustments = [];
+
+  for (const result of matchResults) {
+    if (result?.status !== "final" || !result.teams || !result.score) continue;
+    const teamA = byName.get(result.teams.teamA);
+    const teamB = byName.get(result.teams.teamB);
+    if (!teamA || !teamB) continue;
+
+    const { teamA: goalsA, teamB: goalsB } = result.score;
+    const actual = goalsA > goalsB ? 1 : goalsA === goalsB ? 0.5 : 0;
+    const expected = eloExpected(teamA.elo, teamB.elo);
+    const delta = Math.round(
+      kFactor * goalDifferenceMultiplier(goalsA - goalsB) * (actual - expected)
+    );
+
+    teamA.elo += delta;
+    teamB.elo -= delta;
+    adjustments.push({
+      matchId: result.matchId,
+      teamA: result.teams.teamA,
+      teamB: result.teams.teamB,
+      delta
+    });
+  }
+
+  return { groups: updated, adjustments };
+}
+
 export function simulateTournament(groups, options = {}) {
   const rng = createRng(options.seed ?? 1);
   const counts = new Map();
   const iterations = Math.max(1, Math.floor(options.iterations ?? 1000));
+
+  if (options.dynamicElo !== false && options.matchResults?.length) {
+    groups = applyMatchResultsToElo(groups, options.matchResults, options).groups;
+  }
 
   for (const group of groups) {
     for (const team of group.teams) {
