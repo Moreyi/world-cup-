@@ -21,3 +21,10 @@ Open `http://localhost:8000`.
 - Update `docs/AI_MEMORY.md` whenever project assumptions, model behavior, commands, or data caveats change.
 - Run `npm test` after simulator or data-shape changes.
 
+## Public / Server-Only Boundary
+
+- GitHub may receive only public/free material: daily match list, basic team data, recent form, head-to-head notes, simple model lean, README screenshots, tests, and shared docs.
+- Do not push paid, ad-unlocked, or commercially sensitive content to GitHub.
+- Do not push real ad IDs, Offerwall/Rewarded Ad production config, server IP/SSH/nginx details, tokens, secrets, or private deployment notes.
+- Server-only monetization work should load config from a non-committed local/server file such as `config.local.js`.
+- Ordinary display ad slots must not be used as unlock triggers; rewarded/offerwall flows need a separate compliant interface and a friendly unavailable state.

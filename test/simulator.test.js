@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import { buildClubStarModel, getCountryBoost } from "../src/clubModel.js";
 import { STARTER_GROUPS } from "../src/data.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "../src/history.js";
+import { MATCH_RESULTS } from "../src/liveResults.js";
 import { clubName, countryName, localizeCountryText, positionName } from "../src/localization.js";
 import { buildGroupMatchAnalysis } from "../src/matchAnalysis.js";
 import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "../src/nationalStars.js";
@@ -132,13 +133,21 @@ describe("match-by-match analysis", () => {
   it("marks completed matches with scores and post-match analysis", () => {
     const analysis = buildGroupMatchAnalysis(STARTER_GROUPS);
     const opener = analysis.matches.find((match) => match.id === "A-1");
+    const completedResults = MATCH_RESULTS.filter((result) => result.status === "final");
+    const totalGoals = completedResults.reduce((sum, result) => sum + result.score.teamA + result.score.teamB, 0);
+    const openerResult = MATCH_RESULTS.find((result) => result.matchId === "A-1");
 
-    assert.equal(analysis.summary.completedMatches, 2);
-    assert.equal(analysis.summary.totalGoals, 5);
+    assert.equal(analysis.summary.completedMatches, completedResults.length);
+    assert.equal(analysis.summary.totalGoals, totalGoals);
     assert.equal(opener.result.status, "final");
-    assert.deepEqual(opener.result.score, { teamA: 2, teamB: 0 });
-    assert.equal(opener.postMatch.points.teamA, 3);
+    assert.deepEqual(opener.result.score, openerResult.score);
+    assert.equal(opener.postMatch.points.teamA, openerResult.score.teamA > openerResult.score.teamB ? 3 : openerResult.score.teamA === openerResult.score.teamB ? 1 : 0);
     assert.ok(opener.postMatch.forecastProbability > 0);
+    assert.equal(opener.postMatch.predictionHit, true);
+  });
+
+  it("builds completed-match analysis only when result teams match the modeled fixture", () => {
+    assert.doesNotThrow(() => buildGroupMatchAnalysis(STARTER_GROUPS));
   });
 
   it("surfaces today's matches as a separate feed", () => {

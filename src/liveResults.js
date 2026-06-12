@@ -3,7 +3,7 @@ export const RESULT_SNAPSHOT = {
   sourceNote: "人工核验比分快照；只录入已结束比赛，未结束比赛继续展示赛前模型概率。",
   sources: [
     {
-      name: "FIFA Match Centre",
+      name: "赛事信息页",
       url: "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026"
     },
     {
@@ -43,7 +43,7 @@ export const MATCH_CALENDAR = [
         url: "https://www.espn.com/soccer/match/_/gameId/760416"
       },
       {
-        label: "FIFA Match Centre",
+        label: "赛事信息页",
         url: "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026"
       }
     ]
@@ -61,7 +61,7 @@ export const MATCH_CALENDAR = [
         url: "https://www.espn.com/soccer/match/_/gameId/760417"
       },
       {
-        label: "FIFA Match Centre",
+        label: "赛事信息页",
         url: "https://www.fifa.com/en/tournaments/mens/worldcup/canadamexicousa2026"
       }
     ]
@@ -71,6 +71,7 @@ export const MATCH_CALENDAR = [
 export const MATCH_RESULTS = [
   {
     matchId: "A-1",
+    teams: { teamA: "Mexico", teamB: "South Africa" },
     status: "final",
     date: "2026-06-11",
     venue: "Estadio Azteca, Mexico City",
@@ -79,6 +80,7 @@ export const MATCH_RESULTS = [
   },
   {
     matchId: "A-2",
+    teams: { teamA: "South Korea", teamB: "Czechia" },
     status: "final",
     date: "2026-06-11",
     venue: "Estadio Azteca, Mexico City",

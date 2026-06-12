@@ -102,6 +102,8 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - `src/matchAnalysis.js` currently covers all 72 group-stage matches generated from the 12 groups in `src/data.js`.
 - Pairing order is a stable modeled schedule: 1v2, 3v4, 1v3, 4v2, 4v1, 2v3.
 - Each row shows win/draw/win probabilities, favorite, match profile, and upset-or-draw probability. Completed matches from `src/liveResults.js` show final score, model hit/deviation, and points/goal-difference impact. Today's fixtures are also surfaced as a separate homepage rail before the full 72-match list.
+- `predictionHit` means the real outcome matched the modal pre-match outcome: whichever of team A win, draw, or team B win had the highest modeled probability. Draws are not automatically counted as hits.
+- `src/liveResults.js` final-result rows include redundant English team keys (`teams.teamA` / `teams.teamB`) and `src/matchAnalysis.js` validates them against the generated fixture before attaching scores, so reordered group data fails loudly instead of silently misassigning scores.
 - Champion predictions now apply final group-stage results before simulating remaining group matches, so already-completed games change qualification and title probabilities.
 - The "更新实时数据" button fetches the ESPN scoreboard client-side. Available odds are shown only as public market/odds direction, not as global betting volume or betting advice.
 - Each match now has a model predicted score and tactical preview. Today's match cards show richer team data: Elo, coach, core stars, predicted score, tactical matchup, and forecast explanation.
@@ -137,6 +139,14 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - If adding external data import/export, preserve the current built-in demo mode.
 - When a future agent learns an important durable fact, add it to this file.
 
+## Public / Server-Only Boundary
+
+- GitHub is allowed to receive only public/free material: daily match list, basic team information, recent form, head-to-head notes, simple model lean, README screenshots, tests, and shared documentation.
+- Paid, ad-unlocked, or commercially sensitive content must stay off GitHub.
+- Real ad IDs, Google Offerwall/Rewarded Ad production config, server IP/SSH/nginx details, tokens, secrets, and private deployment notes must not be committed.
+- Server-only monetization work should load configuration from a non-committed local/server file such as `config.local.js`.
+- Ordinary display ad slots are for display only and must not be used as unlock triggers. Rewarded/offerwall flows need a separate compliant interface and a friendly unavailable state.
+
 ## Known Environment Notes
 
 - Local git commits exist in this workspace.
@@ -161,3 +171,5 @@ Run it after changes to `src/localization.js`; the test suite checks representat
 - 2026-06-12: Added a standalone "今日比赛" rail for Canada vs Bosnia and Herzegovina plus United States vs Paraguay, using the same model probability feed while keeping the full match analysis list below.
 - 2026-06-12: Added live data refresh from ESPN scoreboard, public odds direction display, an upset prediction rail, hour-level ET/Beijing kickoff display, coach data, player Chinese/English display metadata, and current-result-adjusted champion simulation.
 - 2026-06-12: Added model predicted scores and richer tactical previews for each match, with expanded same-day match cards for coach/core-player/model/tactical context.
+- 2026-06-12: Tightened completed-match analysis: model-hit stats now use modal-outcome matching, final-result rows carry redundant team keys, and result-to-fixture joins validate team names before attaching scores.
+- 2026-06-12: Documented the public/server-only boundary for Claude and future agents: GitHub may sync free daily data and public screenshots, while ad unlocks, paid content, production ad config, and server details remain server-only.

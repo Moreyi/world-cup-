@@ -32,7 +32,9 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
       const calendarFixture = fixtureByMatchId(`${group.name}-${index + 1}`);
       const fixtureOverride = fixtureOverrides.find((entry) => entry.matchId === `${group.name}-${index + 1}`);
       const fixtureInfo = fixtureOverride ? { ...calendarFixture, ...fixtureOverride } : calendarFixture;
-      const result = resultOverrides.find((entry) => entry.matchId === `${group.name}-${index + 1}`) ?? resultByMatchId(`${group.name}-${index + 1}`);
+      const matchId = `${group.name}-${index + 1}`;
+      const result = resultOverrides.find((entry) => entry.matchId === matchId) ?? resultByMatchId(matchId);
+      validateResultTeams(result, matchId, teamA, teamB);
       const predictedScore = predictScore(teamA, teamB, probabilities);
       const matchShell = {
         teamA,
@@ -42,7 +44,7 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
       };
 
       return {
-        id: `${group.name}-${index + 1}`,
+        id: matchId,
         group: group.name,
         matchday: fixture.matchday,
         window: fixtureInfo?.date ?? MATCHDAY_WINDOWS[fixture.matchday],
@@ -58,7 +60,7 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
         upsetOrDrawProbability: underdogWinProbability + probabilities.draw,
         edge,
         result,
-        postMatch: result ? analyzeResult(result, probabilities, teamA, teamB, favorite) : null,
+        postMatch: result ? analyzeResult(result, probabilities, teamA, teamB) : null,
         profile: result?.status === "final" ? "已结束" : result?.status === "live" ? "进行中" : classifyMatch(edge, probabilities.draw)
       };
     })
@@ -72,6 +74,15 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
     upsetMatches: buildUpsetMatches(matches),
     resultSnapshot: RESULT_SNAPSHOT
   };
+}
+
+function validateResultTeams(result, matchId, teamA, teamB) {
+  if (!result?.teams) return;
+  if (result.teams.teamA === teamA.name && result.teams.teamB === teamB.name) return;
+
+  throw new Error(
+    `Result team mismatch for ${matchId}: expected ${result.teams.teamA} vs ${result.teams.teamB}, actual ${teamA.name} vs ${teamB.name}`
+  );
 }
 
 function predictScore(teamA, teamB, probabilities) {
@@ -130,17 +141,15 @@ function summarizeMatches(matches) {
   };
 }
 
-function analyzeResult(result, probabilities, teamA, teamB, favorite) {
+function analyzeResult(result, probabilities, teamA, teamB) {
   const goalsA = result.score.teamA;
   const goalsB = result.score.teamB;
   const actualOutcome = goalsA > goalsB ? "teamA" : goalsB > goalsA ? "teamB" : "draw";
   const actualWinner = actualOutcome === "teamA" ? teamA : actualOutcome === "teamB" ? teamB : null;
   const forecastProbability =
     actualOutcome === "teamA" ? probabilities.teamA : actualOutcome === "teamB" ? probabilities.teamB : probabilities.draw;
-  const predictionHit =
-    (actualOutcome === "teamA" && favorite.name === teamA.name) ||
-    (actualOutcome === "teamB" && favorite.name === teamB.name) ||
-    actualOutcome === "draw";
+  const modalOutcome = modalProbabilityOutcome(probabilities);
+  const predictionHit = actualOutcome === modalOutcome;
   const margin = Math.abs(goalsA - goalsB);
   const deviationScore = Number((1 - forecastProbability + Math.min(margin, 4) * 0.04).toFixed(4));
 
@@ -160,6 +169,14 @@ function analyzeResult(result, probabilities, teamA, teamB, favorite) {
       teamB: goalsB - goalsA
     }
   };
+}
+
+function modalProbabilityOutcome(probabilities) {
+  return [
+    ["teamA", probabilities.teamA],
+    ["draw", probabilities.draw],
+    ["teamB", probabilities.teamB]
+  ].sort((a, b) => b[1] - a[1])[0][0];
 }
 
 function buildUpsetMatches(matches) {
