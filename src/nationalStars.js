@@ -165,6 +165,17 @@ export const NATIONAL_STAR_PROFILES = [
     ]
   },
   {
+    country: "Bosnia and Herzegovina",
+    tier: "附加赛韧性队",
+    outlook: "Dzeko 的支点和经验仍是进攻轴心，年轻中场负责提高转换速度。",
+    stars: [
+      star("Edin Dzeko", "Forward", "Schalke", 82, 92, 78, "经验高值"),
+      star("Ermedin Demirovic", "Forward", "Stuttgart", 82, 82, 84, "稳定"),
+      star("Benjamin Tahirovic", "Midfielder", "National Team Pool", 78, 78, 84, "上升"),
+      star("Armin Gigovic", "Midfielder", "National Team Pool", 78, 78, 84, "上升")
+    ]
+  },
+  {
     country: "Japan",
     tier: "体系强队",
     outlook: "整体技术、压迫和留洋深度都好，淘汰赛需要更高终结效率。",
@@ -195,6 +206,17 @@ export const NATIONAL_STAR_PROFILES = [
       star("James Rodriguez", "Midfielder", "Leon", 78, 86, 76, "经验高值"),
       star("Jhon Duran", "Forward", "Al Nassr", 80, 78, 84, "上升"),
       star("Davinson Sanchez", "Defender", "Galatasaray", 78, 78, 82, "稳定")
+    ]
+  },
+  {
+    country: "Paraguay",
+    tier: "低位反击队",
+    outlook: "中后场对抗和定位球是基本盘，前场需要 Enciso/Sanabria 把少量机会转成进球。",
+    stars: [
+      star("Gustavo Gomez", "Defender", "Palmeiras", 82, 88, 86, "队长核心"),
+      star("Omar Alderete", "Defender", "Sunderland", 80, 82, 84, "稳定"),
+      star("Diego Gomez", "Midfielder", "Brighton & Hove Albion", 80, 80, 86, "上升"),
+      star("Antonio Sanabria", "Forward", "Cremonese", 80, 82, 82, "关键进球")
     ]
   },
   {
@@ -315,6 +337,10 @@ function starMetadata(name) {
   "Jonathan David": meta("David", "乔纳森·戴维"),
   "Tajon Buchanan": meta("Buchanan", "布坎南"),
   "Stephen Eustaquio": meta("Eustaquio", "尤斯塔基奥"),
+  "Edin Dzeko": meta("Dzeko", "哲科"),
+  "Ermedin Demirovic": meta("Demirovic", "德米罗维奇"),
+  "Benjamin Tahirovic": meta("Tahirovic", "塔希罗维奇"),
+  "Armin Gigovic": meta("Gigovic", "吉戈维奇"),
   "Takefusa Kubo": meta("Kubo", "久保建英"),
   "Kaoru Mitoma": meta("Mitoma", "三笘薰"),
   "Wataru Endo": meta("Endo", "远藤航"),
@@ -327,6 +353,10 @@ function starMetadata(name) {
   "James Rodriguez": meta("James", "哈梅斯·罗德里格斯"),
   "Jhon Duran": meta("Duran", "约翰·杜兰"),
   "Davinson Sanchez": meta("Sanchez", "达文森·桑切斯"),
+  "Gustavo Gomez": meta("G. Gomez", "古斯塔沃·戈麦斯"),
+  "Omar Alderete": meta("Alderete", "阿尔德雷特"),
+  "Diego Gomez": meta("D. Gomez", "迭戈·戈麦斯"),
+  "Antonio Sanabria": meta("Sanabria", "萨纳布里亚"),
   "Erling Haaland": meta("Haaland", "哈兰德"),
   "Martin Odegaard": meta("Odegaard", "厄德高"),
   "Alexander Sorloth": meta("Sorloth", "瑟洛特"),

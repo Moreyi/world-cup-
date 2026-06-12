@@ -660,7 +660,14 @@ function renderTeamDataPanel(team) {
   const coach = coachForCountry(team.name);
   const stars = (profile?.stars ?? []).filter((star) => star.shortName && star.chineseName).slice(0, 3);
   const starLine = stars.length
-    ? stars.map((star) => `${star.shortName}/${star.chineseName}${star.marketValueEurM ? ` ${formatMarketValue(star.marketValueEurM)}` : ""}`).join("、")
+    ? stars
+        .map(
+          (star) =>
+            `${star.shortName}/${star.chineseName} ${positionName(star.position)} ${star.trend}${
+              star.marketValueEurM ? ` ${formatMarketValue(star.marketValueEurM)}` : ""
+            }`
+        )
+        .join("、")
     : "待补核心球员";
   return `
     <div class="today-team-data">
@@ -686,6 +693,7 @@ function renderRecentFormPanel(country) {
   return `
     <div class="recent-form-card">
       <strong>${countryName(country)} 近赛</strong>
+      <span>${form.multiYear}</span>
       <span>${form.summary}</span>
       <ul>
         ${
@@ -711,6 +719,7 @@ function renderTacticalPreview(match) {
         <span>${tactic.teamB.shape} · ${tactic.teamB.style}</span>
       </div>
       <p><b>战术对抗</b>${tactic.duel}</p>
+      <p><b>主帅重点</b>${tactic.teamA.coachPlan} / ${tactic.teamB.coachPlan}</p>
       <p><b>预测判断</b>${tactic.prediction}</p>
       <p><b>数据说明</b>${tactic.dataNote}</p>
     </div>
