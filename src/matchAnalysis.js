@@ -2,6 +2,8 @@ import { matchProbabilities } from "./simulator.js";
 import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260612-tactic";
 import { buildTacticalPreview } from "./teamTactics.js";
 import { fuseProbabilities, marketProbabilitiesForMatch } from "./marketFusion.js";
+import { fullFixtureByMatchId } from "./fixtureCalendar.js";
+import { venueEloBoost } from "./venueFactors.js";
 
 const GROUP_PAIRINGS = [
   { matchday: 1, pair: [0, 1] },
@@ -26,7 +28,19 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
       const teamA = group.teams[fixture.pair[0]];
       const teamB = group.teams[fixture.pair[1]];
       const matchId = `${group.name}-${index + 1}`;
-      const modelProbabilities = matchProbabilities(teamA, teamB, options);
+      // Fixture info: full generated calendar < manually verified entry < explicit override.
+      const fullFixture = fullFixtureByMatchId(matchId);
+      const calendarFixture = fixtureByMatchId(matchId);
+      const baseFixture = fullFixture || calendarFixture ? { ...fullFixture, ...calendarFixture } : null;
+      const fixtureOverride = fixtureOverrides.find((entry) => entry.matchId === matchId);
+      const fixtureInfo = fixtureOverride ? { ...baseFixture, ...fixtureOverride } : baseFixture;
+      // Altitude venues (Mexico City/Guadalajara) boost acclimatized teams for
+      // probability purposes only; displayed base Elo stays untouched.
+      const venueBoostA = venueEloBoost(teamA.name, fixtureInfo?.venue);
+      const venueBoostB = venueEloBoost(teamB.name, fixtureInfo?.venue);
+      const ratedTeamA = venueBoostA ? { ...teamA, elo: teamA.elo + venueBoostA } : teamA;
+      const ratedTeamB = venueBoostB ? { ...teamB, elo: teamB.elo + venueBoostB } : teamB;
+      const modelProbabilities = matchProbabilities(ratedTeamA, ratedTeamB, options);
       const marketProbabilities = marketProbabilitiesForMatch(matchId);
       // Published probabilities fuse real market odds when we have them;
       // modelProbabilities stays pure for review/Brier tracking.
@@ -37,9 +51,6 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
       const favoriteWinProbability = Math.max(probabilities.teamA, probabilities.teamB);
       const underdogWinProbability = Math.min(probabilities.teamA, probabilities.teamB);
       const edge = Math.abs(probabilities.teamA - probabilities.teamB);
-      const calendarFixture = fixtureByMatchId(matchId);
-      const fixtureOverride = fixtureOverrides.find((entry) => entry.matchId === matchId);
-      const fixtureInfo = fixtureOverride ? { ...calendarFixture, ...fixtureOverride } : calendarFixture;
       const result = resultOverrides.find((entry) => entry.matchId === matchId) ?? resultByMatchId(matchId);
       validateResultTeams(result, matchId, teamA, teamB);
       const predictedScore = predictScore(teamA, teamB, probabilities);
@@ -61,6 +72,10 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
         probabilities,
         modelProbabilities,
         marketProbabilities,
+        venueFactor:
+          venueBoostA || venueBoostB
+            ? { venue: fixtureInfo?.venue, teamA: venueBoostA, teamB: venueBoostB }
+            : null,
         predictedScore,
         tacticalPreview: buildTacticalPreview(matchShell),
         favorite,

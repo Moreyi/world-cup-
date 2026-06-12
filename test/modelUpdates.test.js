@@ -133,3 +133,39 @@ test("market fusion", async (t) => {
     assert.equal(marketProbabilitiesForMatch("Z-9"), null);
   });
 });
+
+test("fixture calendar and venue factors", async (t) => {
+  const { FULL_MATCH_CALENDAR } = await import("../src/fixtureCalendar.js");
+  const { venueEloBoost, venueAltitudeM } = await import("../src/venueFactors.js");
+  const { buildGroupMatchAnalysis } = await import("../src/matchAnalysis.js");
+
+  await t.test("covers all 72 group matches with dates and venues", () => {
+    const ids = Object.keys(FULL_MATCH_CALENDAR);
+    assert.equal(ids.length, 72);
+    for (const id of ids) {
+      const entry = FULL_MATCH_CALENDAR[id];
+      assert.ok(entry.dateTime && entry.venue && entry.date, `${id} incomplete`);
+    }
+    assert.equal(FULL_MATCH_CALENDAR["A-1"].dateTime, "2026-06-11T19:00:00Z");
+    assert.match(FULL_MATCH_CALENDAR["A-3"].venue, /Akron/);
+  });
+
+  await t.test("boosts acclimatized teams at altitude only", () => {
+    assert.equal(venueAltitudeM("Estadio Banorte"), 2240);
+    assert.equal(venueAltitudeM("Mexico City Stadium"), 2240);
+    assert.equal(venueEloBoost("Mexico", "Estadio Banorte"), 40);
+    assert.equal(venueEloBoost("Mexico", "Estadio Akron, Guadalajara"), 28);
+    assert.equal(venueEloBoost("Czechia", "Estadio Banorte"), 0);
+    assert.equal(venueEloBoost("Mexico", "SoFi Stadium"), 0);
+    assert.equal(venueEloBoost("Ecuador", "Estadio Akron"), 28);
+  });
+
+  await t.test("every analysis row gets fixture info and altitude flows into probabilities", () => {
+    const analysis = buildGroupMatchAnalysis(STARTER_GROUPS, { seed: 3 });
+    assert.ok(analysis.matches.every((match) => match.fixture?.venue));
+    const a3 = analysis.matches.find((match) => match.id === "A-3");
+    assert.ok(a3.venueFactor && a3.venueFactor.teamA === 28, "Mexico at Akron should carry +28");
+    const b1 = analysis.matches.find((match) => match.id === "B-1");
+    assert.equal(b1.venueFactor, null);
+  });
+});
