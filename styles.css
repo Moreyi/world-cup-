@@ -48,7 +48,8 @@ select {
 .history-panel,
 .club-model-panel,
 .policy-odds-panel,
-.match-analysis-panel {
+.match-analysis-panel,
+.trend-panel {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -67,7 +68,8 @@ select {
 .history-panel,
 .club-model-panel,
 .policy-odds-panel,
-.match-analysis-panel {
+.match-analysis-panel,
+.trend-panel {
   padding: 18px;
 }
 
@@ -75,7 +77,8 @@ select {
 .history-panel,
 .club-model-panel,
 .policy-odds-panel,
-.match-analysis-panel {
+.match-analysis-panel,
+.trend-panel {
   grid-column: 1 / -1;
 }
 
@@ -363,7 +366,8 @@ button.secondary {
 
 .history-stats,
 .model-stats,
-.match-stats {
+.match-stats,
+.trend-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
@@ -400,7 +404,8 @@ button.secondary {
 
 .history-layout,
 .club-model-layout,
-.policy-odds-layout {
+.policy-odds-layout,
+.trend-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
@@ -673,6 +678,100 @@ button.secondary {
   font-variant-numeric: tabular-nums;
 }
 
+.trend-table,
+.trend-change-list {
+  display: grid;
+  gap: 10px;
+}
+
+.trend-row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) minmax(160px, 1fr) minmax(220px, 1.4fr) 72px;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.trend-team {
+  display: grid;
+  grid-template-columns: 28px minmax(86px, 1fr);
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.trend-team span {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.trend-team em {
+  grid-column: 2;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: normal;
+}
+
+.trend-spark {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  align-items: end;
+  gap: 6px;
+  height: 42px;
+}
+
+.trend-point {
+  display: flex;
+  align-items: end;
+  height: 100%;
+  border-radius: 999px;
+  background: #e7ece9;
+}
+
+.trend-point > div {
+  width: 100%;
+  min-height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--blue), var(--field));
+}
+
+.trend-values {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(44px, 1fr));
+  gap: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.trend-row b,
+.trend-change-row strong {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.positive {
+  color: var(--field);
+}
+
+.negative {
+  color: var(--red);
+}
+
+.trend-change-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1fr) 70px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
 .model-note {
   margin: 12px 0 0;
   line-height: 1.5;
@@ -785,9 +884,11 @@ button.secondary {
   .history-stats,
   .model-stats,
   .match-stats,
+  .trend-stats,
   .history-layout,
   .club-model-layout,
   .policy-odds-layout,
+  .trend-layout,
   .finals-timeline,
   .star-impact-grid,
   .external-boost-grid,
@@ -811,9 +912,11 @@ button.secondary {
   .history-stats,
   .model-stats,
   .match-stats,
+  .trend-stats,
   .history-layout,
   .club-model-layout,
   .policy-odds-layout,
+  .trend-layout,
   .finals-timeline,
   .match-groups {
     grid-template-columns: 1fr;
@@ -883,6 +986,18 @@ button.secondary {
 
   .final-card p {
     grid-column: 2 / -1;
+  }
+
+  .trend-row {
+    grid-template-columns: 1fr;
+  }
+
+  .trend-values {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .trend-row b {
+    text-align: left;
   }
 
   .match-meta,

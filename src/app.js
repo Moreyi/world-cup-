@@ -4,6 +4,7 @@ import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./h
 import { buildGroupMatchAnalysis } from "./matchAnalysis.js";
 import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
+import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
@@ -26,6 +27,12 @@ const elements = {
   resetButton: document.querySelector("#resetButton"),
   topList: document.querySelector("#topList"),
   summary: document.querySelector("#summary"),
+  trendSummary: document.querySelector("#trendSummary"),
+  trendStats: document.querySelector("#trendStats"),
+  trendScenarioLabels: document.querySelector("#trendScenarioLabels"),
+  trendTable: document.querySelector("#trendTable"),
+  trendRisers: document.querySelector("#trendRisers"),
+  trendFallers: document.querySelector("#trendFallers"),
   matchAnalysisSummary: document.querySelector("#matchAnalysisSummary"),
   matchStats: document.querySelector("#matchStats"),
   matchGroups: document.querySelector("#matchGroups"),
@@ -93,8 +100,10 @@ function runSimulation() {
   requestAnimationFrame(() => {
     const startedAt = performance.now();
     const results = simulateTournament(groups, options);
+    const trend = runTrendAnalysis(options);
     const elapsed = Math.round(performance.now() - startedAt);
     renderResults(results, options.iterations, elapsed);
+    renderTrendAnalysis(trend);
     renderMatchAnalysis(groups, options);
     renderMatchup();
     elements.status.textContent = "Done";
@@ -114,6 +123,82 @@ function renderResults(results, iterations, elapsed) {
           <strong>${team.name}</strong>
           <div class="bar" aria-hidden="true"><div style="width: ${(team.winProbability / max) * 100}%"></div></div>
           <div class="pct">${formatPercent(team.winProbability)}</div>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function runTrendAnalysis(options) {
+  const trendIterations = Math.min(options.iterations, 2000);
+  const scenarioResults = {};
+
+  for (const scenario of TREND_SCENARIOS) {
+    const scenarioOptions = {
+      ...options,
+      ...scenario.options,
+      iterations: trendIterations
+    };
+    scenarioResults[scenario.id] = simulateTournament(applySelectedBoosts(state.groups, scenarioOptions), scenarioOptions);
+  }
+
+  return {
+    ...buildForecastTrend(scenarioResults, TREND_SCENARIOS),
+    iterations: trendIterations
+  };
+}
+
+function renderTrendAnalysis(trend) {
+  const maxProbability = Math.max(...trend.leaders.map((row) => row.finalProbability), 0.01);
+  elements.trendSummary.textContent = `${trend.iterations.toLocaleString()} 次/阶段，观察 ${trend.scenarios.length} 个模型阶段`;
+  elements.trendScenarioLabels.textContent = trend.scenarios.map((scenario) => scenario.label).join(" / ");
+  elements.trendStats.innerHTML = `
+    <div class="stat-card"><strong>${trend.summary.leader.name}</strong><span>全模型最高 ${formatPercent(trend.summary.leader.finalProbability)}</span></div>
+    <div class="stat-card"><strong>${trend.summary.biggestRiser.name}</strong><span>最大上升 ${formatDelta(trend.summary.biggestRiser.delta)}</span></div>
+    <div class="stat-card"><strong>${trend.summary.biggestFaller.name}</strong><span>最大回落 ${formatDelta(trend.summary.biggestFaller.delta)}</span></div>
+    <div class="stat-card"><strong>${trend.summary.mostVolatile.name}</strong><span>波动 ${formatPercent(trend.summary.mostVolatile.volatility)}</span></div>
+  `;
+
+  elements.trendTable.innerHTML = trend.leaders
+    .map(
+      (row, index) => `
+        <article class="trend-row">
+          <div class="trend-team">
+            <span>${index + 1}</span>
+            <strong>${row.name}</strong>
+            <em>${row.direction}</em>
+          </div>
+          <div class="trend-spark" aria-hidden="true">
+            ${row.values
+              .map(
+                (value) => `
+                  <div class="trend-point">
+                    <div style="height: ${Math.max(8, (value / maxProbability) * 100)}%"></div>
+                  </div>
+                `
+              )
+              .join("")}
+          </div>
+          <div class="trend-values">
+            ${row.values.map((value) => `<span>${formatPercent(value)}</span>`).join("")}
+          </div>
+          <b class="${row.delta >= 0 ? "positive" : "negative"}">${formatDelta(row.delta)}</b>
+        </article>
+      `
+    )
+    .join("");
+
+  elements.trendRisers.innerHTML = renderTrendChangeList(trend.risers);
+  elements.trendFallers.innerHTML = renderTrendChangeList(trend.fallers);
+}
+
+function renderTrendChangeList(rows) {
+  return rows
+    .map(
+      (row) => `
+        <div class="trend-change-row">
+          <span>${row.name}</span>
+          <strong class="${row.delta >= 0 ? "positive" : "negative"}">${formatDelta(row.delta)}</strong>
         </div>
       `
     )
@@ -480,6 +565,11 @@ function cloneGroups(groups) {
 
 function formatPercent(value) {
   return `${(value * 100).toFixed(value < 0.01 ? 2 : 1)}%`;
+}
+
+function formatDelta(value) {
+  const sign = value >= 0 ? "+" : "";
+  return `${sign}${(value * 100).toFixed(1)}pp`;
 }
 
 function formatFixture(match) {

@@ -22,6 +22,7 @@ The app is meant to be transparent and easy to adjust, not a betting model.
 - `src/history.js` contains 2002-2022 completed World Cup history plus a separate 2026 context object.
 - `src/matchAnalysis.js` creates group-stage match-by-match probability rows from the current team data and selected model options.
 - `src/policyOddsModel.js` contains external policy/logistics factors and an odds snapshot converted into model boosts.
+- `src/trendAnalysis.js` compares championship probabilities across model stages.
 - `src/simulator.js` contains deterministic RNG, Elo probability, group-stage simulation, knockout simulation, and tournament aggregation.
 - `src/app.js` wires DOM controls to the simulator.
 - `test/simulator.test.js` covers probability invariants and tournament flow.
@@ -38,6 +39,7 @@ Also run it after changes to `src/history.js`; the test suite verifies key histo
 Run it after changes to `src/clubModel.js`; the test suite checks model shape and country boost behavior.
 Run it after changes to `src/policyOddsModel.js`; the test suite checks odds conversion and boost lookup behavior.
 Run it after changes to `src/matchAnalysis.js`; the test suite checks 72 group-stage matches and normalized result distributions.
+Run it after changes to `src/trendAnalysis.js`; the test suite checks stage comparison and riser/faller ranking.
 
 ## Model Notes
 
@@ -73,6 +75,13 @@ Run it after changes to `src/matchAnalysis.js`; the test suite checks 72 group-s
 - It reflects the currently selected model layers in the UI because `src/app.js` passes boosted groups into `buildGroupMatchAnalysis`.
 - Future real-result tracking should add actual score fields and prediction-error calculations without replacing this forecast mode.
 
+## Forecast Trend Notes
+
+- `src/trendAnalysis.js` compares four stages: pure Elo, form, form+policy, and full model.
+- In the UI, trend simulations are capped at 2000 iterations per stage to keep the browser responsive.
+- The trend is a model-layer sensitivity curve, not live odds movement or real-match momentum.
+- Keep trend output focused on probability change, risers/fallers, and volatility.
+
 ## Data Caveats
 
 - Starter teams, groups, and ratings are demonstration data.
@@ -105,3 +114,4 @@ Run it after changes to `src/matchAnalysis.js`; the test suite checks 72 group-s
 - 2026-06-12: Added post-2022 club/star form model and optional Elo boost switch.
 - 2026-06-12: Added international policy/external environment model and odds calibration switch.
 - 2026-06-12: Added match-by-match group-stage result probability charts.
+- 2026-06-12: Added forecast trend analysis across model stages.

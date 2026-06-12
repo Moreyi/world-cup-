@@ -93,6 +93,40 @@
         <div class="top-list" id="topList"></div>
       </section>
 
+      <section class="trend-panel" aria-label="预测走势分析">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Forecast Trend</p>
+            <h2>预测走势分析</h2>
+          </div>
+          <p id="trendSummary">纯 Elo 到全模型的概率变化。</p>
+        </div>
+        <div class="trend-stats" id="trendStats"></div>
+        <div class="trend-layout">
+          <article class="analysis-block wide">
+            <div class="block-head">
+              <h3>夺冠概率走势</h3>
+              <span id="trendScenarioLabels">纯 Elo / 状态 / 政策 / 赔率</span>
+            </div>
+            <div class="trend-table" id="trendTable"></div>
+          </article>
+          <article class="analysis-block">
+            <div class="block-head">
+              <h3>上升最快</h3>
+              <span>全模型 - 纯 Elo</span>
+            </div>
+            <div class="trend-change-list" id="trendRisers"></div>
+          </article>
+          <article class="analysis-block">
+            <div class="block-head">
+              <h3>回落最大</h3>
+              <span>全模型 - 纯 Elo</span>
+            </div>
+            <div class="trend-change-list" id="trendFallers"></div>
+          </article>
+        </div>
+      </section>
+
       <section class="match-analysis-panel" aria-label="每场比赛结果图分析">
         <div class="section-head">
           <div>

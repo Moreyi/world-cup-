@@ -11,6 +11,7 @@ import {
   getPolicyBoost
 } from "../src/policyOddsModel.js";
 import { eloExpected, matchProbabilities, simulateGroupStage, simulateTournament } from "../src/simulator.js";
+import { TREND_SCENARIOS, buildForecastTrend } from "../src/trendAnalysis.js";
 
 describe("eloExpected", () => {
   it("returns 50% for equal ratings", () => {
@@ -116,5 +117,33 @@ describe("match-by-match analysis", () => {
       const total = match.probabilities.teamA + match.probabilities.draw + match.probabilities.teamB;
       assert.ok(Math.abs(total - 1) < 1e-12);
     }
+  });
+});
+
+describe("forecast trend analysis", () => {
+  it("compares model stages and ranks trend leaders", () => {
+    const scenarioResults = {
+      base: [
+        { name: "France", group: "I", elo: 2030, winProbability: 0.12 },
+        { name: "Argentina", group: "J", elo: 2055, winProbability: 0.16 }
+      ],
+      form: [
+        { name: "France", group: "I", elo: 2060, winProbability: 0.15 },
+        { name: "Argentina", group: "J", elo: 2070, winProbability: 0.15 }
+      ],
+      policy: [
+        { name: "France", group: "I", elo: 2068, winProbability: 0.17 },
+        { name: "Argentina", group: "J", elo: 2075, winProbability: 0.14 }
+      ],
+      full: [
+        { name: "France", group: "I", elo: 2090, winProbability: 0.2 },
+        { name: "Argentina", group: "J", elo: 2080, winProbability: 0.13 }
+      ]
+    };
+    const trend = buildForecastTrend(scenarioResults, TREND_SCENARIOS);
+    assert.equal(trend.summary.leader.name, "France");
+    assert.equal(trend.summary.biggestRiser.name, "France");
+    assert.equal(trend.summary.biggestFaller.name, "Argentina");
+    assert.equal(trend.rows.length, 2);
   });
 });
