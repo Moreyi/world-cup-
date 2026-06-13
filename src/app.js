@@ -1,7 +1,7 @@
 import { STARTER_GROUPS } from "./data.js";
 import { buildClubStarModel, getCountryBoost } from "./clubModel.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
-import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260612-tactic";
+import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260613-compliance";
 import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js";
 import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
 import { recentFormForCountry } from "./recentForm.js";
@@ -11,9 +11,10 @@ import { coachForCountry } from "./teamStaff.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
 import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
 import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-unlock2";
-import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js";
+import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-compliance";
 import { liveWinProbability } from "./liveModel.js";
-import { oddsMovementForMatch } from "./oddsMovement.js";
+import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-compliance";
+import { recommendMarketWeight } from "./calibration.js";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
@@ -176,6 +177,11 @@ function handleLangToggle() {
 function runSimulation() {
   const options = readOptions();
   const groups = applySelectedBoosts(state.groups, options);
+  // Self-calibration: from finished matches, adopt the market-blend weight that
+  // would have minimized Brier so far (stays at default until enough samples).
+  const calMatches = buildGroupMatchAnalysis(groups, withRealtimeOptions(options)).matches;
+  const weightRec = recommendMarketWeight(calMatches);
+  if (weightRec.ready) options.marketWeight = weightRec.recommended;
   const analysisOptions = withRealtimeOptions(options);
   renderMatchAnalysis(groups, analysisOptions);
   renderMatchup();
@@ -625,7 +631,7 @@ function renderPremiumAnalysis(match, options = {}) {
         <strong>高级分析</strong>
         <span>包含最终比分预测、胜平负概率、爆冷指数、模型信心值和一句话结论。</span>
       </div>
-      <button type="button" class="unlock-button" data-ad-unlock-match="${match.id}">观看激励广告查看</button>
+      <button type="button" class="unlock-button" data-ad-unlock-match="${match.id}">查看高级分析</button>
       <p class="unlock-message" data-unlock-message="${match.id}" aria-live="polite"></p>
       ${options.showDetailAd ? renderDetailAdSlot(match) : ""}
     </div>
@@ -795,7 +801,7 @@ async function handleAdUnlockClick(event) {
   const matchId = button.dataset.adUnlockMatch;
   const message = document.querySelector(`[data-unlock-message="${matchId}"]`);
   button.disabled = true;
-  if (message) message.textContent = "正在准备激励广告...";
+  if (message) message.textContent = "正在准备高级分析...";
 
   try {
     const unlocked = await requestRewardedUnlock(matchId);

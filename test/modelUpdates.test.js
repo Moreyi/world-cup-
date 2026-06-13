@@ -347,3 +347,45 @@ test("live in-play win probability", async (t) => {
     assert.ok(Math.abs(p.teamA + p.draw + p.teamB - 1) < 1e-6);
   });
 });
+
+test("model self-calibration", async (t) => {
+  const { brier, outcomeOfScore, evaluateModel, recommendMarketWeight } = await import("../src/calibration.js");
+
+  await t.test("brier and outcome helpers", () => {
+    assert.equal(outcomeOfScore({ teamA: 2, teamB: 0 }), "teamA");
+    assert.equal(outcomeOfScore({ teamA: 1, teamB: 1 }), "draw");
+    assert.ok(Math.abs(brier({ teamA: 1, draw: 0, teamB: 0 }, "teamA")) < 1e-9); // perfect
+    assert.ok(brier({ teamA: 0.33, draw: 0.34, teamB: 0.33 }, "teamA") > 0.6); // uninformed
+  });
+
+  await t.test("evaluates finished matches", () => {
+    const matches = [
+      { id: "A-1", result: { status: "final", score: { teamA: 2, teamB: 0 } }, modelProbabilities: { teamA: 0.7, draw: 0.2, teamB: 0.1 } },
+      { id: "A-2", result: { status: "final", score: { teamA: 2, teamB: 1 } }, modelProbabilities: { teamA: 0.45, draw: 0.25, teamB: 0.3 } },
+      { id: "B-1", result: { status: "scheduled" }, modelProbabilities: { teamA: 0.5, draw: 0.3, teamB: 0.2 } }
+    ];
+    const e = evaluateModel(matches);
+    assert.equal(e.count, 2);
+    assert.equal(e.modelHitRate, 1); // both modal picks (teamA) hit
+    assert.ok(e.modelBrier > 0 && e.modelBrier < 0.667);
+  });
+
+  await t.test("market-weight search needs enough samples", () => {
+    const thin = recommendMarketWeight([], { minSamples: 4 });
+    assert.equal(thin.ready, false);
+    assert.equal(thin.recommended, 0.5);
+  });
+
+  await t.test("market-weight search finds a minimizing weight when data exists", () => {
+    // Build samples where the market is consistently closer to truth than the model,
+    // so the search should lean toward a higher market weight.
+    const mk = (id) => ({
+      id, result: { status: "final", score: { teamA: 1, teamB: 0 } },
+      modelProbabilities: { teamA: 0.4, draw: 0.3, teamB: 0.3 },
+      marketProbabilities: { teamA: 0.8, draw: 0.12, teamB: 0.08 }
+    });
+    const rec = recommendMarketWeight([mk("A"), mk("B"), mk("C"), mk("D"), mk("E")], { step: 0.25, minSamples: 4 });
+    assert.equal(rec.ready, true);
+    assert.ok(rec.recommended >= 0.5, `expected market-leaning weight, got ${rec.recommended}`);
+  });
+});
