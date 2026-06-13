@@ -99,7 +99,12 @@ export const POSITION_NAMES_ZH = {
   Midfielder: "中场"
 };
 
+import { getLang } from "./i18n.js";
+
+// English is the source key for every name, so English mode just returns the
+// key; Chinese mode looks up the localized map.
 export function countryName(name) {
+  if (getLang() === "en") return name;
   return COUNTRY_NAMES_ZH[name] ?? name;
 }
 
@@ -111,6 +116,7 @@ export function countryListName(value) {
 }
 
 export function localizeCountryText(value) {
+  if (getLang() === "en") return value;
   return Object.entries(COUNTRY_NAMES_ZH).reduce(
     (text, [englishName, chineseName]) => text.replaceAll(englishName, chineseName),
     value
@@ -118,9 +124,11 @@ export function localizeCountryText(value) {
 }
 
 export function clubName(name) {
+  if (getLang() === "en") return name;
   return CLUB_NAMES_ZH[name] ?? name;
 }
 
 export function positionName(name) {
+  if (getLang() === "en") return name;
   return POSITION_NAMES_ZH[name] ?? name;
 }

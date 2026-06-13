@@ -5,6 +5,7 @@ import { STARTER_GROUPS } from "../src/data.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "../src/history.js";
 import { MATCH_RESULTS } from "../src/liveResults.js";
 import { clubName, countryName, localizeCountryText, positionName } from "../src/localization.js";
+import { setLang } from "../src/i18n.js";
 import { buildGroupMatchAnalysis } from "../src/matchAnalysis.js";
 import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "../src/nationalStars.js";
 import {
@@ -288,10 +289,19 @@ describe("recent form", () => {
 });
 
 describe("Chinese localization", () => {
-  it("localizes countries, clubs, positions, and score text", () => {
+  it("returns English names in English mode (default)", () => {
+    setLang("en");
+    assert.equal(countryName("Brazil"), "Brazil");
+    assert.equal(clubName("Paris Saint-Germain"), "Paris Saint-Germain");
+    assert.equal(localizeCountryText("Brazil 2-0 Germany"), "Brazil 2-0 Germany");
+  });
+
+  it("localizes countries, clubs, positions, and score text in Chinese mode", () => {
+    setLang("zh");
     assert.equal(countryName("Brazil"), "巴西");
     assert.equal(clubName("Paris Saint-Germain"), "巴黎圣日耳曼");
     assert.equal(positionName("Forward"), "前锋");
     assert.equal(localizeCountryText("Brazil 2-0 Germany"), "巴西 2-0 德国");
+    setLang("en"); // restore default for other tests
   });
 });

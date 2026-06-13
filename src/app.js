@@ -11,6 +11,7 @@ import { coachForCountry } from "./teamStaff.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
 import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
 import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-unlock2";
+import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
@@ -89,6 +90,9 @@ const elements = {
   status: document.querySelector("#status")
 };
 
+setLang(getLang()); // sync <html lang> with the stored/default language
+applyStaticTranslations(); // translate static chrome to the current language
+
 renderTeamControls();
 renderSelectors();
 renderMatchup();
@@ -97,10 +101,10 @@ renderNationalStars();
 renderPolicyOddsModel();
 renderHistoryAnalysis();
 runSimulation();
-renderDisplayAds();
 
 elements.simulateButton.addEventListener("click", runSimulation);
 elements.refreshLiveButton.addEventListener("click", refreshRealtimeData);
+document.querySelector("#langToggle")?.addEventListener("click", handleLangToggle);
 document.addEventListener("click", handleAdUnlockClick);
 elements.resetButton.addEventListener("click", () => {
   state.groups = cloneGroups(STARTER_GROUPS);
@@ -125,6 +129,19 @@ elements.useOddsModel.addEventListener("change", () => {
   renderMatchup();
   runSimulation();
 });
+
+function handleLangToggle() {
+  setLang(getLang() === "en" ? "zh" : "en");
+  applyStaticTranslations();
+  renderTeamControls();
+  renderSelectors();
+  renderMatchup();
+  renderClubStarModel();
+  renderNationalStars();
+  renderPolicyOddsModel();
+  renderHistoryAnalysis();
+  runSimulation();
+}
 
 function runSimulation() {
   const options = readOptions();
@@ -647,7 +664,6 @@ function renderCompletedMatchCard(match) {
       </div>
       <div class="match-read post-match-read">
         <span>实际：${winnerText} · ${hitText}</span>
-        <span>高级复盘：预测偏差与赛前概率需解锁</span>
       </div>
       ${renderPremiumPostMatch(match)}
       <div class="post-match-note">
@@ -658,27 +674,23 @@ function renderCompletedMatchCard(match) {
   `;
 }
 
+// Finished matches show the full post-match report for free — once a match is
+// over the prediction has no betting value, so there is nothing to gate.
 function renderPremiumPostMatch(match) {
-  if (!isMatchUnlocked(match.id)) {
-    return `
-      <div class="premium-panel locked">
-        <div>
-          <strong>高级复盘</strong>
-          <span>包含赛前概率、预测偏差和赛后模型对比。</span>
-        </div>
-        <button type="button" class="unlock-button" data-ad-unlock-match="${match.id}">观看激励广告查看</button>
-        <p class="unlock-message" data-unlock-message="${match.id}" aria-live="polite"></p>
-      </div>
-    `;
-  }
-
+  const { postMatch, predictedScore, result, probabilities } = match;
+  const actualScore = `${result.score.teamA}-${result.score.teamB}`;
+  const scoreExact = predictedScore.label === actualScore;
   return `
-    <div class="premium-panel unlocked">
+    <div class="premium-panel unlocked post-match-report">
       <div class="premium-head">
-        <span>高级复盘已解锁</span>
-        <strong>${match.postMatch.predictionHit ? "方向命中" : "方向偏离"}</strong>
+        <span>赛后分析报告</span>
+        <strong>${postMatch.predictionHit ? "方向命中 ✓" : "方向偏离 ✗"}</strong>
       </div>
-      <p>模型赛前给到该赛果 ${formatPercent(match.postMatch.forecastProbability)}，预测比分为 ${match.predictedScore.label}。</p>
+      <ul class="post-report-list">
+        <li>预测比分 <b>${predictedScore.label}</b> · 实际 <b>${actualScore}</b>${scoreExact ? " · 比分精准命中" : ""}</li>
+        <li>模型赛前给出该赛果概率 <b>${formatPercent(postMatch.forecastProbability)}</b></li>
+        <li>赛前胜平负：${countryName(match.teamA.name)} ${formatPercent(probabilities.teamA)} · 平 ${formatPercent(probabilities.draw)} · ${countryName(match.teamB.name)} ${formatPercent(probabilities.teamB)}</li>
+      </ul>
     </div>
   `;
 }
@@ -691,7 +703,7 @@ function buildPostMatchCopy(match) {
     postMatch.points.teamA
   } 分（净胜球 ${formatSigned(postMatch.goalDifference.teamA)}），${teamB} ${postMatch.points.teamB} 分（净胜球 ${formatSigned(
     postMatch.goalDifference.teamB
-  )}）。具体预测偏差和概率复盘在解锁版展示。`;
+  )}）。`;
 }
 
 function simpleLeanLabel(match) {
@@ -733,9 +745,13 @@ function renderDisplayAds() {
     const adSlot = config.displaySlots?.[placement];
     const adFormat = config.displayFormats?.[placement] || "auto";
     if (!client || !adSlot) {
+      delete slot.dataset.renderedAdSlot;
       slot.classList.add("ad-slot-placeholder");
       return;
     }
+    if (slot.dataset.renderedAdSlot === adSlot && slot.querySelector("ins.adsbygoogle")) return;
+    slot.dataset.renderedAdSlot = adSlot;
+    slot.classList.remove("ad-slot-placeholder");
 
     slot.innerHTML = `
       <ins class="adsbygoogle"
@@ -745,8 +761,10 @@ function renderDisplayAds() {
         data-ad-format="${escapeAttribute(adFormat)}"
         data-full-width-responsive="true"></ins>
     `;
+    const adElement = slot.querySelector("ins.adsbygoogle");
     window.requestAnimationFrame(() => {
       try {
+        if (!adElement || adElement.getAttribute("data-adsbygoogle-status")) return;
         window.adsbygoogle = window.adsbygoogle || [];
         window.adsbygoogle.push({});
       } catch (error) {
