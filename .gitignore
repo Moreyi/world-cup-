@@ -4,3 +4,4 @@ coverage/
 config.local.js
 *.local.js
 src/adUnlock.js
+ads.txt

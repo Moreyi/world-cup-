@@ -10,7 +10,7 @@ import { matchProbabilities, simulateTournament } from "./simulator.js";
 import { coachForCountry } from "./teamStaff.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
 import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
-import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-storage";
+import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-unlock2";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
@@ -757,7 +757,7 @@ function renderDisplayAds() {
 }
 
 function ensureAdSenseScript(client) {
-  if (!client || document.querySelector("#worldcup-adsense-loader")) return;
+  if (!client || document.querySelector("#worldcup-adsense-loader, script[src*='pagead2.googlesyndication.com/pagead/js/adsbygoogle.js']")) return;
   const script = document.createElement("script");
   script.id = "worldcup-adsense-loader";
   script.async = true;
