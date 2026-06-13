@@ -1,17 +1,17 @@
 import { STARTER_GROUPS } from "./data.js";
 import { buildClubStarModel, getCountryBoost } from "./clubModel.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
-import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260613-results3";
+import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260613-results4";
 import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js";
 import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
 import { recentFormForCountry } from "./recentForm.js";
-import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results3";
+import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results4";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
 import { coachForCountry } from "./teamStaff.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
 import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
 import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-unlock2";
-import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-results3";
+import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-results4";
 import { liveWinProbability } from "./liveModel.js";
 import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-compliance";
 import { recommendMarketWeight } from "./calibration.js";
@@ -187,28 +187,43 @@ function runSimulation() {
   const weightRec = recommendMarketWeight(calMatches);
   if (weightRec.ready) options.marketWeight = weightRec.recommended;
   const analysisOptions = withRealtimeOptions(options);
-  renderMatchAnalysis(groups, analysisOptions);
+  // The match-analysis rails are secondary; a failure in any one of them must
+  // never block the core simulation/hero render (stability first).
+  safeRender("match-analysis", () => renderMatchAnalysis(groups, analysisOptions));
   renderMatchup();
   elements.status.textContent = "Running";
   elements.simulateButton.disabled = true;
 
   requestAnimationFrame(() => {
-    const startedAt = performance.now();
-    const analysis = buildGroupMatchAnalysis(groups, analysisOptions);
-    const simulationOptions = {
-      ...options,
-      matchResults: currentFinalMatchResults(analysis)
-    };
-    const results = simulateTournament(groups, simulationOptions);
-    const trend = runTrendAnalysis(simulationOptions);
-    const elapsed = Math.round(performance.now() - startedAt);
-    renderResults(results, options.iterations, elapsed);
-    renderTrendAnalysis(trend);
-    renderMatchAnalysis(groups, analysisOptions);
-    renderMatchup();
-    elements.status.textContent = "Done";
-    elements.simulateButton.disabled = false;
+    try {
+      const startedAt = performance.now();
+      const analysis = buildGroupMatchAnalysis(groups, analysisOptions);
+      const simulationOptions = {
+        ...options,
+        matchResults: currentFinalMatchResults(analysis)
+      };
+      const results = simulateTournament(groups, simulationOptions);
+      const trend = runTrendAnalysis(simulationOptions);
+      const elapsed = Math.round(performance.now() - startedAt);
+      renderResults(results, options.iterations, elapsed);
+      renderTrendAnalysis(trend);
+      safeRender("match-analysis", () => renderMatchAnalysis(groups, analysisOptions));
+      renderMatchup();
+      elements.status.textContent = "Done";
+    } finally {
+      elements.simulateButton.disabled = false;
+    }
   });
+}
+
+// Run a non-critical render and swallow (but log) any failure so one broken
+// panel can't blank the whole dashboard. Errors still surface in the console.
+function safeRender(label, fn) {
+  try {
+    fn();
+  } catch (error) {
+    console.error(`[render] ${label} failed:`, error);
+  }
 }
 
 async function refreshRealtimeData() {
