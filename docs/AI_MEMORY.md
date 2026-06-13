@@ -190,6 +190,10 @@ English-first with a Chinese toggle. `src/i18n.js` holds the EN/ZH string table 
 
 **index.html is blocked from GitHub**: Codex hardcodes the real AdSense pub ID in it (a `<meta google-adsense-account>` + the adsbygoogle loader `?client=ca-pub-…`). Per the public/server boundary that ID must not be committed, so index.html stays deployed-only and out of GitHub. To unblock GitHub sync, move the pub ID into server-only `config.local.js` (inject the meta + loader at runtime) so committed index.html carries no real ID. This is Codex's ad-wiring lane — coordinate before changing.
 
+## Parlay engine (2026-06-13, data-entertainment scope)
+
+`src/parlay.js` builds multi-leg parlays ("串") from match-analysis rows: `buildParlay(selections)` → combined hit rate + theoretical fair decimal odds + per-leg breakdown + combined market odds when every leg has market data; `recommendedParlay(matches, {legs, minConfidence})` auto-picks each match's modal outcome, most-confident first; `valueParlay(matches, {legs, minEdge})` picks legs where model prob beats market implied prob. Legs treated as independent (caveat surfaced in the `note`). Strictly data-entertainment: theoretical odds from our own probabilities, NO real betting, NO bookmaker links — keep that framing in any UI. Deployed; UI surface ("今日高信心串" card) is Codex's app.js/index.html lane — wire it there. Tests in test/modelUpdates.test.js (51 pass).
+
 ## Maintenance Rules
 
 - Keep the app buildless and static unless the user asks for a larger framework.

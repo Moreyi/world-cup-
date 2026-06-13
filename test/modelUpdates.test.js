@@ -214,3 +214,47 @@ test("climate / heat-stress factor", async (t) => {
     assert.ok(analysis.matches.every((m) => m.climate && typeof m.climate.score === "number"));
   });
 });
+
+test("parlay engine", async (t) => {
+  const { buildParlay, recommendedParlay, valueParlay } = await import("../src/parlay.js");
+
+  const mk = (id, a, d, b, market) => ({
+    id, teamA: { name: id + "A" }, teamB: { name: id + "B" },
+    probabilities: { teamA: a, draw: d, teamB: b },
+    marketProbabilities: market || null
+  });
+
+  await t.test("combines leg probabilities and derives fair odds", () => {
+    const p = buildParlay([
+      { match: mk("X", 0.6, 0.25, 0.15), pick: "teamA" },
+      { match: mk("Y", 0.5, 0.3, 0.2), pick: "teamA" }
+    ]);
+    assert.ok(Math.abs(p.combinedProbability - 0.3) < 1e-9);
+    assert.ok(Math.abs(p.theoreticalOdds - 3.33) < 0.02);
+    assert.equal(p.legCount, 2);
+  });
+
+  await t.test("recommends the most confident modal legs", () => {
+    const matches = [
+      mk("A", 0.8, 0.12, 0.08),
+      mk("B", 0.7, 0.2, 0.1),
+      mk("C", 0.34, 0.33, 0.33),
+      { ...mk("D", 0.9, 0.05, 0.05), result: { status: "final" } }
+    ];
+    const rec = recommendedParlay(matches, { legs: 3, minConfidence: 0.5 });
+    assert.equal(rec.legCount, 2); // A and B qualify; C below 0.5; D is final
+    assert.ok(rec.legs.every((l) => l.pick === "teamA"));
+    assert.ok(rec.combinedProbability < rec.legs[0].probability);
+  });
+
+  await t.test("value parlay needs a model edge over the market", () => {
+    const matches = [
+      mk("A", 0.55, 0.25, 0.2, { teamA: 0.45, draw: 0.3, teamB: 0.25 }), // +0.10 edge
+      mk("B", 0.5, 0.3, 0.2, { teamA: 0.42, draw: 0.33, teamB: 0.25 }), // +0.08 edge
+      mk("C", 0.4, 0.3, 0.3, { teamA: 0.4, draw: 0.3, teamB: 0.3 }) // no edge
+    ];
+    const vp = valueParlay(matches, { legs: 3, minEdge: 0.04 });
+    assert.equal(vp.legCount, 2);
+    assert.ok(vp.edges.every((e) => e.edge >= 0.04));
+  });
+});
