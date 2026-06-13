@@ -160,6 +160,30 @@ Good already: token-based CSS (18 vars), zero !important, consistent dark-green 
 
 Polish status (2026-06-13, Claude): the P0s and quick P1/P2s are live via `styles-polish.css`, loaded after styles.css from index.html. It fixes the muted-token contrast (--muted #8b968d → #5e6d64), header text opacity, button green to 4.5:1 (#11875a), eyebrow size/color, 44px tabs, tabular-nums, collapses unfilled/empty ad slots (`:has` rules), hides the mobile header subtitle, and adds a tab-row fade hint plus a ready-to-use `.upset-alert` dark-horse badge style. Match rows now carry a `darkHorse` boolean (no-result matches with upset+draw ≥ 0.55) — render `.upset-alert` on today cards/upset radar using it. **This file is a temporary layer: whoever finishes the styles.css rework should merge these rules in and delete the file.** Contrast re-measured live after deploy: 4.53–5.46:1 on all previously failing elements. Remaining from the review: view-switching/lazy render for the 7 stacked modules, narrow-phone breakpoint tier.
 
+## Multi-Factor Model Stack (2026-06-13) — the product's differentiator
+
+Predictions fuse these, layered in matchAnalysis on top of base eloratings Elo:
+1. Base Elo (eloratings.net, real) + dynamic Elo updates from finished results (K=60).
+2. Club/star form + policy/odds boosts (pre-existing toggleable layers).
+3. Market fusion (`marketFusion.js`): blend model with vig-free DraftKings odds (weight 0.5).
+4. Venue/altitude (`venueFactors.js`): Mexico City 2,240m / Guadalajara 1,566m → up to +40 Elo for acclimatized teams (Mexico/Ecuador/Colombia).
+5. Officiating (`refereeFactors.js`): strict card climate (opener had 3 reds) raises upset/draw variance; per-referee table is an empty extension point (no fabricated data).
+6. Climate/heat-stress (`climateFactors.js`): venue June–July heat × humidity × kickoff time × roof/AC → up to +18 Elo edge to heat-adapted side; each row carries a climate read.
+
+All factors adjust *probability inputs only* — displayed base Elo is untouched. Each match row exposes `venueFactor`, `officiating`, `climate`, `modelProbabilities`, `marketProbabilities`, `darkHorse`. Flagship dark-horse pick: **Ecuador** (docs/analysis/dark-horse-of-2026.md); Japan dossier alongside.
+
+## Agent Division of Labor (set 2026-06-13 — concurrency safety)
+
+Claude and Codex are editing this ONE worktree at the same time, which collides on shared files (memory rule: concurrent agents need isolation). Working split to avoid clobbering:
+- **Claude owns**: data/model layer — `src/*Factors.js`, `simulator.js`, `marketFusion.js`, `matchAnalysis.js`, `fixtureCalendar.js`, `liveResults.js`, `data.js`, all `docs/`. Deploys these + commits to GitHub.
+- **Codex owns**: UI shell — `index.html`, `app.js`, `styles.css`, ad/unlock wiring. (adUnlock.js/config.local.js/ads.txt are server-only, gitignored.)
+- UI/layout/i18n requests (English-first + Chinese toggle, "more attractive layout") belong to whoever holds app.js/index.html; Claude only touches them with a version-string bump or a non-conflicting additive file (e.g. styles-polish.css) and flags it.
+
+## Open Requests Backlog (2026-06-13, from boss rapid-fire)
+
+Done & live: data fixes, dynamic Elo, market fusion, 72-match calendar, venue/officiating/climate factors, dark-horse pick+flag, unlock free, finished-match free report, UI polish layer, GitHub boundary secured (pub ID never leaked; ads.txt gitignored).
+Pending (need boss steer or Codex coordination): (a) nginx HTML no-cache to root-fix mobile stale cache — classifier-blocked, needs boss to run/permit; clear-cache workaround works now; (b) English-first UI + Chinese toggle (Codex's files); (c) more attractive layout (Codex's files); (d) parlay/足彩串 data engine — authorized, data-entertainment scope, not yet built; (e) live in-play data → live re-prediction (ESPN live, feasible); (f) deeper player-form/sharpness; (g) automated post-match→model-calibration loop (foundation exists in docs/match-reviews + Brier).
+
 ## Maintenance Rules
 
 - Keep the app buildless and static unless the user asks for a larger framework.
