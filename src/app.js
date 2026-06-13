@@ -12,6 +12,7 @@ import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
 import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
 import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-unlock2";
 import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js";
+import { liveWinProbability } from "./liveModel.js";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
@@ -237,15 +238,28 @@ function mapRealtimeUpdates(updates, matches) {
 
     if (update.status === "live" || update.status === "final") {
       const homeIsTeamA = update.homeTeam === match.teamA.name;
+      const score = {
+        teamA: homeIsTeamA ? update.homeScore : update.awayScore,
+        teamB: homeIsTeamA ? update.awayScore : update.homeScore
+      };
+      // Live re-prediction: blend pre-match Elo expectation with the current
+      // scoreline and elapsed minute (red cards not in the scoreboard feed yet).
+      const liveProbabilities =
+        update.status === "live"
+          ? liveWinProbability(match.probabilities, {
+              goalsA: score.teamA,
+              goalsB: score.teamB,
+              minute: update.minute ?? 0
+            })
+          : null;
       resultOverrides.push({
         matchId: match.id,
         status: update.status,
         date: match.fixture?.date ?? update.dateTime.slice(0, 10),
         venue: formatVenue(update),
-        score: {
-          teamA: homeIsTeamA ? update.homeScore : update.awayScore,
-          teamB: homeIsTeamA ? update.awayScore : update.homeScore
-        },
+        score,
+        minute: update.minute ?? null,
+        liveProbabilities,
         note: update.status === "final" ? "实时比分源已标记完赛。" : "实时比分源显示比赛进行中。"
       });
     }
@@ -681,12 +695,31 @@ function renderCompletedMatchCard(match) {
       <div class="match-read post-match-read">
         <span>实际：${winnerText} · ${hitText}</span>
       </div>
+      ${result.status === "live" ? renderLiveProbability(match) : ""}
       ${renderPremiumPostMatch(match)}
       <div class="post-match-note">
         <strong>赛后分析</strong>
         <p>${buildPostMatchCopy(match)}</p>
       </div>
     </article>
+  `;
+}
+
+// Live in-play win probability — recomputed each refresh from the current
+// scoreline, elapsed minute, and pre-match Elo expectation.
+function renderLiveProbability(match) {
+  const live = match.result?.liveProbabilities;
+  if (!live) return "";
+  const minuteText = match.result.minute ? `${match.result.minute}'` : "";
+  return `
+    <div class="live-prob" aria-label="${t("live.title")}">
+      <div class="live-prob-head"><strong>${t("live.title")}</strong><span>${minuteText}</span></div>
+      <div class="live-prob-bars">
+        <span>${countryName(match.teamA.name)} ${formatPercent(live.teamA)}</span>
+        <span>${t("live.draw")} ${formatPercent(live.draw)}</span>
+        <span>${countryName(match.teamB.name)} ${formatPercent(live.teamB)}</span>
+      </div>
+    </div>
   `;
 }
 

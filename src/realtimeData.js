@@ -37,6 +37,7 @@ function parseEvent(event) {
     dateTime: competition.date ?? event.date,
     status: normalizeStatus(status),
     statusText: status.shortDetail ?? status.detail ?? status.description ?? "Scheduled",
+    minute: parseMatchMinute(competition.status ?? event.status),
     completed: Boolean(status.completed),
     homeTeam: normalizeTeamName(home.team?.displayName ?? home.team?.name),
     awayTeam: normalizeTeamName(away.team?.displayName ?? away.team?.name),
@@ -48,6 +49,21 @@ function parseEvent(event) {
     broadcasts: competition.broadcasts?.[0]?.names ?? [],
     marketOdds: parseMarketOdds(competition.odds?.[0])
   };
+}
+
+// Elapsed match minute from ESPN's competition status. Prefers displayClock
+// ("67'"), falls back to clock seconds; null when not live.
+function parseMatchMinute(statusObj) {
+  if (!statusObj) return null;
+  const display = statusObj.displayClock;
+  if (typeof display === "string") {
+    const m = display.match(/(\d+)/);
+    if (m) return Math.min(96, Number(m[1]));
+  }
+  if (Number.isFinite(statusObj.clock) && statusObj.clock > 0) {
+    return Math.min(96, Math.round(statusObj.clock / 60));
+  }
+  return null;
 }
 
 function normalizeStatus(status) {

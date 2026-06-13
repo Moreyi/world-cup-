@@ -89,6 +89,8 @@ export const STRINGS = {
   "calculating": { en: "Calculating", zh: "计算中" },
   "ov.titleOdds": { en: "Title odds · rating", zh: "夺冠概率 · 实力分" },
   "ov.topDarkHorse": { en: "Top dark horse", zh: "头号黑马" },
+  "live.title": { en: "Live win probability", zh: "实时胜率" },
+  "live.draw": { en: "Draw", zh: "平" },
   "ov.darkHorseMeta": { en: "Reach-QF odds · rating", zh: "进 8 强概率 · 实力分" },
   "ov.confidence": { en: "Model confidence", zh: "模型信心指数" },
   "ov.confidenceClear": { en: "High · clear picture", zh: "高 · 格局清晰" },

@@ -312,3 +312,38 @@ test("odds-movement radar", async (t) => {
     assert.equal(oddsMovementForMatch("Z-9", hist), null);
   });
 });
+
+test("live in-play win probability", async (t) => {
+  const { liveWinProbability } = await import("../src/liveModel.js");
+  const even = { knockoutA: 0.5 };
+
+  await t.test("kickoff (0') stays close to the pre-match split", () => {
+    const p = liveWinProbability(even, { goalsA: 0, goalsB: 0, minute: 0 });
+    assert.ok(Math.abs(p.teamA - p.teamB) < 0.05); // even teams ~ symmetric
+    assert.ok(p.draw > 0.2);
+  });
+
+  await t.test("a two-goal lead at 80' is decisive", () => {
+    const p = liveWinProbability(even, { goalsA: 2, goalsB: 0, minute: 80 });
+    assert.ok(p.teamA > 0.9, `expected >0.9, got ${p.teamA}`);
+  });
+
+  await t.test("full-time score is locked in", () => {
+    const win = liveWinProbability(even, { goalsA: 1, goalsB: 0, minute: 90 });
+    assert.equal(win.teamA, 1);
+    const draw = liveWinProbability(even, { goalsA: 1, goalsB: 1, minute: 90 });
+    assert.equal(draw.draw, 1);
+  });
+
+  await t.test("a red card shifts probability toward the opponent", () => {
+    const baseline = liveWinProbability(even, { goalsA: 0, goalsB: 0, minute: 30 });
+    const redOnA = liveWinProbability(even, { goalsA: 0, goalsB: 0, minute: 30, redA: 1 });
+    assert.ok(redOnA.teamB > baseline.teamB);
+    assert.ok(redOnA.teamA < baseline.teamA);
+  });
+
+  await t.test("probabilities always sum to 1", () => {
+    const p = liveWinProbability({ knockoutA: 0.7 }, { goalsA: 1, goalsB: 1, minute: 55 });
+    assert.ok(Math.abs(p.teamA + p.draw + p.teamB - 1) < 1e-6);
+  });
+});
