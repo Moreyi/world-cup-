@@ -8,7 +8,7 @@
       name="description"
       content="足球赛前数据研究工具，提供今日比赛基础信息、近期状态、赛前变量和娱乐向模型分析。"
     />
-    <link rel="stylesheet" href="styles.css?v=20260613-card-air2" />
+    <link rel="stylesheet" href="styles.css?v=20260613-content-guide" />
     <link rel="stylesheet" href="styles-polish.css?v=20260613-1" />
     <script>
       window.WorldCupAdConfig = {
@@ -23,7 +23,7 @@
         rewardedEnabled: false
       };
     </script>
-    <script src="config.local.js?v=20260613-adsense3"></script>
+    <script src="config.local.js?v=20260613-adsense4"></script>
     <!-- AdSense loader + account meta are injected at runtime from config.local.js (server-only),
          so the real publisher ID never lives in committed HTML. -->
   </head>
@@ -102,6 +102,15 @@
           </div>
           <b id="heroProbability">--</b>
           <span id="heroMeta"></span>
+        </article>
+        <article class="headline-card dark-horse-card">
+          <p data-i18n="ov.topDarkHorse">Top dark horse</p>
+          <div class="headline-team">
+            <span class="flag flag-generic" id="darkHorseFlag" aria-hidden="true"></span>
+            <strong id="darkHorseTeam">--</strong>
+          </div>
+          <b id="darkHorseProbability">--</b>
+          <span id="darkHorseMeta"></span>
         </article>
         <article class="overview-card confidence-card">
           <div class="ring" aria-hidden="true"><span id="confidenceScore">76</span></div>

@@ -43,6 +43,10 @@ const elements = {
   heroTeam: document.querySelector("#heroTeam"),
   heroProbability: document.querySelector("#heroProbability"),
   heroMeta: document.querySelector("#heroMeta"),
+  darkHorseFlag: document.querySelector("#darkHorseFlag"),
+  darkHorseTeam: document.querySelector("#darkHorseTeam"),
+  darkHorseProbability: document.querySelector("#darkHorseProbability"),
+  darkHorseMeta: document.querySelector("#darkHorseMeta"),
   confidenceScore: document.querySelector("#confidenceScore"),
   confidenceLabel: document.querySelector("#confidenceLabel"),
   confidenceNote: document.querySelector("#confidenceNote"),
@@ -275,8 +279,20 @@ function renderResults(results, iterations, elapsed) {
   elements.dataStatusTime.textContent = nowText;
   elements.heroTeam.textContent = countryName(leader.name);
   elements.heroProbability.textContent = formatPercent(leader.winProbability);
-  elements.heroMeta.textContent = `夺冠概率 · 实力分 ${Math.round(leader.elo)}`;
+  elements.heroMeta.textContent = `${t("ov.titleOdds")} ${Math.round(leader.elo)}`;
   elements.heroFlag.className = `flag ${flagClass(leader.name)}`;
+
+  // Top dark horse: best deep-run team outside the top favorites.
+  const favoriteNames = new Set(leaders.slice(0, 6).map((team) => team.name));
+  const darkHorse = results
+    .filter((team) => !favoriteNames.has(team.name))
+    .sort((a, b) => b.quarterfinalProbability - a.quarterfinalProbability || b.winProbability - a.winProbability)[0];
+  if (darkHorse && elements.darkHorseTeam) {
+    elements.darkHorseTeam.textContent = countryName(darkHorse.name);
+    elements.darkHorseProbability.textContent = formatPercent(darkHorse.quarterfinalProbability);
+    elements.darkHorseMeta.textContent = `${t("ov.darkHorseMeta")} ${Math.round(darkHorse.elo)}`;
+    elements.darkHorseFlag.className = `flag ${flagClass(darkHorse.name)}`;
+  }
   elements.confidenceScore.textContent = confidence;
   elements.confidenceLabel.textContent = confidence >= 74 ? "高 · 格局清晰" : confidence >= 62 ? "中 · 竞争开放" : "低 · 变数较大";
   elements.confidenceNote.textContent = confidence >= 74 ? "基于冠军分布集中度" : "热门队差距仍需观察";
