@@ -13,6 +13,7 @@ import { clubName, countryListName, countryName, localizeCountryText, positionNa
 import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-unlock2";
 import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js";
 import { liveWinProbability } from "./liveModel.js";
+import { oddsMovementForMatch } from "./oddsMovement.js";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
@@ -23,7 +24,8 @@ const state = {
     resultOverrides: [],
     fixtureOverrides: [],
     error: null
-  }
+  },
+  oddsHistory: null
 };
 
 const elements = {
@@ -106,6 +108,7 @@ renderNationalStars();
 renderPolicyOddsModel();
 renderHistoryAnalysis();
 runSimulation();
+loadOddsHistory();
 
 elements.simulateButton.addEventListener("click", runSimulation);
 elements.refreshLiveButton.addEventListener("click", refreshRealtimeData);
@@ -134,6 +137,28 @@ elements.useOddsModel.addEventListener("change", () => {
   renderMatchup();
   runSimulation();
 });
+
+// Loads the server-side odds-history snapshot file (produced by the cron
+// fetcher) and re-renders so the odds-movement radar shows on match cards.
+async function loadOddsHistory() {
+  try {
+    const res = await fetch(`data/odds-history.json?ts=${Math.floor(Date.now() / 600000)}`);
+    if (!res.ok) return;
+    state.oddsHistory = await res.json();
+    runSimulation();
+  } catch (error) {
+    /* radar is optional; ignore fetch failures */
+  }
+}
+
+// Odds-movement chip for a match card — only shown once the market has actually
+// drifted (stable movement is omitted to avoid noise).
+function renderOddsMovement(match) {
+  const move = state.oddsHistory ? oddsMovementForMatch(match.id, state.oddsHistory) : null;
+  if (!move || move.level === "stable") return "";
+  const arrow = move.level === "sharp" ? "⚡" : "↗";
+  return `<span class="odds-move odds-move-${move.level}">${arrow} ${t("oddsMove.label")}: ${move.note}</span>`;
+}
 
 function handleLangToggle() {
   setLang(getLang() === "en" ? "zh" : "en");
@@ -532,6 +557,7 @@ function renderTodayMatchCard(match) {
         <strong>${countryName(match.teamB.name)}</strong>
       </div>
       <p>${fixture.venue}</p>
+      ${renderOddsMovement(match)}
       ${renderFreeLeanSummary(match)}
       ${renderPremiumAnalysis(match, { showDetailAd: true })}
       ${renderTodayTeamData(match)}
@@ -668,6 +694,7 @@ function renderMatchCard(match) {
         <span>简单倾向：${simpleLeanLabel(match)}</span>
         <span>高级分析：比分、概率、爆冷指数需解锁</span>
       </div>
+      ${renderOddsMovement(match)}
       ${renderPremiumAnalysis(match)}
       <div class="match-tactic-mini">${match.tacticalPreview.duel}</div>
     </article>

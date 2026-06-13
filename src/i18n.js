@@ -91,6 +91,7 @@ export const STRINGS = {
   "ov.topDarkHorse": { en: "Top dark horse", zh: "头号黑马" },
   "live.title": { en: "Live win probability", zh: "实时胜率" },
   "live.draw": { en: "Draw", zh: "平" },
+  "oddsMove.label": { en: "Odds move", zh: "盘口异动" },
   "ov.darkHorseMeta": { en: "Reach-QF odds · rating", zh: "进 8 强概率 · 实力分" },
   "ov.confidence": { en: "Model confidence", zh: "模型信心指数" },
   "ov.confidenceClear": { en: "High · clear picture", zh: "高 · 格局清晰" },
