@@ -7,3 +7,6 @@ src/adUnlock.js
 ads.txt
 
 data/odds-history.json
+
+# Server-only deployment artifacts (nginx confs, etc.) — never push to GitHub.
+deploy/

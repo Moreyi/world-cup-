@@ -1,5 +1,5 @@
 import { matchProbabilities } from "./simulator.js";
-import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260613-compliance";
+import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260613-results2";
 import { buildTacticalPreview } from "./teamTactics.js";
 import { fuseProbabilities, marketProbabilitiesForMatch } from "./marketFusion.js";
 import { fullFixtureByMatchId } from "./fixtureCalendar.js";
@@ -113,14 +113,49 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
   // "Today" is dynamic (US-Eastern, where fixture dates are anchored); falls
   // back to the manual snapshot date when no override is supplied.
   const todayDate = options.todayDate || TODAY_DATE;
+  const tomorrowDate = nextDate(todayDate);
   return {
     matches,
     summary: summarizeMatches(matches),
     todayDate,
     todayMatches: matches.filter((match) => match.fixture?.date === todayDate),
+    tomorrowDate,
+    tomorrowMatches: tomorrowDate ? matches.filter((match) => match.fixture?.date === tomorrowDate) : [],
     upsetMatches: buildUpsetMatches(matches),
+    confidenceMatches: buildConfidenceMatches(matches),
     resultSnapshot: RESULT_SNAPSHOT
   };
+}
+
+// Confidence picks: the upcoming matches the model is most sure of — the mirror
+// image of the upset radar. Ranked by the favorite's win probability so the
+// single highest-probability call sits on top as the headline "信心之选".
+function buildConfidenceMatches(matches) {
+  return matches
+    .filter((match) => !match.result || match.result.status !== "final")
+    .map((match) => ({
+      ...match,
+      confidenceLevel: confidenceLevel(match.favoriteWinProbability, match.edge)
+    }))
+    .sort((a, b) => b.favoriteWinProbability - a.favoriteWinProbability || b.edge - a.edge)
+    .slice(0, 6);
+}
+
+function confidenceLevel(favoriteWinProbability, edge) {
+  if (favoriteWinProbability >= 0.7 && edge >= 0.45) return "极高";
+  if (favoriteWinProbability >= 0.62) return "高";
+  if (favoriteWinProbability >= 0.5) return "中高";
+  return "中";
+}
+
+// Calendar day after a "YYYY-MM-DD" string, in UTC, so the tomorrow rail tracks
+// the same US-Eastern-anchored fixture dates the today rail uses. Returns null
+// for malformed input.
+function nextDate(dateStr) {
+  if (typeof dateStr !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return null;
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const next = new Date(Date.UTC(year, month - 1, day + 1));
+  return next.toISOString().slice(0, 10);
 }
 
 function validateResultTeams(result, matchId, teamA, teamB) {

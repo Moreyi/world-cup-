@@ -11,7 +11,7 @@ import { coachForCountry } from "./teamStaff.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
 import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
 import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-unlock2";
-import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-compliance3";
+import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-results3";
 import { liveWinProbability } from "./liveModel.js";
 import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-compliance";
 import { recommendMarketWeight } from "./calibration.js";
@@ -60,8 +60,12 @@ const elements = {
   modelReadout: document.querySelector("#modelReadout"),
   todaySummary: document.querySelector("#todaySummary"),
   todayMatches: document.querySelector("#todayMatches"),
+  tomorrowSummary: document.querySelector("#tomorrowSummary"),
+  tomorrowMatches: document.querySelector("#tomorrowMatches"),
   upsetSummary: document.querySelector("#upsetSummary"),
   upsetMatches: document.querySelector("#upsetMatches"),
+  confidenceSummary: document.querySelector("#confidenceSummary"),
+  confidenceMatches: document.querySelector("#confidenceMatches"),
   topList: document.querySelector("#topList"),
   summary: document.querySelector("#summary"),
   trendSummary: document.querySelector("#trendSummary"),
@@ -513,6 +517,8 @@ function renderMatchAnalysis(groups, options) {
     summary.totalMatches - summary.completedMatches
   } 场待赛 · 更新 ${analysis.resultSnapshot.generatedAt}`;
   renderTodayMatches(analysis.todayMatches, analysis.todayDate);
+  renderTomorrowMatches(analysis.tomorrowMatches, analysis.tomorrowDate);
+  renderConfidenceMatches(analysis.confidenceMatches, analysis.todayDate);
   renderUpsetMatches(analysis.upsetMatches, analysis.todayDate);
   elements.matchStats.innerHTML = `
     <div class="stat-card"><strong>${summary.completedMatches}</strong><span>已结束比赛</span></div>
@@ -543,6 +549,18 @@ function renderTodayMatches(matches, todayDate) {
   const suffix = state.realtime.fetchedAt ? ` · 已实时更新 ${formatDashboardTime(new Date(state.realtime.fetchedAt))}` : "";
   elements.todaySummary.textContent = `${todayDate} · ${matches.length} 场${suffix}`;
   elements.todayMatches.innerHTML = matches.map(renderTodayMatchCard).join("");
+}
+
+function renderTomorrowMatches(matches, tomorrowDate) {
+  if (!elements.tomorrowMatches) return;
+  if (!matches.length) {
+    elements.tomorrowSummary.textContent = tomorrowDate ? `${tomorrowDate} · ${t("tomorrow.empty")}` : t("tomorrow.empty");
+    elements.tomorrowMatches.innerHTML = "";
+    return;
+  }
+  elements.tomorrowSummary.textContent = `${tomorrowDate} · ${matches.length} 场`;
+  // Reuse the today card so the premium lock and free-lean boundary stay identical.
+  elements.tomorrowMatches.innerHTML = matches.map(renderTodayMatchCard).join("");
 }
 
 function renderTodayMatchCard(match) {
@@ -679,6 +697,30 @@ function renderUpsetMatches(matches, todayDate) {
         </article>
       `
     )
+    .join("");
+}
+
+function renderConfidenceMatches(matches, todayDate) {
+  elements.confidenceSummary.textContent = `${todayDate} · Top ${matches.length}`;
+  elements.confidenceMatches.innerHTML = matches
+    .map((match, index) => {
+      const opponent = match.favorite.name === match.teamA.name ? match.teamB : match.teamA;
+      const whenTag = match.fixture?.date === todayDate ? "今日" : match.fixture?.date ?? `Group ${match.group}`;
+      return `
+        <article class="upset-card confidence-card-pick${index === 0 ? " confidence-top" : ""}">
+          <div class="upset-head">
+            <span>${index === 0 ? t("confidence.top") : whenTag}</span>
+            <strong class="confidence-badge confidence-badge-${match.confidenceLevel}">${t("confidence.level")}：${match.confidenceLevel}</strong>
+          </div>
+          <div class="upset-main">
+            <strong>${countryName(match.favorite.name)}</strong>
+            <span>力压</span>
+            <strong>${countryName(opponent.name)}</strong>
+          </div>
+          <p>${t("confidence.locked")}</p>
+        </article>
+      `;
+    })
     .join("");
 }
 

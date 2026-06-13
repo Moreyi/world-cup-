@@ -165,6 +165,40 @@ describe("match-by-match analysis", () => {
     assert.ok(analysis.todayMatches[1].tacticalPreview.prediction);
   });
 
+  it("surfaces tomorrow's matches as a separate preview feed", () => {
+    // todayDate 2026-06-13 → tomorrow 2026-06-14 has the 5 group-D/E/F openers.
+    const analysis = buildGroupMatchAnalysis(STARTER_GROUPS, { todayDate: "2026-06-13" });
+    assert.equal(analysis.tomorrowDate, "2026-06-14");
+    assert.deepEqual(
+      analysis.tomorrowMatches.map((match) => match.id),
+      ["D-2", "E-1", "E-2", "F-1", "F-2"]
+    );
+    assert.ok(analysis.tomorrowMatches.every((match) => match.predictedScore.label.includes("-")));
+    // Month rollover stays valid.
+    assert.equal(buildGroupMatchAnalysis(STARTER_GROUPS, { todayDate: "2026-06-30" }).tomorrowDate, "2026-07-01");
+  });
+
+  it("ranks confidence picks by the favorite's win probability", () => {
+    const analysis = buildGroupMatchAnalysis(STARTER_GROUPS);
+    assert.ok(analysis.confidenceMatches.length > 0);
+    // No finished match should appear as a forward-looking confidence pick.
+    assert.ok(analysis.confidenceMatches.every((match) => match.result?.status !== "final"));
+    // Top pick is the most-confident upcoming match in the whole field.
+    const maxUpcoming = Math.max(
+      ...analysis.matches
+        .filter((match) => !match.result || match.result.status !== "final")
+        .map((match) => match.favoriteWinProbability)
+    );
+    assert.equal(analysis.confidenceMatches[0].favoriteWinProbability, maxUpcoming);
+    // Descending order is preserved.
+    for (let i = 1; i < analysis.confidenceMatches.length; i += 1) {
+      assert.ok(
+        analysis.confidenceMatches[i - 1].favoriteWinProbability >= analysis.confidenceMatches[i].favoriteWinProbability
+      );
+    }
+    assert.ok(analysis.confidenceMatches[0].confidenceLevel);
+  });
+
   it("keeps each match outcome distribution normalized", () => {
     const analysis = buildGroupMatchAnalysis(STARTER_GROUPS);
     for (const match of analysis.matches) {

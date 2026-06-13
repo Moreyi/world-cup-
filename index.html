@@ -8,7 +8,7 @@
       name="description"
       content="足球赛前数据研究工具，提供今日比赛基础信息、近期状态、赛前变量和娱乐向模型分析。"
     />
-    <link rel="stylesheet" href="styles.css?v=20260613-content-guide" />
+    <link rel="stylesheet" href="styles.css?v=20260613-compliance-ui2" />
     <link rel="stylesheet" href="styles-polish.css?v=20260613-1" />
     <script>
       window.WorldCupAdConfig = {
@@ -66,7 +66,7 @@
       </section>
 
       <section class="legal-note" aria-label="免责声明提示" data-i18n="legal.note">
-        Predictions are for entertainment and research only — not betting, investment, or financial advice.
+        Predictions are for entertainment and research only — not investment, financial, or revenue advice.
       </section>
 
       <section class="content-guide" id="about" aria-label="站点方法与数据说明">
@@ -141,6 +141,28 @@
           <p id="todaySummary" data-i18n="today.loading">Loading today's fixtures</p>
         </div>
         <div class="today-matches" id="todayMatches"></div>
+      </section>
+
+      <section class="today-panel tomorrow-panel" id="tomorrow" aria-label="明日比赛">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-i18n="tomorrow.eyebrow">Tomorrow</p>
+            <h2 data-i18n="tomorrow.title">Tomorrow's Matches</h2>
+          </div>
+          <p id="tomorrowSummary" data-i18n="tomorrow.loading">Loading tomorrow's fixtures</p>
+        </div>
+        <div class="today-matches" id="tomorrowMatches"></div>
+      </section>
+
+      <section class="upset-panel confidence-panel" aria-label="信心之选">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-i18n="confidence.eyebrow">Best Bets</p>
+            <h2 data-i18n="confidence.title">Confidence Picks</h2>
+          </div>
+          <p id="confidenceSummary" data-i18n="confidence.loading">Loading top picks</p>
+        </div>
+        <div class="upset-matches" id="confidenceMatches"></div>
       </section>
 
       <section class="upset-panel" aria-label="爆冷预测">
@@ -478,7 +500,7 @@
       </section>
       <section id="disclaimer">
         <h2 data-i18n="footer.disclaimer">Disclaimer</h2>
-        <p data-i18n="footer.disclaimerBody">Predictions are for entertainment and research only — not betting, investment, or financial advice. This site has no affiliation with, authorization from, or endorsement by any competition organizer.</p>
+        <p data-i18n="footer.disclaimerBody">Predictions are for entertainment and research only — not investment, financial, or revenue advice. This site has no affiliation with, authorization from, or endorsement by any competition organizer.</p>
       </section>
     </footer>
 
@@ -487,6 +509,6 @@
       <strong data-i18n="ad.bottom">Bottom display ad slot</strong>
     </div>
 
-    <script type="module" src="src/app.js?v=20260613-ads-stable-render"></script>
+    <script type="module" src="src/app.js?v=20260613-results3"></script>
   </body>
 </html>
