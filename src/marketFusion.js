@@ -1,4 +1,4 @@
-import { americanToImpliedProbability } from "./policyOddsModel.js?v=20260613-results9";
+import { americanToImpliedProbability } from "./policyOddsModel.js?v=20260613-results10";
 
 // Converts a win/draw/win moneyline triple (American odds) into vig-free
 // probabilities that sum to 1.

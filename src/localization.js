@@ -99,7 +99,7 @@ export const POSITION_NAMES_ZH = {
   Midfielder: "中场"
 };
 
-import { getLang } from "./i18n.js?v=20260613-results9";
+import { getLang } from "./i18n.js?v=20260613-results10";
 
 // English is the source key for every name, so English mode just returns the
 // key; Chinese mode looks up the localized map.
