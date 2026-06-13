@@ -198,6 +198,12 @@ English-first with a Chinese toggle. `src/i18n.js` holds the EN/ZH string table 
 
 Origin nginx (`worldcup.renrenren.cn` vhost) serves HTML **and** `.js`/`.mjs` with `Cache-Control: no-cache` (added 2026-06-13 with boss authorization; backup in ~/backups/). Cloudflare does NOT edge-cache HTML (cf-cache-status DYNAMIC) but DOES edge-cache `.js` (~max-age 14400) — so the cache-bust mechanism for JS is the `?v=` query string on imports in index.html: **bump the version when you deploy a changed JS module**, and because HTML is no-cache the new version reaches users immediately. This fixed the mobile "stuck on 计算中" stale-cache bug (root cause: browser was caching old index.html). Deploy = scp to /tmp → sudo cp to /var/www/worldcup → chown www-data. Server-only files (adUnlock.js, config.local.js, ads.txt) never leave the server.
 
+## Odds-movement radar (2026-06-13)
+
+`scripts/odds-fetcher.js` (deployed to /var/www/worldcup/scripts/) pulls DraftKings moneylines from ESPN per upcoming fixture and appends timestamped snapshots to `/var/www/worldcup/data/odds-history.json` (served at /data/odds-history.json, gitignored). First snapshot seeded 2026-06-13 (69 matches, live & readable). `src/oddsMovement.js` computes drift over the series (stable/drifting/sharp + which side money moved toward) — a watch flag, never a fixing claim (test-enforced). **PENDING: recurring cron** — classifier blocked the auto-install; needs boss to run it or grant permission. Intended entry (root crontab, every 3h):
+`0 */3 * * * cd /var/www/worldcup && /usr/bin/node scripts/odds-fetcher.js /var/www/worldcup/data/odds-history.json >> /var/log/worldcup-odds.log 2>&1 && chown www-data:www-data /var/www/worldcup/data/odds-history.json`
+Until the cron runs, only the seed snapshot exists, so movement stays null (needs ≥2 snapshots). Frontend wiring (async-load /data/odds-history.json, attach `oddsMovementForMatch` to rows) is app.js's lane — Codex.
+
 ## Maintenance Rules
 
 - Keep the app buildless and static unless the user asks for a larger framework.
