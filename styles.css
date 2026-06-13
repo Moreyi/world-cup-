@@ -2564,3 +2564,85 @@ input[type="checkbox"] {
   border-top: 1px solid var(--line);
   padding-top: 18px;
 }
+
+/* ===== Tournament map (top-of-page): group grid + knockout funnel ===== */
+.tournament-map {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px 24px 26px;
+}
+
+.map-band {
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--green-dark);
+  margin: 18px 0 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.map-band:first-of-type { margin-top: 8px; }
+
+.group-map {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.group-map-card {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  padding: 12px 12px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  text-decoration: none;
+  color: var(--ink);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
+}
+.group-map-card:hover {
+  border-color: rgba(21, 148, 97, 0.5);
+  box-shadow: 0 8px 20px -14px rgba(21, 148, 97, 0.6);
+  transform: translateY(-1px);
+}
+
+.gm-head {
+  font-size: 0.82rem;
+  font-weight: 900;
+  color: var(--green-dark);
+  margin-bottom: 4px;
+}
+
+.gm-team {
+  display: grid;
+  grid-template-columns: 16px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  padding: 3px 0;
+  color: var(--muted-strong);
+}
+.gm-team .gm-rank { color: var(--muted); font-weight: 800; font-size: 0.74rem; }
+.gm-team .gm-adv { font-variant-numeric: tabular-nums; color: var(--muted); }
+
+/* Top-2 = projected to advance from the group */
+.gm-team.adv {
+  color: var(--ink);
+  font-weight: 700;
+}
+.gm-team.adv .gm-name::before {
+  content: "▸ ";
+  color: var(--green);
+}
+.gm-team.adv .gm-adv { color: var(--green); font-weight: 800; }
+
+@media (max-width: 980px) {
+  .group-map { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .group-map { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

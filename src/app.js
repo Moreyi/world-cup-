@@ -1,20 +1,20 @@
-import { STARTER_GROUPS } from "./data.js?v=20260613-results7";
-import { buildClubStarModel, getCountryBoost } from "./clubModel.js?v=20260613-results7";
-import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js?v=20260613-results7";
-import { buildGroupMatchAnalysis, recomputeMatchPrediction } from "./matchAnalysis.js?v=20260613-results7";
-import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js?v=20260613-results7";
-import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js?v=20260613-results7";
-import { recentFormForCountry } from "./recentForm.js?v=20260613-results7";
-import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results7";
-import { matchProbabilities, simulateTournament } from "./simulator.js?v=20260613-results7";
-import { coachForCountry } from "./teamStaff.js?v=20260613-results7";
-import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js?v=20260613-results7";
-import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js?v=20260613-results7";
-import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-results7";
-import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-results7";
-import { liveWinProbability } from "./liveModel.js?v=20260613-results7";
-import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-results7";
-import { recommendMarketWeight } from "./calibration.js?v=20260613-results7";
+import { STARTER_GROUPS } from "./data.js?v=20260613-results8";
+import { buildClubStarModel, getCountryBoost } from "./clubModel.js?v=20260613-results8";
+import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js?v=20260613-results8";
+import { buildGroupMatchAnalysis, recomputeMatchPrediction } from "./matchAnalysis.js?v=20260613-results8";
+import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js?v=20260613-results8";
+import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js?v=20260613-results8";
+import { recentFormForCountry } from "./recentForm.js?v=20260613-results8";
+import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results8";
+import { matchProbabilities, simulateTournament } from "./simulator.js?v=20260613-results8";
+import { coachForCountry } from "./teamStaff.js?v=20260613-results8";
+import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js?v=20260613-results8";
+import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js?v=20260613-results8";
+import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-results8";
+import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-results8";
+import { liveWinProbability } from "./liveModel.js?v=20260613-results8";
+import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-results8";
+import { recommendMarketWeight } from "./calibration.js?v=20260613-results8";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
@@ -92,7 +92,7 @@ const elements = {
   matchStats: document.querySelector("#matchStats"),
   matchGroups: document.querySelector("#matchGroups"),
   knockoutBracket: document.querySelector("#knockoutBracket"),
-  bracketSummary: document.querySelector("#bracketSummary"),
+  groupMap: document.querySelector("#groupMap"),
   matchDetail: document.querySelector("#matchDetail"),
   detailBody: document.querySelector("#detailBody"),
   detailBack: document.querySelector("#detailBack"),
@@ -235,6 +235,7 @@ function runSimulation() {
       const elapsed = Math.round(performance.now() - startedAt);
       state.lastResults = results;
       renderResults(results, options.iterations, elapsed);
+      safeRender("group-map", () => renderGroupMap(results));
       safeRender("knockout-bracket", () => renderKnockoutBracket(results));
       renderTrendAnalysis(trend);
       safeRender("match-analysis", () => renderMatchAnalysis(groups, analysisOptions));
@@ -582,7 +583,7 @@ function renderMatchAnalysis(groups, options) {
   elements.matchGroups.innerHTML = Object.entries(byGroup)
     .map(
       ([groupName, matches]) => `
-        <article class="match-group-card compact">
+        <article class="match-group-card compact" id="group-${groupName}">
           <div class="match-group-title">Group ${groupName}</div>
           <div class="match-rows">
             ${matches.map(renderCompactMatchRow).join("")}
@@ -615,6 +616,37 @@ function renderCompactMatchRow(match) {
       <span class="row-go" aria-hidden="true">›</span>
     </a>
   `;
+}
+
+// Top-of-page group map: 12 group cards, each ranking its 4 teams by their
+// advance-from-group probability (roundOf32 = made the knockout field). Top 2
+// highlighted. Each card links down to that group's match rows.
+function renderGroupMap(results) {
+  if (!elements.groupMap) return;
+  const byName = new Map((results ?? []).map((r) => [r.name, r]));
+  elements.groupMap.innerHTML = state.groups
+    .map((group) => {
+      const teams = group.teams
+        .map((team) => ({ name: team.name, advance: byName.get(team.name)?.roundOf32Probability ?? null }))
+        .sort((a, b) => (b.advance ?? -1) - (a.advance ?? -1));
+      const rows = teams
+        .map(
+          (team, index) => `
+            <div class="gm-team${index < 2 ? " adv" : ""}">
+              <span class="gm-rank">${index + 1}</span>
+              <span class="gm-name">${countryName(team.name)}</span>
+              <b class="gm-adv">${team.advance != null ? formatPercent(team.advance) : "--"}</b>
+            </div>`
+        )
+        .join("");
+      return `
+        <a class="group-map-card" href="#group-${group.name}">
+          <div class="gm-head">Group ${group.name}</div>
+          ${rows}
+        </a>
+      `;
+    })
+    .join("");
 }
 
 function renderKnockoutBracket(results) {

@@ -144,6 +144,12 @@ export const STRINGS = {
   "confidence.top": { en: "Top pick", zh: "头号信心" },
   "confidence.level": { en: "Confidence", zh: "信心" },
   "confidence.locked": { en: "Free view shows the lean and confidence tier; exact win probability and predicted score are in the unlocked report.", zh: "免费版展示倾向与信心等级;精确胜率与预测比分在解锁版展示。" },
+  // tournament map (top of page)
+  "map.eyebrow": { en: "Tournament Map", zh: "Tournament Map" },
+  "map.title": { en: "2026 World Cup — All Groups & Knockout", zh: "2026 世界杯 · 全分组与晋级图" },
+  "map.summary": { en: "12 groups · advance % from the live simulation · tap a group for its matches.", zh: "12 个小组 · 出线概率来自实时模拟 · 点小组看该组比赛。" },
+  "map.groupStage": { en: "Group Stage", zh: "小组赛" },
+  "map.knockout": { en: "Knockout — Projected Progression", zh: "淘汰赛 · 晋级概率" },
   // knockout bracket
   "bracket.eyebrow": { en: "Knockout", zh: "Knockout" },
   "bracket.title": { en: "Knockout Progression", zh: "晋级概率图" },
