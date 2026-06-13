@@ -4,6 +4,7 @@ import { buildTacticalPreview } from "./teamTactics.js";
 import { fuseProbabilities, marketProbabilitiesForMatch } from "./marketFusion.js";
 import { fullFixtureByMatchId } from "./fixtureCalendar.js";
 import { venueEloBoost } from "./venueFactors.js";
+import { officiatingFactor } from "./refereeFactors.js";
 
 const GROUP_PAIRINGS = [
   { matchday: 1, pair: [0, 1] },
@@ -51,6 +52,10 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
       const favoriteWinProbability = Math.max(probabilities.teamA, probabilities.teamB);
       const underdogWinProbability = Math.min(probabilities.teamA, probabilities.teamB);
       const edge = Math.abs(probabilities.teamA - probabilities.teamB);
+      // Officiating climate raises upset variance (strict refs widen the
+      // underdog's path) without shifting the Elo-driven winner.
+      const officiating = officiatingFactor(fixtureInfo?.referee);
+      const upsetOrDrawProbability = Math.min(0.95, underdogWinProbability + probabilities.draw + officiating.upsetBoost);
       const result = resultOverrides.find((entry) => entry.matchId === matchId) ?? resultByMatchId(matchId);
       validateResultTeams(result, matchId, teamA, teamB);
       const predictedScore = predictScore(teamA, teamB, probabilities);
@@ -76,15 +81,16 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
           venueBoostA || venueBoostB
             ? { venue: fixtureInfo?.venue, teamA: venueBoostA, teamB: venueBoostB }
             : null,
+        officiating,
         predictedScore,
         tacticalPreview: buildTacticalPreview(matchShell),
         favorite,
         favoriteWinProbability,
         underdogWinProbability,
-        upsetOrDrawProbability: underdogWinProbability + probabilities.draw,
+        upsetOrDrawProbability,
         edge,
         result,
-        darkHorse: result?.status !== "final" && underdogWinProbability + probabilities.draw >= 0.55,
+        darkHorse: result?.status !== "final" && upsetOrDrawProbability >= 0.55,
         postMatch: result ? analyzeResult(result, probabilities, teamA, teamB) : null,
         profile: result?.status === "final" ? "已结束" : result?.status === "live" ? "进行中" : classifyMatch(edge, probabilities.draw)
       };

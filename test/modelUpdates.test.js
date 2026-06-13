@@ -169,3 +169,23 @@ test("fixture calendar and venue factors", async (t) => {
     assert.equal(b1.venueFactor, null);
   });
 });
+
+test("officiating / referee factor", async (t) => {
+  const { officiatingFactor, CARD_CLIMATE } = await import("../src/refereeFactors.js");
+  const { buildGroupMatchAnalysis } = await import("../src/matchAnalysis.js");
+
+  await t.test("flags a strict card climate as raising upset variance", () => {
+    const f = officiatingFactor();
+    assert.equal(f.strictness, "high"); // 3 reds / 2 matches = 1.5 per match
+    assert.ok(f.upsetBoost > 0 && f.upsetBoost <= 0.05);
+    assert.ok(f.note);
+  });
+
+  await t.test("upset boost is bounded and reflected on match rows", () => {
+    const analysis = buildGroupMatchAnalysis(STARTER_GROUPS, { seed: 5 });
+    for (const m of analysis.matches) {
+      assert.ok(m.officiating && typeof m.officiating.upsetBoost === "number");
+      assert.ok(m.upsetOrDrawProbability <= 0.95);
+    }
+  });
+});
