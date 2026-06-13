@@ -1,11 +1,11 @@
 import { STARTER_GROUPS } from "./data.js";
 import { buildClubStarModel, getCountryBoost } from "./clubModel.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
-import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260613-results2";
+import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260613-results3";
 import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js";
 import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
 import { recentFormForCountry } from "./recentForm.js";
-import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results2";
+import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results3";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
 import { coachForCountry } from "./teamStaff.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
@@ -701,6 +701,7 @@ function renderUpsetMatches(matches, todayDate) {
 }
 
 function renderConfidenceMatches(matches, todayDate) {
+  if (!elements.confidenceMatches) return;
   elements.confidenceSummary.textContent = `${todayDate} · Top ${matches.length}`;
   elements.confidenceMatches.innerHTML = matches
     .map((match, index) => {
