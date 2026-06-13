@@ -27,7 +27,8 @@ never overwritten — factors only adjust the probability inputs):
 1. **Base Elo** — real eloratings.net values, plus **dynamic Elo** that updates
    from finished results (K=60) so completed games change the odds.
 2. **Club / star form** and **policy / external-environment** adjustments.
-3. **Market fusion** — blends the model with vig-free bookmaker odds.
+3. **Market calibration** — blends the model with vig-free public market
+   signals.
 4. **Altitude** — Mexico City (2,240m) and Guadalajara (1,566m) give
    acclimatized teams an edge.
 5. **Officiating** — a strict card climate widens upset/draw variance.
@@ -39,10 +40,16 @@ never overwritten — factors only adjust the probability inputs):
 - Win/draw/loss probabilities and a predicted score for every match
 - Real 72-match group calendar with venues, kickoff times, and live refresh
 - Monte Carlo simulation of the group stage + 32-team knockout
-- Dark-horse radar — high-upset matches flagged; a flagship tournament
-  dark-horse pick
-- Parlay tool — combine picks into a confidence parlay with theoretical odds
-  (entertainment/research only)
+- Title-favorite and top dark-horse shown side by side; high-upset matches
+  flagged across the radar
+- Live in-play re-prediction — during a match, win/draw/loss updates from the
+  current scoreline, elapsed minute, and pre-match Elo
+- Market-movement radar — tracks public market drift over time and flags a
+  caution chip when it moves (a watch signal, never a fixing claim)
+- Self-calibration — finished matches are scored (Brier) and the market-blend
+  weight auto-tunes from real results over the tournament
+- Confidence-combo tool — combine picks into a multi-match confidence view with
+  a theoretical reference value (entertainment/research only)
 - Free post-match reports — once a match ends, the prediction-vs-result report
   is shown for free
 - Forecast-trend analysis across model stages, editable team ratings, history
@@ -88,7 +95,7 @@ npm test   # run the model/factor test suite
 1. **基础 Elo** — eloratings.net 真实评分,叠加**动态 Elo**(完赛后按 K=60 自更新,
    已结束比赛会改变后续概率)。
 2. **俱乐部/球星状态** 和 **政策/外部环境** 修正。
-3. **市场赔率融合** — 模型与去水后的博彩盘口加权融合。
+3. **市场热度校准** — 模型与去水后的公开市场信号加权融合。
 4. **海拔** — 墨西哥城(2,240m)、瓜达拉哈拉(1,566m)给适应的球队加成。
 5. **裁判判罚** — 判罚趋严会抬升爆冷/平局方差。
 6. **气候热应激** — 场地气温 × 湿度 × 开球时间 × 顶棚,给耐热球队在高热下加成。
@@ -98,8 +105,11 @@ npm test   # run the model/factor test suite
 - 每场比赛的胜平负概率 + 预测比分
 - 真实 72 场小组赛日程(含场馆、开球时间、实时刷新)
 - 小组赛 + 32 强淘汰赛蒙特卡洛模拟
-- 黑马雷达 — 高爆冷场次醒目标记 + 一个招牌级年度黑马预测
-- 预测串工具 — 把多场组合成"信心串",给理论赔率(仅娱乐/研究)
+- 头号夺冠 + 头号黑马并排展示,高爆冷场次全程雷达标记
+- 实时比赛中滚动预测 — 比赛进行时,按当前比分、已踢分钟和赛前 Elo 实时更新胜平负
+- 市场异动雷达 — 跟踪公开市场赔率随时间的漂移,移动时给"谨慎"标记(只作观察信号,绝不指控操控)
+- 自校准 — 已完赛按 Brier 评分,市场融合权重随真实赛果在赛事过程中自动调优
+- 多场信心组合工具 — 把多场组合成研究视图,给理论参考值(仅娱乐/研究)
 - 赛后报告免费 — 比赛一结束,预测 vs 实际的报告免费展示
 - 模型分阶段走势分析、可编辑球队评分、历史面板(2002–2022)、逐场战术/教练背景
 - 英文为主,一键切换中文
@@ -120,5 +130,5 @@ npm test   # 运行模型/因子测试套件
   Elo 随比赛漂移,页面里评分可直接编辑。
 - 已结束赛果先核对信源再录入;逐场赛后复盘对比 模型 vs 市场 vs 实际(带累计
   Brier 分),在赛事过程中持续校准模型。详见 `docs/`。
-- 这不是收益模型。预测是娱乐与数据研究用途的估计,不构成任何投注、投资或财务
+- 这不是收益模型。预测是娱乐与数据研究用途的估计,不构成任何收益、投资或财务
   建议,与任何赛事组织无隶属关系。
