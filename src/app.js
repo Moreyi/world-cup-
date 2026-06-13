@@ -1,17 +1,17 @@
 import { STARTER_GROUPS } from "./data.js";
 import { buildClubStarModel, getCountryBoost } from "./clubModel.js";
 import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
-import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260613-compliance";
+import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260613-results2";
 import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js";
 import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
 import { recentFormForCountry } from "./recentForm.js";
-import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260612-live";
+import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results2";
 import { matchProbabilities, simulateTournament } from "./simulator.js";
 import { coachForCountry } from "./teamStaff.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
 import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
 import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-unlock2";
-import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-compliance2";
+import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-compliance3";
 import { liveWinProbability } from "./liveModel.js";
 import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-compliance";
 import { recommendMarketWeight } from "./calibration.js";
@@ -209,7 +209,7 @@ function runSimulation() {
 
 async function refreshRealtimeData() {
   elements.refreshLiveButton.disabled = true;
-  elements.refreshLiveButton.textContent = "更新中";
+  elements.refreshLiveButton.textContent = t("status.updating");
   elements.status.textContent = "Syncing";
   try {
     const analysis = buildGroupMatchAnalysis(applySelectedBoosts(state.groups, readOptions()), withRealtimeOptions(readOptions()));
@@ -224,10 +224,10 @@ async function refreshRealtimeData() {
     runSimulation();
   } catch (error) {
     state.realtime.error = error.message;
-    elements.status.textContent = "更新失败";
+    elements.status.textContent = t("status.updateFailed");
   } finally {
     elements.refreshLiveButton.disabled = false;
-    elements.refreshLiveButton.textContent = "更新实时数据";
+    elements.refreshLiveButton.textContent = t("btn.refresh");
   }
 }
 
@@ -471,7 +471,7 @@ function renderTeamControls() {
                 <label class="rating-row">
                   <span title="${countryName(team.name)}">
                     ${countryName(team.name)}
-                    <em>主帅：${coachLabel(team.name)}</em>
+                    <em>${t("card.coach")}：${coachLabel(team.name)}</em>
                   </span>
                   <input
                     type="number"
@@ -550,7 +550,7 @@ function renderTodayMatchCard(match) {
 
   const fixture = match.fixture;
   const kickoff = formatKickoffTime(fixture);
-  const statusText = fixture?.status === "live" ? "进行中" : "待开赛";
+  const statusText = fixture?.status === "live" ? t("card.statusLive") : t("card.statusUpcoming");
   return `
     <article class="today-match-card">
       <div class="today-match-meta">
@@ -577,16 +577,16 @@ function renderTodayMatchCard(match) {
 function renderFreeLeanSummary(match) {
   const lean = match.probabilities.teamA >= match.probabilities.teamB ? match.teamA : match.teamB;
   const confidence = Math.abs(match.probabilities.teamA - match.probabilities.teamB);
-  const leanText = confidence >= 0.08 ? `${countryName(lean.name)}不败倾向` : "双方接近，谨慎看待";
+  const leanText = confidence >= 0.08 ? `${countryName(lean.name)} ${t("card.unbeatenLean")}` : t("card.leanClose");
   return `
     <div class="forecast-summary">
       <div>
-        <span>简单倾向</span>
+        <span>${t("card.simpleLean")}</span>
         <strong>${leanText}</strong>
       </div>
       <div>
-        <span>高级分析</span>
-        <strong>比分、概率、爆冷指数需解锁</strong>
+        <span>${t("card.advanced")}</span>
+        <strong>${t("card.advancedLocked")}</strong>
       </div>
     </div>
   `;
@@ -597,26 +597,26 @@ function renderPremiumAnalysis(match, options = {}) {
     return `
       <div class="premium-panel unlocked">
         <div class="premium-head">
-          <span>高级分析已解锁</span>
+          <span>${t("premium.unlocked")}</span>
           <strong>${simpleLeanLabel(match)}</strong>
         </div>
         <div class="forecast-summary">
           <div>
-            <span>最终比分预测</span>
+            <span>${t("premium.predScore")}</span>
             <strong>${countryName(match.teamA.name)} ${match.predictedScore.teamA}-${match.predictedScore.teamB} ${countryName(match.teamB.name)}</strong>
           </div>
           <div>
-            <span>胜平负概率</span>
-            <strong>${countryName(match.teamA.name)} ${formatPercent(match.probabilities.teamA)} · 平 ${formatPercent(
+            <span>${t("premium.wdl")}</span>
+            <strong>${countryName(match.teamA.name)} ${formatPercent(match.probabilities.teamA)} · ${t("card.drawShort")} ${formatPercent(
               match.probabilities.draw
             )} · ${countryName(match.teamB.name)} ${formatPercent(match.probabilities.teamB)}</strong>
           </div>
           <div>
-            <span>爆冷指数</span>
+            <span>${t("premium.upsetIndex")}</span>
             <strong>${formatPercent(match.upsetOrDrawProbability)}</strong>
           </div>
           <div>
-            <span>模型信心值</span>
+            <span>${t("premium.confidence")}</span>
             <strong>${premiumConfidence(match)}</strong>
           </div>
         </div>
@@ -628,10 +628,10 @@ function renderPremiumAnalysis(match, options = {}) {
   return `
     <div class="premium-panel locked">
       <div>
-        <strong>高级分析</strong>
-        <span>包含最终比分预测、胜平负概率、爆冷指数、模型信心值和一句话结论。</span>
+        <strong>${t("card.advanced")}</strong>
+        <span>${t("premium.lockedDesc")}</span>
       </div>
-      <button type="button" class="unlock-button" data-ad-unlock-match="${match.id}">查看高级分析</button>
+      <button type="button" class="unlock-button" data-ad-unlock-match="${match.id}">${t("premium.unlockBtn")}</button>
       <p class="unlock-message" data-unlock-message="${match.id}" aria-live="polite"></p>
       ${options.showDetailAd ? renderDetailAdSlot(match) : ""}
     </div>
@@ -697,8 +697,8 @@ function renderMatchCard(match) {
         <strong>${countryName(match.teamB.name)}</strong>
       </div>
       <div class="match-read">
-        <span>简单倾向：${simpleLeanLabel(match)}</span>
-        <span>高级分析：比分、概率、爆冷指数需解锁</span>
+        <span>${t("card.simpleLean")}：${simpleLeanLabel(match)}</span>
+        <span>${t("card.advanced")}：${t("card.advancedLocked")}</span>
       </div>
       ${renderOddsMovement(match)}
       ${renderPremiumAnalysis(match)}
@@ -710,9 +710,9 @@ function renderMatchCard(match) {
 function renderCompletedMatchCard(match) {
   const { result, postMatch } = match;
   const score = `${result.score.teamA}-${result.score.teamB}`;
-  const hitText = postMatch.predictionHit ? "方向命中" : "方向偏离";
-  const winnerText = postMatch.actualWinner ? countryName(postMatch.actualWinner.name) : "平局";
-  const statusLabel = result.status === "live" ? "进行中" : "已结束";
+  const hitText = postMatch.predictionHit ? t("post.hit") : t("post.miss");
+  const winnerText = postMatch.actualWinner ? countryName(postMatch.actualWinner.name) : t("post.draw");
+  const statusLabel = result.status === "live" ? t("card.statusLive") : t("card.statusFinal");
 
   return `
     <article class="match-card completed">
@@ -726,12 +726,12 @@ function renderCompletedMatchCard(match) {
         <strong>${countryName(match.teamB.name)}</strong>
       </div>
       <div class="match-read post-match-read">
-        <span>实际：${winnerText} · ${hitText}</span>
+        <span>${t("post.actual")}：${winnerText} · ${hitText}</span>
       </div>
       ${result.status === "live" ? renderLiveProbability(match) : ""}
       ${renderPremiumPostMatch(match)}
       <div class="post-match-note">
-        <strong>赛后分析</strong>
+        <strong>${t("post.report")}</strong>
         <p>${buildPostMatchCopy(match)}</p>
       </div>
     </article>
@@ -791,7 +791,7 @@ function buildPostMatchCopy(match) {
 function simpleLeanLabel(match) {
   const lean = match.probabilities.teamA >= match.probabilities.teamB ? match.teamA : match.teamB;
   const confidence = Math.abs(match.probabilities.teamA - match.probabilities.teamB);
-  return confidence >= 0.08 ? `${countryName(lean.name)}不败倾向` : "双方接近";
+  return confidence >= 0.08 ? `${countryName(lean.name)} ${t("card.unbeatenLean")}` : t("card.leanClose");
 }
 
 async function handleAdUnlockClick(event) {
@@ -908,7 +908,7 @@ function renderTeamDataPanel(team) {
   return `
     <div class="today-team-data">
       <strong>${countryName(team.name)} · Elo ${Math.round(team.elo)}</strong>
-      <span>主帅：${coach.chineseName}${coach.name !== "TBD" ? ` / ${coach.name}` : ""}</span>
+      <span>${t("card.coach")}：${coach.chineseName}${coach.name !== "TBD" ? ` / ${coach.name}` : ""}</span>
       <span>核心：${starLine}</span>
     </div>
   `;
@@ -982,7 +982,7 @@ function findNationalStarProfile(country) {
 function formatKickoffTime(fixture = {}) {
   if (fixture.dateTime) {
     const date = new Date(fixture.dateTime);
-    return `${formatTimeZoneHour(date, "America/New_York")} ET / ${formatTimeZoneHour(date, "Asia/Shanghai")} 北京`;
+    return `${formatTimeZoneHour(date, "America/New_York")} ET / ${formatTimeZoneHour(date, "Asia/Shanghai")} ${t("time.beijing")}`;
   }
   return `今日 ${fixture.timeET} ET`;
 }
