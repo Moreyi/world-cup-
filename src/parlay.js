@@ -1,11 +1,11 @@
-// Parlay ("串关") engine — data-entertainment only.
+// Multi-match confidence-combo engine — data-entertainment only.
 //
 // Combines the model's per-match win/draw/loss probabilities into a multi-leg
-// parlay: combined hit rate + the theoretical fair decimal odds it implies,
-// and (when market odds exist) the combined market price for comparison. This
+// combination: combined hit rate + the theoretical fair decimal reference value
+// it implies, and (when market signals exist) the combined market reference for comparison. This
 // is a model-confidence combination for research/entertainment — it does NOT
-// place bets, does not link to bookmakers, and theoretical odds are derived
-// from our own probabilities, not an invitation to wager.
+// trigger transactions, does not link to market operators, and theoretical
+// values are derived from our own probabilities, not an invitation to act on them.
 //
 // Legs are treated as independent; real matches have mild correlations, so the
 // combined number is an upper-ish estimate. Always surface that caveat.
@@ -62,7 +62,7 @@ export function buildParlay(selections) {
     combinedProbability: Number(combinedProbability.toFixed(4)),
     theoreticalOdds: combinedProbability > 0 ? Number((1 / combinedProbability).toFixed(2)) : null,
     combinedMarketOdds: combinedMarketProbability ? Number((1 / combinedMarketProbability).toFixed(2)) : null,
-    note: "模型置信组合，腿间按独立处理；仅供娱乐与数据研究，不构成投注建议。"
+    note: "模型置信组合，腿间按独立处理；仅供娱乐与数据研究，不构成收益、投资或财务建议。"
   };
 }
 

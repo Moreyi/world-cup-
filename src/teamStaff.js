@@ -16,8 +16,8 @@ export const TEAM_STAFF = {
   Australia: coach("Tony Popovic", "托尼·波波维奇"),
   Turkey: coach("Vincenzo Montella", "文森佐·蒙特拉"),
   Germany: coach("Julian Nagelsmann", "尤利安·纳格尔斯曼"),
-  Curacao: coach("Dick Advocaat", "迪克·阿德沃卡特", "需按官方参赛名单复核"),
-  Egypt: coach("Hossam Hassan", "胡萨姆·哈桑", "需按官方参赛名单复核"),
+  Curacao: coach("Dick Advocaat", "迪克·阿德沃卡特", "需按最终参赛名单复核"),
+  Egypt: coach("Hossam Hassan", "胡萨姆·哈桑", "需按最终参赛名单复核"),
   "New Zealand": coach("Darren Bazeley", "达伦·巴泽利"),
   "Ivory Coast": coach("Emerse Faé", "埃梅尔斯·法埃"),
   Ecuador: coach("Sebastián Beccacece", "塞巴斯蒂安·贝卡塞塞"),
@@ -28,7 +28,7 @@ export const TEAM_STAFF = {
   England: coach("Thomas Tuchel", "托马斯·图赫尔"),
   Ghana: coach("Carlos Queiroz", "卡洛斯·奎罗斯"),
   Panama: coach("Thomas Christiansen", "托马斯·克里斯蒂安森"),
-  Serbia: coach("Veljko Paunović", "韦利科·保诺维奇", "需按官方参赛名单复核"),
+  Serbia: coach("Veljko Paunović", "韦利科·保诺维奇", "需按最终参赛名单复核"),
   Spain: coach("Luis de la Fuente", "路易斯·德拉富恩特"),
   "Cape Verde": coach("Bubista", "布比斯塔"),
   "Saudi Arabia": coach("Hervé Renard", "埃尔韦·勒纳尔"),
@@ -47,7 +47,7 @@ export const TEAM_STAFF = {
   Colombia: coach("Néstor Lorenzo", "内斯托尔·洛伦索"),
   Croatia: coach("Zlatko Dalić", "兹拉特科·达利奇"),
   Iran: coach("Amir Ghalenoei", "阿米尔·加莱诺埃"),
-  Jamaica: coach("TBD", "待核验", "需按官方参赛名单复核"),
+  Jamaica: coach("TBD", "待核验", "需按最终参赛名单复核"),
   Belgium: coach("Rudi Garcia", "鲁迪·加西亚")
 };
 

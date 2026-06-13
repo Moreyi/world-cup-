@@ -1,17 +1,16 @@
-// Odds-movement radar — turns a time series of bookmaker odds snapshots into a
+// Market-movement radar — turns a time series of public market snapshots into a
 // pre-match drift signal. Upgrades the single-snapshot marketSignal into "how
-// did the price MOVE", which is the input real integrity monitors use.
+// did the public market MOVE", which is useful context for model caution.
 //
 // Honest scope (same red line as marketSignal.js): movement reflects informed
-// money / injury / lineup news far more often than anything improper, and World
-// Cup matches are the least likely to be manipulated. A sharp move is a
+// injury / lineup news far more often than anything improper. A sharp move is a
 // "watch / treat with caution" flag, NEVER a fixing accusation. Copy is
 // test-enforced to avoid fixing language.
 //
-// Snapshots use ESPN home/away/draw moneylines (a consistent key over time);
+// Snapshots use ESPN home/away/draw market lines (a consistent key over time);
 // the UI maps home/away to team names via the snapshot's `home`/`away` labels.
 
-import { americanToImpliedProbability } from "./policyOddsModel.js";
+import { americanToImpliedProbability } from "./policyOddsModel.js?v=20260613-results5";
 
 function impliedFromMoneylines(ml) {
   if (!ml || ml.home == null || ml.away == null) return null;
@@ -59,10 +58,10 @@ export function computeOddsMovement(history) {
     movedTowardTeam: movedToward === "home" ? latest?.home : movedToward === "away" ? latest?.away : "Draw",
     note:
       level === "sharp"
-        ? "赛前盘口明显移动:多因伤停/首发/资金面信息,本场预测请谨慎参考。"
+        ? "赛前市场明显移动:多因伤停/首发/资金面信息,本场预测请谨慎参考。"
         : level === "drifting"
-        ? "盘口有温和移动,建议结合最新信息。"
-        : "盘口基本平稳。"
+        ? "市场有温和移动,建议结合最新信息。"
+        : "市场基本平稳。"
   };
 }
 

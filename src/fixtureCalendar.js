@@ -1,7 +1,7 @@
 // Full 2026 group-stage calendar (all 72 matches), generated from the ESPN
 // scoreboard API on 2026-06-13. `date`/`timeET` are US Eastern (UTC-4).
 // Manually verified entries in src/liveResults.js take precedence at merge
-// time in src/matchAnalysis.js; regenerate this file if FIFA reschedules.
+// time in src/matchAnalysis.js; regenerate this file if the schedule changes.
 export const FULL_MATCH_CALENDAR = {
   "A-1": { dateTime: "2026-06-11T19:00:00Z", date: "2026-06-11", timeET: "15:00", venue: "Estadio Banorte", city: "Mexico City", espnGameId: "760415" },
   "A-2": { dateTime: "2026-06-12T02:00:00Z", date: "2026-06-11", timeET: "22:00", venue: "Estadio Akron", city: "Guadalajara", espnGameId: "760414" },

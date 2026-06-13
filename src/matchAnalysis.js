@@ -1,12 +1,12 @@
-import { matchProbabilities } from "./simulator.js";
-import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260613-results2";
-import { buildTacticalPreview } from "./teamTactics.js";
-import { fuseProbabilities, marketProbabilitiesForMatch } from "./marketFusion.js";
-import { fullFixtureByMatchId } from "./fixtureCalendar.js";
-import { venueEloBoost } from "./venueFactors.js";
-import { officiatingFactor } from "./refereeFactors.js";
-import { climateEloBoost, heatStress } from "./climateFactors.js";
-import { marketSignal } from "./marketSignal.js?v=20260613-compliance";
+import { matchProbabilities } from "./simulator.js?v=20260613-results5";
+import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260613-results5";
+import { buildTacticalPreview } from "./teamTactics.js?v=20260613-results5";
+import { fuseProbabilities, marketProbabilitiesForMatch } from "./marketFusion.js?v=20260613-results5";
+import { fullFixtureByMatchId } from "./fixtureCalendar.js?v=20260613-results5";
+import { venueEloBoost } from "./venueFactors.js?v=20260613-results5";
+import { officiatingFactor } from "./refereeFactors.js?v=20260613-results5";
+import { climateEloBoost, heatStress } from "./climateFactors.js?v=20260613-results5";
+import { marketSignal } from "./marketSignal.js?v=20260613-results5";
 
 const GROUP_PAIRINGS = [
   { matchday: 1, pair: [0, 1] },

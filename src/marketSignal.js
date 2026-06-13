@@ -6,8 +6,8 @@
 // Surfacing that divergence is genuinely useful: it tells the user "treat our
 // pick here with caution; the market sees it differently."
 //
-// What this IS NOT: a match-fixing detector. Real integrity monitoring (FIFA /
-// Sportradar UFDS) needs time-series odds across many bookmakers to spot
+// What this IS NOT: a match-fixing detector. Real integrity monitoring needs
+// time-series prices across many market sources to spot
 // abnormal pre-match drift, and even then flags are probabilistic. We have a
 // single-snapshot price, so we MUST NOT label any match or team as "fixed" or
 // "manipulated" — that is defamatory and false-positive-prone. The strongest
@@ -44,9 +44,9 @@ export function marketSignal(modelProb, marketProb) {
     // Display copy: a caution flag, never a fixing claim.
     note:
       level === "strong"
-        ? "市场与模型分歧大：盘口可能已计入伤停/阵容/资金面信息，谨慎看待本场预测。"
+        ? "市场与模型分歧大：公开市场可能已计入伤停/阵容/资金面信息，谨慎看待本场预测。"
         : level === "notable"
-        ? "市场与模型存在分歧,建议结合盘口参考。"
+        ? "市场与模型存在分歧,建议结合外部校准参考。"
         : "市场与模型基本一致。"
   };
 }

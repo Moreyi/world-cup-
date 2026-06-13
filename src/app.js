@@ -1,20 +1,20 @@
-import { STARTER_GROUPS } from "./data.js";
-import { buildClubStarModel, getCountryBoost } from "./clubModel.js";
-import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js";
-import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260613-results4";
-import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js";
-import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js";
-import { recentFormForCountry } from "./recentForm.js";
-import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results4";
-import { matchProbabilities, simulateTournament } from "./simulator.js";
-import { coachForCountry } from "./teamStaff.js";
-import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
-import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
-import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-unlock2";
-import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-results4";
-import { liveWinProbability } from "./liveModel.js";
-import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-compliance";
-import { recommendMarketWeight } from "./calibration.js";
+import { STARTER_GROUPS } from "./data.js?v=20260613-results5";
+import { buildClubStarModel, getCountryBoost } from "./clubModel.js?v=20260613-results5";
+import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js?v=20260613-results5";
+import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260613-results5";
+import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js?v=20260613-results5";
+import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js?v=20260613-results5";
+import { recentFormForCountry } from "./recentForm.js?v=20260613-results5";
+import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results5";
+import { matchProbabilities, simulateTournament } from "./simulator.js?v=20260613-results5";
+import { coachForCountry } from "./teamStaff.js?v=20260613-results5";
+import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js?v=20260613-results5";
+import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js?v=20260613-results5";
+import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-results5";
+import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-results5";
+import { liveWinProbability } from "./liveModel.js?v=20260613-results5";
+import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-results5";
+import { recommendMarketWeight } from "./calibration.js?v=20260613-results5";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),

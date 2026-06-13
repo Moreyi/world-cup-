@@ -1,4 +1,4 @@
-// Groups verified against ESPN FIFA World Cup standings (retrieved 2026-06-12).
+// Groups verified against ESPN tournament standings (retrieved 2026-06-12).
 // Elo ratings are real values from eloratings.net (retrieved 2026-06-12), used as-is.
 // Team order inside each group follows the real matchday-1 pairing (1v2, 3v4).
 export const STARTER_GROUPS = [

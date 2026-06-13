@@ -6,7 +6,7 @@
 // docs/forecast-accuracy-research.md, off-field factor table).
 
 // Patterns absorb naming variants ("Estadio Banorte" = "Estadio Azteca" =
-// FIFA's "Mexico City Stadium") across ESPN and manually entered venues.
+// "Mexico City Stadium") across ESPN and manually entered venues.
 const VENUE_ALTITUDES = [
   { pattern: /banorte|azteca|mexico city/i, altitudeM: 2240 },
   { pattern: /akron|guadalajara/i, altitudeM: 1566 },

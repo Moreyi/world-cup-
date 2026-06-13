@@ -4,7 +4,7 @@
   "description": "A browser-based 2026 World Cup Elo win-probability and Monte Carlo forecasting tool.",
   "type": "module",
   "scripts": {
-    "test": "node --test"
+    "test": "node --import ./tools/register-version-strip.mjs --test"
   },
   "keywords": [
     "world-cup",
