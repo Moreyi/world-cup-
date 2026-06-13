@@ -194,6 +194,10 @@ English-first with a Chinese toggle. `src/i18n.js` holds the EN/ZH string table 
 
 `src/parlay.js` builds multi-leg parlays ("串") from match-analysis rows: `buildParlay(selections)` → combined hit rate + theoretical fair decimal odds + per-leg breakdown + combined market odds when every leg has market data; `recommendedParlay(matches, {legs, minConfidence})` auto-picks each match's modal outcome, most-confident first; `valueParlay(matches, {legs, minEdge})` picks legs where model prob beats market implied prob. Legs treated as independent (caveat surfaced in the `note`). Strictly data-entertainment: theoretical odds from our own probabilities, NO real betting, NO bookmaker links — keep that framing in any UI. Deployed; UI surface ("今日高信心串" card) is Codex's app.js/index.html lane — wire it there. Tests in test/modelUpdates.test.js (51 pass).
 
+## Deploy / cache (2026-06-13)
+
+Origin nginx (`worldcup.renrenren.cn` vhost) serves HTML **and** `.js`/`.mjs` with `Cache-Control: no-cache` (added 2026-06-13 with boss authorization; backup in ~/backups/). Cloudflare does NOT edge-cache HTML (cf-cache-status DYNAMIC) but DOES edge-cache `.js` (~max-age 14400) — so the cache-bust mechanism for JS is the `?v=` query string on imports in index.html: **bump the version when you deploy a changed JS module**, and because HTML is no-cache the new version reaches users immediately. This fixed the mobile "stuck on 计算中" stale-cache bug (root cause: browser was caching old index.html). Deploy = scp to /tmp → sudo cp to /var/www/worldcup → chown www-data. Server-only files (adUnlock.js, config.local.js, ads.txt) never leave the server.
+
 ## Maintenance Rules
 
 - Keep the app buildless and static unless the user asks for a larger framework.
