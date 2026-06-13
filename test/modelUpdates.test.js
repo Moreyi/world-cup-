@@ -258,3 +258,20 @@ test("parlay engine", async (t) => {
     assert.ok(vp.edges.every((e) => e.edge >= 0.04));
   });
 });
+
+test("market signal (model-vs-market divergence)", async (t) => {
+  const { marketSignal } = await import("../src/marketSignal.js");
+
+  await t.test("returns null without market data", () => {
+    assert.equal(marketSignal({ teamA: 0.5, draw: 0.3, teamB: 0.2 }, null), null);
+  });
+
+  await t.test("grades divergence and never claims fixing", () => {
+    const aligned = marketSignal({ teamA: 0.5, draw: 0.3, teamB: 0.2 }, { teamA: 0.52, draw: 0.29, teamB: 0.19 });
+    assert.equal(aligned.level, "aligned");
+    const strong = marketSignal({ teamA: 0.29, draw: 0.27, teamB: 0.44 }, { teamA: 0.46, draw: 0.3, teamB: 0.24 });
+    assert.equal(strong.level, "strong");
+    assert.equal(strong.marketLeansTo, "teamA");
+    assert.ok(!/fix|manipulat|操控|假球/i.test(strong.note)); // never a fixing accusation
+  });
+});

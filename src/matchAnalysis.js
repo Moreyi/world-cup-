@@ -6,6 +6,7 @@ import { fullFixtureByMatchId } from "./fixtureCalendar.js";
 import { venueEloBoost } from "./venueFactors.js";
 import { officiatingFactor } from "./refereeFactors.js";
 import { climateEloBoost, heatStress } from "./climateFactors.js";
+import { marketSignal } from "./marketSignal.js";
 
 const GROUP_PAIRINGS = [
   { matchday: 1, pair: [0, 1] },
@@ -88,6 +89,7 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
             ? { venue: fixtureInfo?.venue, teamA: venueBoostA, teamB: venueBoostB }
             : null,
         officiating,
+        marketSignal: marketSignal(modelProbabilities, marketProbabilities),
         climate: {
           ...heatStress(fixtureInfo?.venue, fixtureInfo?.timeET),
           teamA: climateBoostA,
