@@ -2330,3 +2330,209 @@ input[type="checkbox"] {
     text-align: left;
   }
 }
+
+/* ===== Compact group-stage rows + knockout bracket + match detail ===== */
+
+.match-groups.compact {
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.match-group-card.compact {
+  padding: 14px 16px 16px;
+}
+
+.match-rows {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.match-row {
+  display: grid;
+  grid-template-columns: 38px 1fr auto 14px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  text-decoration: none;
+  color: var(--ink);
+  border: 1px solid transparent;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.match-row:hover {
+  background: var(--green-soft);
+  border-color: var(--line-strong);
+}
+
+.match-row .row-id {
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: var(--muted);
+}
+
+.match-row .row-teams {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.match-row .row-vs {
+  color: var(--muted);
+  font-weight: 600;
+  margin: 0 4px;
+}
+
+.match-row .row-score {
+  color: var(--green-dark);
+  margin: 0 4px;
+}
+
+.match-row .row-tag {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--green);
+  white-space: nowrap;
+}
+
+.match-row .row-tag.hit { color: var(--green); }
+.match-row .row-tag.miss { color: var(--red); }
+.match-row .row-go { color: var(--muted); font-weight: 900; }
+
+/* Knockout progression funnel */
+.bracket-panel { margin-top: 18px; }
+
+.bracket {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(140px, 1fr);
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.bracket-col {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px;
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.bracket-col-head {
+  font-size: 0.78rem;
+  font-weight: 900;
+  color: var(--green-dark);
+  text-align: center;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--line);
+}
+
+.bracket-team {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.82rem;
+}
+
+.bracket-team b { color: var(--green); }
+
+/* Match detail (二级页面) */
+.detail-shell {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 18px 20px 60px;
+}
+
+.detail-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.detail-breadcrumb { font-weight: 800; color: var(--muted-strong); }
+
+.detail-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px 26px 28px;
+  display: grid;
+  gap: 22px;
+}
+
+.detail-teams {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.detail-teams span { color: var(--muted); font-size: 1rem; }
+.detail-meta { color: var(--muted); margin-top: 4px; }
+
+/* Prediction bars (live recompute target) */
+.pred-bars { display: grid; gap: 8px; }
+
+.pred-bar {
+  display: grid;
+  grid-template-columns: 92px 1fr 56px;
+  align-items: center;
+  gap: 10px;
+}
+
+.pred-bar .bar {
+  background: var(--line);
+  border-radius: 999px;
+  height: 12px;
+  overflow: hidden;
+}
+
+.pred-bar .bar i { display: block; height: 100%; background: var(--green); border-radius: 999px; }
+.pred-bar .bar.draw i { background: var(--gold); }
+.pred-bar b { text-align: right; font-variant-numeric: tabular-nums; }
+
+.pred-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: var(--muted-strong);
+}
+
+/* Factor panel */
+.factor-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+  background: var(--green-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.factor-group { display: grid; gap: 10px; align-content: start; }
+.factor-group h3 { font-size: 0.82rem; font-weight: 900; color: var(--green-dark); margin: 0; }
+
+.factor-row { display: grid; grid-template-columns: 1fr; gap: 4px; font-size: 0.82rem; }
+.factor-row .factor-label { color: var(--muted-strong); font-weight: 700; }
+.factor-row .factor-label em { color: var(--red); font-style: normal; font-weight: 700; }
+.factor-row input[type="range"] { width: 100%; accent-color: var(--green); }
+.factor-row output { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--ink); }
+
+.factor-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 700; }
+.factor-toggle input { accent-color: var(--green); }
+
+.detail-reset { margin-top: 6px; justify-self: start; }
+.detail-analysis { display: grid; gap: 16px; }
+.detail-missing { color: var(--muted-strong); padding: 40px 0; text-align: center; }
+
+@media (max-width: 640px) {
+  .detail-teams { font-size: 1.15rem; }
+  .pred-bar { grid-template-columns: 76px 1fr 50px; }
+}

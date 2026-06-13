@@ -6,7 +6,7 @@ import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "../
 import { MATCH_RESULTS } from "../src/liveResults.js";
 import { clubName, countryName, localizeCountryText, positionName } from "../src/localization.js";
 import { setLang } from "../src/i18n.js";
-import { buildGroupMatchAnalysis } from "../src/matchAnalysis.js";
+import { buildGroupMatchAnalysis, recomputeMatchPrediction } from "../src/matchAnalysis.js";
 import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "../src/nationalStars.js";
 import {
   americanToImpliedProbability,
@@ -197,6 +197,26 @@ describe("match-by-match analysis", () => {
       );
     }
     assert.ok(analysis.confidenceMatches[0].confidenceLevel);
+  });
+
+  it("recomputeMatchPrediction reacts to tuned factors and stays normalized", () => {
+    const base = { teamA: { name: "Brazil", elo: 1991 }, teamB: { name: "Morocco", elo: 1827 } };
+    const baseline = recomputeMatchPrediction(base, {});
+    const total = baseline.probabilities.teamA + baseline.probabilities.draw + baseline.probabilities.teamB;
+    assert.ok(Math.abs(total - 1) < 1e-9);
+    // Raising team A's Elo must raise team A's win probability.
+    const stronger = recomputeMatchPrediction(base, { eloA: 2200 });
+    assert.ok(stronger.probabilities.teamA > baseline.probabilities.teamA);
+    // A venue/altitude boost to the underdog narrows the edge.
+    const boostedDog = recomputeMatchPrediction(base, { venueBoostB: 120 });
+    assert.ok(boostedDog.edge < baseline.edge);
+    // Market fusion path: pulls toward the supplied market probabilities.
+    const withMarket = recomputeMatchPrediction(
+      { ...base, marketProbabilities: { teamA: 0.2, draw: 0.3, teamB: 0.5 } },
+      { marketWeight: 1 }
+    );
+    assert.ok(Math.abs(withMarket.probabilities.teamA - 0.2) < 1e-9);
+    assert.ok(baseline.predictedScore.label.includes("-"));
   });
 
   it("keeps each match outcome distribution normalized", () => {

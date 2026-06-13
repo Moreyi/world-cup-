@@ -1,20 +1,20 @@
-import { STARTER_GROUPS } from "./data.js?v=20260613-results5";
-import { buildClubStarModel, getCountryBoost } from "./clubModel.js?v=20260613-results5";
-import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js?v=20260613-results5";
-import { buildGroupMatchAnalysis } from "./matchAnalysis.js?v=20260613-results5";
-import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js?v=20260613-results5";
-import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js?v=20260613-results5";
-import { recentFormForCountry } from "./recentForm.js?v=20260613-results5";
-import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results5";
-import { matchProbabilities, simulateTournament } from "./simulator.js?v=20260613-results5";
-import { coachForCountry } from "./teamStaff.js?v=20260613-results5";
-import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js?v=20260613-results5";
-import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js?v=20260613-results5";
-import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-results5";
-import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-results5";
-import { liveWinProbability } from "./liveModel.js?v=20260613-results5";
-import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-results5";
-import { recommendMarketWeight } from "./calibration.js?v=20260613-results5";
+import { STARTER_GROUPS } from "./data.js?v=20260613-results6";
+import { buildClubStarModel, getCountryBoost } from "./clubModel.js?v=20260613-results6";
+import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js?v=20260613-results6";
+import { buildGroupMatchAnalysis, recomputeMatchPrediction } from "./matchAnalysis.js?v=20260613-results6";
+import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js?v=20260613-results6";
+import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js?v=20260613-results6";
+import { recentFormForCountry } from "./recentForm.js?v=20260613-results6";
+import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results6";
+import { matchProbabilities, simulateTournament } from "./simulator.js?v=20260613-results6";
+import { coachForCountry } from "./teamStaff.js?v=20260613-results6";
+import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js?v=20260613-results6";
+import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js?v=20260613-results6";
+import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-results6";
+import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-results6";
+import { liveWinProbability } from "./liveModel.js?v=20260613-results6";
+import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-results6";
+import { recommendMarketWeight } from "./calibration.js?v=20260613-results6";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
@@ -26,8 +26,22 @@ const state = {
     fixtureOverrides: [],
     error: null
   },
-  oddsHistory: null
+  oddsHistory: null,
+  lastResults: null,
+  detail: { id: null, context: null }
 };
+
+// Knockout progression funnel from the Monte Carlo stage-reach probabilities
+// (the model is probabilistic, so there is no single bracket — this shows who
+// is most likely to reach each round, at a glance). Declared before the init
+// sequence so the first runSimulation() can reference it without a TDZ error.
+const BRACKET_ROUNDS = [
+  { key: "winProbability", label: "冠军", n: 1 },
+  { key: "finalProbability", label: "决赛", n: 2 },
+  { key: "semifinalProbability", label: "4 强", n: 4 },
+  { key: "quarterfinalProbability", label: "8 强", n: 8 },
+  { key: "roundOf16Probability", label: "16 强", n: 16 }
+];
 
 const elements = {
   iterations: document.querySelector("#iterations"),
@@ -77,6 +91,13 @@ const elements = {
   matchAnalysisSummary: document.querySelector("#matchAnalysisSummary"),
   matchStats: document.querySelector("#matchStats"),
   matchGroups: document.querySelector("#matchGroups"),
+  knockoutBracket: document.querySelector("#knockoutBracket"),
+  bracketSummary: document.querySelector("#bracketSummary"),
+  matchDetail: document.querySelector("#matchDetail"),
+  detailBody: document.querySelector("#detailBody"),
+  detailBack: document.querySelector("#detailBack"),
+  detailBreadcrumb: document.querySelector("#detailBreadcrumb"),
+  appShell: document.querySelector("#overview"),
   teamsGrid: document.querySelector("#teamsGrid"),
   clubModelSummary: document.querySelector("#clubModelSummary"),
   clubModelStats: document.querySelector("#clubModelStats"),
@@ -117,6 +138,13 @@ loadOddsHistory();
 
 elements.simulateButton.addEventListener("click", runSimulation);
 elements.refreshLiveButton.addEventListener("click", refreshRealtimeData);
+window.addEventListener("hashchange", handleRoute);
+elements.detailBack?.addEventListener("click", () => {
+  // Prefer browser history so the back button feels native; fall back to hash.
+  if (window.history.length > 1) window.history.back();
+  else window.location.hash = "#overview";
+});
+handleRoute(); // honor a deep-linked #match/<id> on first load
 document.querySelector("#langToggle")?.addEventListener("click", handleLangToggle);
 document.addEventListener("click", handleAdUnlockClick);
 elements.resetButton.addEventListener("click", () => {
@@ -205,7 +233,9 @@ function runSimulation() {
       const results = simulateTournament(groups, simulationOptions);
       const trend = runTrendAnalysis(simulationOptions);
       const elapsed = Math.round(performance.now() - startedAt);
+      state.lastResults = results;
       renderResults(results, options.iterations, elapsed);
+      safeRender("knockout-bracket", () => renderKnockoutBracket(results));
       renderTrendAnalysis(trend);
       safeRender("match-analysis", () => renderMatchAnalysis(groups, analysisOptions));
       renderMatchup();
@@ -544,20 +574,267 @@ function renderMatchAnalysis(groups, options) {
     }</span></div>
   `;
 
+  // Stash matches + the options used, so the detail view can recompute any one.
+  state.analysisMatches = analysis.matches;
+  state.analysisOptions = options;
+
   const byGroup = groupBy(analysis.matches, (match) => match.group);
   elements.matchGroups.innerHTML = Object.entries(byGroup)
     .map(
       ([groupName, matches]) => `
-        <article class="match-group-card">
+        <article class="match-group-card compact">
           <div class="match-group-title">Group ${groupName}</div>
-          <div class="match-list">
-            ${matches.map(renderMatchCard).join("")}
+          <div class="match-rows">
+            ${matches.map(renderCompactMatchRow).join("")}
           </div>
         </article>
       `
     )
     .join("");
   renderDisplayAds();
+  // If the detail view is open, keep it in sync with the new analysis.
+  if (state.detail.id) handleRoute();
+}
+
+// Compact, glanceable row for the group-stage overview. Shows lean direction
+// only (exact probabilities stay on the detail page), and links to the
+// drill-down route. Finished games show the score + hit/miss marker.
+function renderCompactMatchRow(match) {
+  const isFinal = match.result?.status === "final";
+  const mid = isFinal
+    ? `<b class="row-score">${match.result.score.teamA}-${match.result.score.teamB}</b>`
+    : `<span class="row-vs">vs</span>`;
+  const tail = isFinal
+    ? `<span class="row-tag ${match.postMatch.predictionHit ? "hit" : "miss"}">${match.postMatch.predictionHit ? "✓ 命中" : "✗ 偏差"}</span>`
+    : `<span class="row-tag">${simpleLeanLabel(match)}</span>`;
+  return `
+    <a class="match-row" href="#match/${match.id}">
+      <span class="row-id">${match.id}</span>
+      <span class="row-teams">${countryName(match.teamA.name)} ${mid} ${countryName(match.teamB.name)}</span>
+      ${tail}
+      <span class="row-go" aria-hidden="true">›</span>
+    </a>
+  `;
+}
+
+function renderKnockoutBracket(results) {
+  if (!elements.knockoutBracket) return;
+  if (!results?.length) {
+    elements.knockoutBracket.innerHTML = "";
+    return;
+  }
+  elements.knockoutBracket.innerHTML = BRACKET_ROUNDS.map((round) => {
+    const ranked = [...results].sort((a, b) => (b[round.key] ?? 0) - (a[round.key] ?? 0)).slice(0, round.n);
+    const rows = ranked
+      .map(
+        (team) => `
+          <div class="bracket-team">
+            <span>${countryName(team.name)}</span>
+            <b>${formatPercent(team[round.key] ?? 0)}</b>
+          </div>`
+      )
+      .join("");
+    return `
+      <div class="bracket-col">
+        <div class="bracket-col-head">${round.label}</div>
+        ${rows}
+      </div>
+    `;
+  }).join("");
+}
+
+// ---- Hash router: overview vs #match/<id> detail view -----------------------
+
+function handleRoute() {
+  const match = (window.location.hash || "").match(/^#match\/(.+)$/);
+  if (match) {
+    showMatchDetail(decodeURIComponent(match[1]));
+  } else {
+    hideMatchDetail();
+  }
+}
+
+function showMatchDetail(id) {
+  const found = (state.analysisMatches ?? []).find((m) => m.id === id);
+  state.detail.id = id;
+  if (elements.appShell) elements.appShell.hidden = true;
+  if (elements.matchDetail) elements.matchDetail.hidden = false;
+  window.scrollTo(0, 0);
+  if (!found) {
+    elements.detailBreadcrumb.textContent = id;
+    elements.detailBody.innerHTML = `<p class="detail-missing">${t("detail.notFound")}</p>`;
+    return;
+  }
+  renderMatchDetail(found);
+}
+
+function hideMatchDetail() {
+  state.detail.id = null;
+  state.detail.context = null;
+  if (elements.matchDetail) elements.matchDetail.hidden = true;
+  if (elements.appShell) elements.appShell.hidden = false;
+}
+
+function renderMatchDetail(match) {
+  const options = state.analysisOptions ?? {};
+  const a = match.teamA;
+  const b = match.teamB;
+  // Per-layer Elo deltas, computed regardless of the global toggle state so the
+  // detail panel can switch each layer independently.
+  const deltas = {
+    formA: getCountryBoost(state.clubStarModel, a.name),
+    policyA: getPolicyBoost(state.policyOddsModel, a.name),
+    oddsA: getOddsBoost(state.policyOddsModel, a.name),
+    formB: getCountryBoost(state.clubStarModel, b.name),
+    policyB: getPolicyBoost(state.policyOddsModel, b.name),
+    oddsB: getOddsBoost(state.policyOddsModel, b.name)
+  };
+  state.detail.context = {
+    base: {
+      teamA: { name: a.name, elo: a.baseElo ?? a.elo, host: a.host },
+      teamB: { name: b.name, elo: b.baseElo ?? b.elo, host: b.host },
+      marketProbabilities: match.marketProbabilities ?? null
+    },
+    deltas,
+    match
+  };
+
+  const def = {
+    eloA: Math.round(a.baseElo ?? a.elo),
+    eloB: Math.round(b.baseElo ?? b.elo),
+    homeAdvantage: Number(options.homeAdvantage ?? 0),
+    drawBias: Number(options.drawBias ?? 0.28),
+    venueBoostA: match.venueFactor?.teamA ?? 0,
+    venueBoostB: match.venueFactor?.teamB ?? 0,
+    climateBoostA: match.climate?.teamA ?? 0,
+    climateBoostB: match.climate?.teamB ?? 0,
+    refereeUpsetBoost: Number((match.officiating?.upsetBoost ?? 0).toFixed(3)),
+    marketWeight: Number(options.marketWeight ?? 0.5)
+  };
+  const hasMarket = Boolean(match.marketProbabilities);
+
+  elements.detailBreadcrumb.textContent = `Group ${match.group} · ${match.id}`;
+  elements.detailBody.innerHTML = `
+    <article class="detail-card">
+      <header class="detail-head">
+        <div class="detail-teams">
+          <strong>${countryName(a.name)}</strong>
+          <span>vs</span>
+          <strong>${countryName(b.name)}</strong>
+        </div>
+        <p class="detail-meta">${match.fixture?.date ?? match.window ?? ""}${
+          match.fixture?.venue ? ` · ${match.fixture.venue}` : ""
+        }${match.fixture?.timeET ? ` · ${match.fixture.timeET} ET` : ""}</p>
+      </header>
+
+      <div class="detail-prediction" id="detailPrediction"></div>
+
+      <div class="factor-panel">
+        <div class="factor-group">
+          <h3>${t("detail.coreFactors")}</h3>
+          ${rangeRow("f_eloA", `${countryName(a.name)} Elo`, 1200, 2300, 1, def.eloA)}
+          ${rangeRow("f_eloB", `${countryName(b.name)} Elo`, 1200, 2300, 1, def.eloB)}
+          ${rangeRow("f_home", t("detail.homeAdv"), 0, 120, 1, def.homeAdvantage)}
+          ${rangeRow("f_draw", t("detail.drawBias"), 0.04, 0.34, 0.01, def.drawBias)}
+        </div>
+        <div class="factor-group">
+          <h3>${t("detail.venueClimate")}</h3>
+          ${rangeRow("f_venA", `${t("detail.altitude")} · ${countryName(a.name)}`, 0, 60, 1, def.venueBoostA)}
+          ${rangeRow("f_venB", `${t("detail.altitude")} · ${countryName(b.name)}`, 0, 60, 1, def.venueBoostB)}
+          ${rangeRow("f_cliA", `${t("detail.heat")} · ${countryName(a.name)}`, 0, 40, 1, def.climateBoostA)}
+          ${rangeRow("f_cliB", `${t("detail.heat")} · ${countryName(b.name)}`, 0, 40, 1, def.climateBoostB)}
+        </div>
+        <div class="factor-group">
+          <h3>${t("detail.refMarket")}</h3>
+          ${rangeRow("f_ref", t("detail.refStrict"), 0, 0.12, 0.005, def.refereeUpsetBoost)}
+          ${rangeRow("f_mkt", t("detail.marketWeight"), 0, 1, 0.05, def.marketWeight, hasMarket ? "" : t("detail.noMarket"))}
+        </div>
+        <div class="factor-group">
+          <h3>${t("detail.modelLayers")}</h3>
+          ${toggleRow("f_form", `${t("detail.starLayer")} (${formatSigned(Math.round(deltas.formA))}/${formatSigned(Math.round(deltas.formB))})`, options.useFormModel)}
+          ${toggleRow("f_policy", `${t("detail.policyLayer")} (${formatSigned(Math.round(deltas.policyA))}/${formatSigned(Math.round(deltas.policyB))})`, options.usePolicyModel)}
+          ${toggleRow("f_odds", `${t("detail.oddsLayer")} (${formatSigned(Math.round(deltas.oddsA))}/${formatSigned(Math.round(deltas.oddsB))})`, options.useOddsModel)}
+          <button type="button" class="secondary detail-reset" id="detailReset">${t("detail.reset")}</button>
+        </div>
+      </div>
+
+      <div class="detail-analysis">
+        ${renderTacticalPreview(match)}
+        ${renderRecentForm(match)}
+      </div>
+    </article>
+  `;
+
+  elements.detailBody.querySelectorAll("input").forEach((input) => {
+    input.addEventListener("input", recomputeFromPanel);
+  });
+  elements.detailBody.querySelector("#detailReset")?.addEventListener("click", () => renderMatchDetail(match));
+  recomputeFromPanel();
+}
+
+function rangeRow(id, label, min, max, step, value, note = "") {
+  return `
+    <label class="factor-row" for="${id}">
+      <span class="factor-label">${label}${note ? ` <em>${note}</em>` : ""}</span>
+      <input type="range" id="${id}" min="${min}" max="${max}" step="${step}" value="${value}" />
+      <output id="${id}_out">${value}</output>
+    </label>
+  `;
+}
+
+function toggleRow(id, label, checked) {
+  return `
+    <label class="factor-toggle" for="${id}">
+      <input type="checkbox" id="${id}" ${checked ? "checked" : ""} />
+      <span>${label}</span>
+    </label>
+  `;
+}
+
+function recomputeFromPanel() {
+  const ctx = state.detail.context;
+  if (!ctx) return;
+  const num = (id) => Number(elements.detailBody.querySelector(`#${id}`)?.value ?? 0);
+  const on = (id) => Boolean(elements.detailBody.querySelector(`#${id}`)?.checked);
+  // Reflect each slider's live value into its output.
+  elements.detailBody.querySelectorAll('input[type="range"]').forEach((input) => {
+    const out = elements.detailBody.querySelector(`#${input.id}_out`);
+    if (out) out.textContent = input.value;
+  });
+
+  const layerA = (on("f_form") ? ctx.deltas.formA : 0) + (on("f_policy") ? ctx.deltas.policyA : 0) + (on("f_odds") ? ctx.deltas.oddsA : 0);
+  const layerB = (on("f_form") ? ctx.deltas.formB : 0) + (on("f_policy") ? ctx.deltas.policyB : 0) + (on("f_odds") ? ctx.deltas.oddsB : 0);
+
+  const result = recomputeMatchPrediction(ctx.base, {
+    eloA: num("f_eloA") + layerA,
+    eloB: num("f_eloB") + layerB,
+    homeAdvantage: num("f_home"),
+    drawBias: num("f_draw"),
+    venueBoostA: num("f_venA"),
+    venueBoostB: num("f_venB"),
+    climateBoostA: num("f_cliA"),
+    climateBoostB: num("f_cliB"),
+    refereeUpsetBoost: num("f_ref"),
+    marketWeight: num("f_mkt")
+  });
+
+  const p = result.probabilities;
+  const a = ctx.base.teamA;
+  const b = ctx.base.teamB;
+  const target = elements.detailBody.querySelector("#detailPrediction");
+  if (!target) return;
+  target.innerHTML = `
+    <div class="pred-bars">
+      <div class="pred-bar"><span>${countryName(a.name)}</span><div class="bar"><i style="width:${(p.teamA * 100).toFixed(1)}%"></i></div><b>${formatPercent(p.teamA)}</b></div>
+      <div class="pred-bar"><span>${t("card.drawShort")}</span><div class="bar draw"><i style="width:${(p.draw * 100).toFixed(1)}%"></i></div><b>${formatPercent(p.draw)}</b></div>
+      <div class="pred-bar"><span>${countryName(b.name)}</span><div class="bar"><i style="width:${(p.teamB * 100).toFixed(1)}%"></i></div><b>${formatPercent(p.teamB)}</b></div>
+    </div>
+    <div class="pred-meta">
+      <span>${t("detail.predScore")}: <b>${countryName(a.name)} ${result.predictedScore.teamA}-${result.predictedScore.teamB} ${countryName(b.name)}</b></span>
+      <span>${t("detail.favorite")}: <b>${countryName(result.favorite.name)} ${formatPercent(result.favoriteWinProbability)}</b></span>
+      <span>${t("detail.upsetIndex")}: <b>${formatPercent(result.upsetOrDrawProbability)}</b></span>
+    </div>
+  `;
 }
 
 function renderTodayMatches(matches, todayDate) {

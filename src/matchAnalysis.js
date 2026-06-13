@@ -1,12 +1,12 @@
-import { matchProbabilities } from "./simulator.js?v=20260613-results5";
-import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260613-results5";
-import { buildTacticalPreview } from "./teamTactics.js?v=20260613-results5";
-import { fuseProbabilities, marketProbabilitiesForMatch } from "./marketFusion.js?v=20260613-results5";
-import { fullFixtureByMatchId } from "./fixtureCalendar.js?v=20260613-results5";
-import { venueEloBoost } from "./venueFactors.js?v=20260613-results5";
-import { officiatingFactor } from "./refereeFactors.js?v=20260613-results5";
-import { climateEloBoost, heatStress } from "./climateFactors.js?v=20260613-results5";
-import { marketSignal } from "./marketSignal.js?v=20260613-results5";
+import { matchProbabilities } from "./simulator.js?v=20260613-results6";
+import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260613-results6";
+import { buildTacticalPreview } from "./teamTactics.js?v=20260613-results6";
+import { fuseProbabilities, marketProbabilitiesForMatch } from "./marketFusion.js?v=20260613-results6";
+import { fullFixtureByMatchId } from "./fixtureCalendar.js?v=20260613-results6";
+import { venueEloBoost } from "./venueFactors.js?v=20260613-results6";
+import { officiatingFactor } from "./refereeFactors.js?v=20260613-results6";
+import { climateEloBoost, heatStress } from "./climateFactors.js?v=20260613-results6";
+import { marketSignal } from "./marketSignal.js?v=20260613-results6";
 
 const GROUP_PAIRINGS = [
   { matchday: 1, pair: [0, 1] },
@@ -156,6 +156,51 @@ function nextDate(dateStr) {
   const [year, month, day] = dateStr.split("-").map(Number);
   const next = new Date(Date.UTC(year, month - 1, day + 1));
   return next.toISOString().slice(0, 10);
+}
+
+// Recompute a single match's prediction from base teams + (optional) market
+// odds, parameterized by manually-tuned factors. Pure: never mutates input.
+// Used by the match-detail view's factor panel for live what-if recompute.
+// Elo-shaped knobs (model toggles, star boost) are folded into eloA/eloB by the
+// caller; this helper only needs the final Elo plus the display-time knobs.
+export function recomputeMatchPrediction(base, factors = {}) {
+  const venueBoostA = Number(factors.venueBoostA ?? 0);
+  const venueBoostB = Number(factors.venueBoostB ?? 0);
+  const climateBoostA = Number(factors.climateBoostA ?? 0);
+  const climateBoostB = Number(factors.climateBoostB ?? 0);
+  const eloA = Number(factors.eloA ?? base.teamA.elo);
+  const eloB = Number(factors.eloB ?? base.teamB.elo);
+  const ratedTeamA = { ...base.teamA, elo: eloA + venueBoostA + climateBoostA };
+  const ratedTeamB = { ...base.teamB, elo: eloB + venueBoostB + climateBoostB };
+  const options = {
+    homeAdvantage: Number(factors.homeAdvantage ?? 0),
+    drawBias: Number(factors.drawBias ?? 0.28)
+  };
+  const modelProbabilities = matchProbabilities(ratedTeamA, ratedTeamB, options);
+  const marketProbabilities = base.marketProbabilities ?? null;
+  const marketWeight = Number(factors.marketWeight ?? 0.5);
+  const probabilities = marketProbabilities
+    ? { ...modelProbabilities, ...fuseProbabilities(modelProbabilities, marketProbabilities, marketWeight) }
+    : modelProbabilities;
+  const favorite = probabilities.teamA >= probabilities.teamB ? base.teamA : base.teamB;
+  const favoriteWinProbability = Math.max(probabilities.teamA, probabilities.teamB);
+  const underdogWinProbability = Math.min(probabilities.teamA, probabilities.teamB);
+  const edge = Math.abs(probabilities.teamA - probabilities.teamB);
+  const refereeUpsetBoost = Number(factors.refereeUpsetBoost ?? 0);
+  const upsetOrDrawProbability = Math.min(0.95, underdogWinProbability + probabilities.draw + refereeUpsetBoost);
+  const predictedScore = predictScore(ratedTeamA, ratedTeamB, probabilities);
+  return {
+    probabilities,
+    modelProbabilities,
+    marketProbabilities,
+    favorite,
+    favoriteWinProbability,
+    underdogWinProbability,
+    edge,
+    upsetOrDrawProbability,
+    predictedScore,
+    inputs: { eloA, eloB, venueBoostA, venueBoostB, climateBoostA, climateBoostB, ...options, marketWeight, refereeUpsetBoost }
+  };
 }
 
 function validateResultTeams(result, matchId, teamA, teamB) {

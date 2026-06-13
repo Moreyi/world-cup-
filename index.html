@@ -51,6 +51,7 @@
       <nav class="dashboard-tabs" aria-label="世界杯预测模块">
         <a class="active" href="#overview"><span></span><i data-i18n="tab.overview">Overview</i></a>
         <a href="#match-analysis"><span></span><i data-i18n="tab.matchAnalysis">Match Predictions</i></a>
+        <a href="#knockout"><span></span><i data-i18n="tab.knockout">Knockout</i></a>
         <a href="#history"><span></span><i data-i18n="tab.history">History</i></a>
         <a href="#teams"><span></span><i data-i18n="tab.teams">Team Database</i></a>
         <a href="#policy"><span></span><i data-i18n="tab.policy">Pre-Match Factors</i></a>
@@ -335,7 +336,18 @@
           <p id="matchAnalysisSummary" data-i18n="ma.summary">Per-match probabilities for all 72 group games.</p>
         </div>
         <div class="match-stats" id="matchStats"></div>
-        <div class="match-groups" id="matchGroups"></div>
+        <div class="match-groups compact" id="matchGroups"></div>
+      </section>
+
+      <section class="bracket-panel" id="knockout" aria-label="晋级对阵图">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-i18n="bracket.eyebrow">Knockout</p>
+            <h2 data-i18n="bracket.title">Projected Knockout Bracket</h2>
+          </div>
+          <p id="bracketSummary" data-i18n="bracket.summary">Seeded from current championship simulation.</p>
+        </div>
+        <div class="bracket" id="knockoutBracket"></div>
       </section>
 
       <section class="teams-panel" id="teams" aria-label="球队 Elo 编辑">
@@ -478,6 +490,14 @@
       </section>
     </main>
 
+    <main class="detail-shell" id="matchDetail" hidden aria-label="比赛详情">
+      <div class="detail-bar">
+        <button type="button" class="secondary" id="detailBack" data-i18n="detail.back">← Back to overview</button>
+        <span id="detailBreadcrumb" class="detail-breadcrumb"></span>
+      </div>
+      <div id="detailBody"></div>
+    </main>
+
     <footer class="site-footer">
       <nav aria-label="站点信息">
         <a href="#about" data-i18n="footer.about">About</a>
@@ -509,6 +529,6 @@
       <strong data-i18n="ad.bottom">Bottom display ad slot</strong>
     </div>
 
-    <script type="module" src="src/app.js?v=20260613-results5"></script>
+    <script type="module" src="src/app.js?v=20260613-results6"></script>
   </body>
 </html>
