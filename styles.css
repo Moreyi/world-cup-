@@ -225,6 +225,13 @@ button.secondary {
   padding: 36px 28px 32px;
 }
 
+/* An author display rule beats the UA [hidden] style, so the router's
+   hidden toggle needs an explicit override to actually hide a shell. */
+.app-shell[hidden],
+.detail-shell[hidden] {
+  display: none !important;
+}
+
 .overview-cards {
   display: grid;
   grid-template-columns: 1.1fr 1.1fr 1.1fr 1.1fr;
@@ -2535,4 +2542,25 @@ input[type="checkbox"] {
 @media (max-width: 640px) {
   .detail-teams { font-size: 1.15rem; }
   .pred-bar { grid-template-columns: 76px 1fr 50px; }
+}
+
+/* Detail page: gated verdict vs open what-if sandbox */
+.detail-section-title {
+  font-size: 0.92rem;
+  font-weight: 900;
+  color: var(--green-dark);
+  margin: 0 0 10px;
+}
+
+.detail-section-title em {
+  font-style: normal;
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.detail-verdict,
+.detail-sandbox {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
 }

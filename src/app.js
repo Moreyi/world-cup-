@@ -1,20 +1,20 @@
-import { STARTER_GROUPS } from "./data.js?v=20260613-results6";
-import { buildClubStarModel, getCountryBoost } from "./clubModel.js?v=20260613-results6";
-import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js?v=20260613-results6";
-import { buildGroupMatchAnalysis, recomputeMatchPrediction } from "./matchAnalysis.js?v=20260613-results6";
-import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js?v=20260613-results6";
-import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js?v=20260613-results6";
-import { recentFormForCountry } from "./recentForm.js?v=20260613-results6";
-import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results6";
-import { matchProbabilities, simulateTournament } from "./simulator.js?v=20260613-results6";
-import { coachForCountry } from "./teamStaff.js?v=20260613-results6";
-import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js?v=20260613-results6";
-import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js?v=20260613-results6";
-import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-results6";
-import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-results6";
-import { liveWinProbability } from "./liveModel.js?v=20260613-results6";
-import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-results6";
-import { recommendMarketWeight } from "./calibration.js?v=20260613-results6";
+import { STARTER_GROUPS } from "./data.js?v=20260613-results7";
+import { buildClubStarModel, getCountryBoost } from "./clubModel.js?v=20260613-results7";
+import { WORLD_CUP_2026_CONTEXT, WORLD_CUP_HISTORY, summarizeHistory } from "./history.js?v=20260613-results7";
+import { buildGroupMatchAnalysis, recomputeMatchPrediction } from "./matchAnalysis.js?v=20260613-results7";
+import { NATIONAL_STAR_PROFILES, summarizeNationalStars } from "./nationalStars.js?v=20260613-results7";
+import { buildPolicyOddsModel, getOddsBoost, getPolicyBoost } from "./policyOddsModel.js?v=20260613-results7";
+import { recentFormForCountry } from "./recentForm.js?v=20260613-results7";
+import { fetchRealtimeFixtures } from "./realtimeData.js?v=20260613-results7";
+import { matchProbabilities, simulateTournament } from "./simulator.js?v=20260613-results7";
+import { coachForCountry } from "./teamStaff.js?v=20260613-results7";
+import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js?v=20260613-results7";
+import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js?v=20260613-results7";
+import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-results7";
+import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-results7";
+import { liveWinProbability } from "./liveModel.js?v=20260613-results7";
+import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-results7";
+import { recommendMarketWeight } from "./calibration.js?v=20260613-results7";
 
 const state = {
   groups: cloneGroups(STARTER_GROUPS),
@@ -727,7 +727,14 @@ function renderMatchDetail(match) {
         }${match.fixture?.timeET ? ` · ${match.fixture.timeET} ET` : ""}</p>
       </header>
 
-      <div class="detail-prediction" id="detailPrediction"></div>
+      <section class="detail-verdict">
+        <h3 class="detail-section-title">${t("detail.modelVerdict")}</h3>
+        ${renderPremiumAnalysis(match)}
+      </section>
+
+      <section class="detail-sandbox">
+        <h3 class="detail-section-title">${t("detail.sandboxTitle")} <em>${t("detail.sandboxNote")}</em></h3>
+        <div class="detail-prediction" id="detailPrediction"></div>
 
       <div class="factor-panel">
         <div class="factor-group">
@@ -757,6 +764,7 @@ function renderMatchDetail(match) {
           <button type="button" class="secondary detail-reset" id="detailReset">${t("detail.reset")}</button>
         </div>
       </div>
+      </section>
 
       <div class="detail-analysis">
         ${renderTacticalPreview(match)}
