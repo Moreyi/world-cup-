@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>World Cup Predictor</title>
+    <title>Football Match Research Dashboard</title>
     <meta
       name="description"
       content="足球赛前数据研究工具，提供今日比赛基础信息、近期状态、赛前变量和娱乐向模型分析。"
     />
-    <link rel="stylesheet" href="styles.css?v=20260613-ad-width" />
+    <link rel="stylesheet" href="styles.css?v=20260613-card-air2" />
     <link rel="stylesheet" href="styles-polish.css?v=20260613-1" />
     <script>
       window.WorldCupAdConfig = {
@@ -24,6 +24,8 @@
       };
     </script>
     <script src="config.local.js?v=20260613-adsense3"></script>
+    <!-- AdSense loader + account meta are injected at runtime from config.local.js (server-only),
+         so the real publisher ID never lives in committed HTML. -->
   </head>
   <body>
     <header class="dashboard-header">
@@ -32,66 +34,91 @@
           <span></span>
         </div>
         <div>
-          <h1>世界杯预测控制台</h1>
-          <p>2026 足球赛前数据研究 · 蒙特卡洛情报驾驶舱</p>
+          <h1 data-i18n="app.title">Football Match Research Dashboard</h1>
+          <p data-i18n="app.subtitle">2026 pre-match data research · Monte Carlo intelligence</p>
         </div>
       </div>
       <div class="header-status">
         <span class="online-dot"></span>
-        <span>模型在线</span>
+        <span data-i18n="header.online">Model online</span>
         <span class="header-divider"></span>
-        <span>最后更新</span>
+        <span data-i18n="header.lastUpdated">Last updated</span>
         <strong id="lastUpdated">6月12日 17:42:33</strong>
-        <button id="refreshLiveButton" type="button" class="secondary">更新实时数据</button>
-        <button id="simulateButton" type="button">重新模拟</button>
+        <button id="langToggle" type="button" class="secondary" data-i18n="btn.langToggle">中文</button>
+        <button id="refreshLiveButton" type="button" class="secondary" data-i18n="btn.refresh">Refresh live data</button>
+        <button id="simulateButton" type="button" data-i18n="btn.simulate">Re-run simulation</button>
       </div>
       <nav class="dashboard-tabs" aria-label="世界杯预测模块">
-        <a class="active" href="#overview"><span></span>赛事总览</a>
-        <a href="#match-analysis"><span></span>对阵预测</a>
-        <a href="#history"><span></span>历史分析</a>
-        <a href="#teams"><span></span>球队数据库</a>
-        <a href="#policy"><span></span>赛前变量</a>
-        <a href="#settings"><span></span>模型设置</a>
-        <a href="#club-model"><span></span>数据更新中心</a>
+        <a class="active" href="#overview"><span></span><i data-i18n="tab.overview">Overview</i></a>
+        <a href="#match-analysis"><span></span><i data-i18n="tab.matchAnalysis">Match Predictions</i></a>
+        <a href="#history"><span></span><i data-i18n="tab.history">History</i></a>
+        <a href="#teams"><span></span><i data-i18n="tab.teams">Team Database</i></a>
+        <a href="#policy"><span></span><i data-i18n="tab.policy">Pre-Match Factors</i></a>
+        <a href="#settings"><span></span><i data-i18n="tab.settings">Model Settings</i></a>
+        <a href="#club-model"><span></span><i data-i18n="tab.clubModel">Data Center</i></a>
       </nav>
     </header>
 
     <main class="app-shell" id="overview">
       <section class="ad-slot ad-slot-home" data-ad-slot="home" aria-label="首页广告">
-        <span>广告</span>
-        <strong>展示广告位</strong>
+        <span data-i18n="ad.label">Ad</span>
+        <strong data-i18n="ad.home">Display ad slot</strong>
       </section>
 
-      <section class="legal-note" aria-label="免责声明提示">
-        本站预测仅供娱乐和数据研究参考，不构成任何收益、投资或财务建议。
+      <section class="legal-note" aria-label="免责声明提示" data-i18n="legal.note">
+        Predictions are for entertainment and research only — not betting, investment, or financial advice.
+      </section>
+
+      <section class="content-guide" id="about" aria-label="站点方法与数据说明">
+        <div class="guide-copy">
+          <p class="eyebrow" data-i18n="guide.eyebrow">Method</p>
+          <h2 data-i18n="guide.title">Independent pre-match research, updated as fixtures move</h2>
+          <p data-i18n="guide.body">
+            This dashboard compares team strength, recent form, coach tendencies, player availability, venue context, travel distance, and public market heat. The free view focuses on fixtures, team context, recent results, head-to-head notes, and a plain-language model readout. Advanced projections are separated behind a compliant rewarded-ad interface when available.
+          </p>
+        </div>
+        <div class="guide-grid" aria-label="站点内容特点">
+          <article>
+            <strong data-i18n="guide.card1Title">Fixture context</strong>
+            <span data-i18n="guide.card1Body">Daily matches, local kickoff time, venue, status, and post-match notes when results are final.</span>
+          </article>
+          <article>
+            <strong data-i18n="guide.card2Title">Team research</strong>
+            <span data-i18n="guide.card2Body">Elo baseline, recent form, coach style, core players, and tactical matchup notes.</span>
+          </article>
+          <article>
+            <strong data-i18n="guide.card3Title">Transparent limits</strong>
+            <span data-i18n="guide.card3Body">Data sources are mixed public references and manual verification; predictions are estimates, not guarantees.</span>
+          </article>
+        </div>
       </section>
 
       <section class="overview-cards" aria-label="赛事总览">
         <article class="headline-card">
-          <p>夺冠头号热门</p>
+          <p data-i18n="ov.topFavorite">Title favorite</p>
           <div class="headline-team">
             <span class="flag flag-generic" id="heroFlag" aria-hidden="true"></span>
-            <strong id="heroTeam">计算中</strong>
+            <strong id="heroTeam">--</strong>
           </div>
           <b id="heroProbability">--</b>
-          <span id="heroMeta">夺冠概率 · 实力分 --</span>
+          <span id="heroMeta"></span>
         </article>
         <article class="overview-card confidence-card">
           <div class="ring" aria-hidden="true"><span id="confidenceScore">76</span></div>
           <div>
-            <p>模型信心指数</p>
-            <strong id="confidenceLabel">高 · 格局清晰</strong>
-            <span id="confidenceNote">基于冠军分布集中度</span>
+            <p data-i18n="ov.confidence">Model confidence</p>
+            <strong id="confidenceLabel"></strong>
+            <span id="confidenceNote"></span>
           </div>
         </article>
         <article class="overview-card">
-          <p>模拟规模</p>
+          <p data-i18n="ov.simScale">Simulation scale</p>
           <strong id="simulationScale">5,000</strong>
-          <span>12 个小组 · 强度前 32 队</span>
+          <span data-i18n="ov.simScaleNote">12 groups · top 32 by strength</span>
         </article>
         <article class="overview-card">
-          <p>数据状态</p>
-          <strong><span class="ready-dot"></span> 已就绪</strong>
+          <p data-i18n="ov.dataStatus">Data status</p>
+          <strong><span class="ready-dot"></span> <span data-i18n="ov.ready">Ready</span></strong>
           <span id="dataStatusTime">6月12日 17:42:33</span>
         </article>
       </section>
@@ -99,10 +126,10 @@
       <section class="today-panel" id="today" aria-label="今日比赛">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Today</p>
-            <h2>今日比赛</h2>
+            <p class="eyebrow" data-i18n="today.eyebrow">Today</p>
+            <h2 data-i18n="today.title">Today's Matches</h2>
           </div>
-          <p id="todaySummary">读取今日赛程</p>
+          <p id="todaySummary" data-i18n="today.loading">Loading today's fixtures</p>
         </div>
         <div class="today-matches" id="todayMatches"></div>
       </section>
@@ -110,10 +137,10 @@
       <section class="upset-panel" aria-label="爆冷预测">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Upset Radar</p>
-            <h2>爆冷预测</h2>
+            <p class="eyebrow" data-i18n="upset.eyebrow">Upset Radar</p>
+            <h2 data-i18n="upset.title">Upset Radar</h2>
           </div>
-          <p id="upsetSummary">读取风险场次</p>
+          <p id="upsetSummary" data-i18n="upset.loading">Loading risk fixtures</p>
         </div>
         <div class="upset-matches" id="upsetMatches"></div>
       </section>
@@ -122,48 +149,48 @@
         <section class="results-panel" aria-label="模拟结果">
           <div class="ranking-head">
             <div>
-              <h2>2026 冠军概率排行</h2>
-              <p id="summary">蒙特卡洛模拟频率</p>
+              <h2 data-i18n="results.title">2026 Title Probability Ranking</h2>
+              <p id="summary" data-i18n="results.summary">Monte Carlo frequency</p>
             </div>
-            <b>TOP 10</b>
+            <b data-i18n="results.top10">TOP 10</b>
           </div>
           <div class="top-list" id="topList"></div>
         </section>
 
         <aside class="side-stack" aria-label="模型侧栏">
           <article class="side-card">
-            <h3>模型解读</h3>
-            <p id="modelReadout">
-              当前模型正在计算冠军头号热门、信心指数和主要变量。
+            <h3 data-i18n="side.readout">Model readout</h3>
+            <p id="modelReadout" data-i18n="side.readoutDefault">
+              The model is computing the title favorite, confidence index, and key variables.
             </p>
           </article>
           <article class="side-card">
-            <h3>关键变量权重</h3>
+            <h3 data-i18n="side.weights">Key variable weights</h3>
             <div class="weight-list">
               <div class="weight-row">
-                <div><strong>Elo 实力权重</strong><span>1.00</span></div>
+                <div><strong data-i18n="side.wElo">Elo strength weight</strong><span>1.00</span></div>
                 <div class="weight-track"><span style="width: 100%"></span></div>
               </div>
               <div class="weight-row">
-                <div><strong>市场热度权重</strong><span>0.55</span></div>
+                <div><strong data-i18n="side.wMarket">Market-heat weight</strong><span>0.55</span></div>
                 <div class="weight-track blue"><span style="width: 55%"></span></div>
               </div>
               <div class="weight-row">
-                <div><strong>球星状态权重</strong><span>0.50</span></div>
+                <div><strong data-i18n="side.wStar">Star-form weight</strong><span>0.50</span></div>
                 <div class="weight-track gold"><span style="width: 50%"></span></div>
               </div>
               <div class="weight-row">
-                <div><strong>历史底蕴权重</strong><span>0.40</span></div>
+                <div><strong data-i18n="side.wHistory">Heritage weight</strong><span>0.40</span></div>
                 <div class="weight-track purple"><span style="width: 40%"></span></div>
               </div>
             </div>
           </article>
           <article class="side-card">
-            <h3>数据更新记录</h3>
+            <h3 data-i18n="side.updates">Data update log</h3>
             <ul class="update-list">
-              <li><span></span>初始化模型并完成首轮模拟</li>
-              <li><span></span>接入球队评分、市场热度与外部因素</li>
-              <li><span></span>生成冠军概率排行与模型解读</li>
+              <li><span></span><span data-i18n="side.update1">Initialized the model and ran the first simulation</span></li>
+              <li><span></span><span data-i18n="side.update2">Loaded team ratings, market heat, and external factors</span></li>
+              <li><span></span><span data-i18n="side.update3">Generated the title ranking and model readout</span></li>
             </ul>
           </article>
         </aside>
@@ -172,62 +199,62 @@
       <section class="control-panel" id="settings" aria-label="世界杯胜率预测控制台">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Model Settings</p>
-            <h2>模型设置</h2>
+            <p class="eyebrow" data-i18n="settings.eyebrow">Model Settings</p>
+            <h2 data-i18n="settings.title">Model Settings</h2>
           </div>
           <div class="status-pill" id="status">Ready</div>
         </div>
 
         <div class="settings-grid">
           <label>
-            模拟次数
+            <span data-i18n="settings.iterations">Simulations</span>
             <input id="iterations" type="number" min="100" max="50000" step="100" value="5000" />
           </label>
           <label>
-            主场加成 Elo
+            <span data-i18n="settings.homeAdv">Home advantage (Elo)</span>
             <input id="homeAdvantage" type="number" min="0" max="120" step="5" value="35" />
           </label>
           <label>
-            平局倾向
+            <span data-i18n="settings.drawBias">Draw bias</span>
             <input id="drawBias" type="range" min="0" max="1" step="0.05" value="0.28" />
           </label>
           <label>
-            随机种子
+            <span data-i18n="settings.seed">Random seed</span>
             <input id="seed" type="number" min="1" max="999999" value="2026" />
           </label>
           <label class="toggle-label">
-            状态修正
+            <span data-i18n="settings.formModel">Form adjustment</span>
             <span>
               <input id="useFormModel" type="checkbox" checked />
-              俱乐部/球星
+              <span data-i18n="settings.formModelSub">Club / star</span>
             </span>
           </label>
           <label class="toggle-label">
-            政策修正
+            <span data-i18n="settings.policyModel">Policy adjustment</span>
             <span>
               <input id="usePolicyModel" type="checkbox" checked />
-              外部环境
+              <span data-i18n="settings.policyModelSub">External environment</span>
             </span>
           </label>
           <label class="toggle-label">
-            外部校准
+            <span data-i18n="settings.oddsModel">External calibration</span>
             <span>
               <input id="useOddsModel" type="checkbox" checked />
-              市场快照
+              <span data-i18n="settings.oddsModelSub">Market snapshot</span>
             </span>
           </label>
           <div class="button-row">
-            <button id="resetButton" type="button" class="secondary">重置评分</button>
+            <button id="resetButton" type="button" class="secondary" data-i18n="btn.reset">Reset ratings</button>
           </div>
         </div>
 
         <div class="matchup-panel">
           <label>
-            球队 A
+            <span data-i18n="matchup.teamA">Team A</span>
             <select id="teamA"></select>
           </label>
           <label>
-            球队 B
+            <span data-i18n="matchup.teamB">Team B</span>
             <select id="teamB"></select>
           </label>
           <div class="matchup-result" id="matchupResult"></div>
@@ -237,31 +264,31 @@
       <section class="trend-panel" aria-label="预测走势分析">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Forecast Trend</p>
-            <h2>预测走势分析</h2>
+            <p class="eyebrow" data-i18n="trend.eyebrow">Forecast Trend</p>
+            <h2 data-i18n="trend.title">Forecast Trend Analysis</h2>
           </div>
-          <p id="trendSummary">纯 Elo 到全模型的概率变化。</p>
+          <p id="trendSummary" data-i18n="trend.summary">Probability shift from pure Elo to the full model.</p>
         </div>
         <div class="trend-stats" id="trendStats"></div>
         <div class="trend-layout">
           <article class="analysis-block wide">
             <div class="block-head">
-              <h3>夺冠概率走势</h3>
-              <span id="trendScenarioLabels">纯 Elo / 状态 / 政策 / 市场</span>
+              <h3 data-i18n="trend.titleTrend">Title probability trend</h3>
+              <span id="trendScenarioLabels" data-i18n="trend.stages">Pure Elo / Form / Policy / Market</span>
             </div>
             <div class="trend-table" id="trendTable"></div>
           </article>
           <article class="analysis-block">
             <div class="block-head">
-              <h3>上升最快</h3>
-              <span>全模型 - 纯 Elo</span>
+              <h3 data-i18n="trend.risers">Biggest risers</h3>
+              <span data-i18n="trend.delta">Full model − pure Elo</span>
             </div>
             <div class="trend-change-list" id="trendRisers"></div>
           </article>
           <article class="analysis-block">
             <div class="block-head">
-              <h3>回落最大</h3>
-              <span>全模型 - 纯 Elo</span>
+              <h3 data-i18n="trend.fallers">Biggest fallers</h3>
+              <span data-i18n="trend.delta">Full model − pure Elo</span>
             </div>
             <div class="trend-change-list" id="trendFallers"></div>
           </article>
@@ -271,10 +298,10 @@
       <section class="match-analysis-panel" id="match-analysis" aria-label="每场比赛结果图分析">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Match By Match</p>
-            <h2>每场比赛结果图分析</h2>
+            <p class="eyebrow" data-i18n="ma.eyebrow">Match By Match</p>
+            <h2 data-i18n="ma.title">Match-by-Match Analysis</h2>
           </div>
-          <p id="matchAnalysisSummary">72 场小组赛逐场概率。</p>
+          <p id="matchAnalysisSummary" data-i18n="ma.summary">Per-match probabilities for all 72 group games.</p>
         </div>
         <div class="match-stats" id="matchStats"></div>
         <div class="match-groups" id="matchGroups"></div>
@@ -283,8 +310,8 @@
       <section class="teams-panel" id="teams" aria-label="球队 Elo 编辑">
         <div class="section-head compact">
           <div>
-            <p class="eyebrow">Editable Ratings</p>
-            <h2>球队数据库</h2>
+            <p class="eyebrow" data-i18n="teams.eyebrow">Editable Ratings</p>
+            <h2 data-i18n="teams.title">Team Database</h2>
           </div>
         </div>
         <div class="teams-grid" id="teamsGrid"></div>
@@ -293,31 +320,31 @@
       <section class="club-model-panel" id="club-model" aria-label="俱乐部和球星状态模型">
         <div class="section-head">
           <div>
-            <p class="eyebrow">Post Qatar 2022</p>
-            <h2>俱乐部 / 球星状态模型</h2>
+            <p class="eyebrow" data-i18n="club.eyebrow">Post Qatar 2022</p>
+            <h2 data-i18n="club.title">Club / Star Form Model</h2>
           </div>
-          <p id="clubModelSummary">从 2022 世界杯后到 2026-06-12 的状态修正。</p>
+          <p id="clubModelSummary" data-i18n="club.summary">Form adjustments from after the 2022 World Cup through 2026-06-12.</p>
         </div>
         <div class="model-stats" id="clubModelStats"></div>
         <div class="club-model-layout">
           <article class="analysis-block">
             <div class="block-head">
-              <h3>国家队状态修正</h3>
+              <h3 data-i18n="club.nationalBoost">National-team form adjustment</h3>
               <span>Elo boost</span>
             </div>
             <div class="national-boost-list" id="nationalBoostList"></div>
           </article>
           <article class="analysis-block">
             <div class="block-head">
-              <h3>俱乐部热度</h3>
-              <span>大赛权重</span>
+              <h3 data-i18n="club.clubHeat">Club heat</h3>
+              <span data-i18n="club.compWeight">Competition weight</span>
             </div>
             <div class="club-power-list" id="clubPowerList"></div>
           </article>
           <article class="analysis-block wide">
             <div class="block-head">
-              <h3>球星影响力</h3>
-              <span>状态 x 角色 x 可用性</span>
+              <h3 data-i18n="club.starImpact">Star impact</h3>
+              <span data-i18n="club.starImpactSub">Form × role × availability</span>
             </div>
             <div class="star-impact-grid" id="starImpactGrid"></div>
           </article>
@@ -327,10 +354,10 @@
       <section class="national-stars-panel" aria-label="各大国家球星数据">
         <div class="section-head">
           <div>
-            <p class="eyebrow">National Star Pool</p>
-            <h2>各大国家球星数据</h2>
+            <p class="eyebrow" data-i18n="ns.eyebrow">National Star Pool</p>
+            <h2 data-i18n="ns.title">National Star Data</h2>
           </div>
-          <p id="nationalStarsSummary">重点国家核心球员池。</p>
+          <p id="nationalStarsSummary" data-i18n="ns.summary">Core player pools for major nations.</p>
         </div>
         <div class="model-stats" id="nationalStarsStats"></div>
         <div class="national-stars-grid" id="nationalStarsGrid"></div>
@@ -339,31 +366,31 @@
       <section class="policy-odds-panel" id="policy" aria-label="国际政策和赛前变量模型">
         <div class="section-head">
           <div>
-            <p class="eyebrow">External Calibration</p>
-            <h2>国际政策 / 外部校准</h2>
+            <p class="eyebrow" data-i18n="policy.eyebrow">External Calibration</p>
+            <h2 data-i18n="policy.title">Policy / External Calibration</h2>
           </div>
-          <p id="policyOddsSummary">外部环境修正 + 市场热度校准。</p>
+          <p id="policyOddsSummary" data-i18n="policy.summary">External-environment adjustment + market-heat calibration.</p>
         </div>
         <div class="model-stats" id="policyOddsStats"></div>
         <div class="policy-odds-layout">
           <article class="analysis-block">
             <div class="block-head">
-              <h3>政策与外部环境</h3>
+              <h3 data-i18n="policy.envTitle">Policy & external environment</h3>
               <span>Elo boost</span>
             </div>
             <div class="policy-list" id="policyList"></div>
           </article>
           <article class="analysis-block">
             <div class="block-head">
-              <h3>市场热度参考</h3>
-              <span>公开市场快照</span>
+              <h3 data-i18n="policy.marketTitle">Market-heat reference</h3>
+              <span data-i18n="policy.marketSub">Public market snapshot</span>
             </div>
             <div class="odds-list" id="oddsList"></div>
           </article>
           <article class="analysis-block wide">
             <div class="block-head">
-              <h3>综合外部修正</h3>
-              <span>政策 + 市场</span>
+              <h3 data-i18n="policy.combined">Combined external adjustment</h3>
+              <span data-i18n="policy.combinedSub">Policy + market</span>
             </div>
             <div class="external-boost-grid" id="externalBoostGrid"></div>
             <p class="model-note" id="oddsDisclaimer"></p>
@@ -374,45 +401,45 @@
       <section class="history-panel" id="history" aria-label="2002 至今世界杯全图分析">
         <div class="section-head">
           <div>
-            <p class="eyebrow">2002 - Now</p>
-            <h2>世界杯全图分析</h2>
+            <p class="eyebrow" data-i18n="hist.eyebrow">2002 - Now</p>
+            <h2 data-i18n="hist.title">World Cup Overview</h2>
           </div>
-          <p id="historySummary">2002-2022 完赛届 + 2026 当前赛制。</p>
+          <p id="historySummary" data-i18n="hist.summary">2002-2022 finished editions + 2026 current format.</p>
         </div>
         <div class="history-stats" id="historyStats"></div>
         <div class="history-layout">
           <article class="analysis-block">
             <div class="block-head">
-              <h3>进球趋势</h3>
-              <span>总进球 / 场均</span>
+              <h3 data-i18n="hist.goalTrend">Goal trend</h3>
+              <span data-i18n="hist.goalTrendSub">Total goals / per match</span>
             </div>
             <div class="goal-chart" id="goalChart"></div>
           </article>
           <article class="analysis-block">
             <div class="block-head">
-              <h3>冠军洲际分布</h3>
+              <h3 data-i18n="hist.confed">Champion confederation split</h3>
               <span>2002-2022</span>
             </div>
             <div class="confed-chart" id="confedChart"></div>
           </article>
           <article class="analysis-block wide">
             <div class="block-head">
-              <h3>决赛时间线</h3>
-              <span>冠军、亚军、三四名</span>
+              <h3 data-i18n="hist.finals">Finals timeline</h3>
+              <span data-i18n="hist.finalsSub">Champion, runner-up, third place</span>
             </div>
             <div class="finals-timeline" id="finalsTimeline"></div>
           </article>
           <article class="analysis-block">
             <div class="block-head">
-              <h3>2026 状态</h3>
-              <span>当前届</span>
+              <h3 data-i18n="hist.cup2026">2026 status</h3>
+              <span data-i18n="hist.cup2026Sub">Current edition</span>
             </div>
             <div class="current-cup" id="currentCup"></div>
           </article>
           <article class="analysis-block">
             <div class="block-head">
-              <h3>关键观察</h3>
-              <span>趋势摘要</span>
+              <h3 data-i18n="hist.insights">Key takeaways</h3>
+              <span data-i18n="hist.insightsSub">Trend summary</span>
             </div>
             <ul class="insight-list" id="historyInsights"></ul>
           </article>
@@ -422,29 +449,35 @@
 
     <footer class="site-footer">
       <nav aria-label="站点信息">
-        <a href="#privacy">隐私政策</a>
-        <a href="#contact">联系我们</a>
-        <a href="#disclaimer">免责声明</a>
+        <a href="#about" data-i18n="footer.about">About</a>
+        <a href="#data-policy" data-i18n="footer.data">Data Notes</a>
+        <a href="#privacy" data-i18n="footer.privacy">Privacy Policy</a>
+        <a href="#contact" data-i18n="footer.contact">Contact Us</a>
+        <a href="#disclaimer" data-i18n="footer.disclaimer">Disclaimer</a>
       </nav>
+      <section id="data-policy">
+        <h2 data-i18n="footer.data">Data Notes</h2>
+        <p data-i18n="footer.dataBody">The dashboard combines public match schedules, historical results, team ratings, recent form notes, coach profiles, player availability, venue and travel context, and market-heat references. When a fixture is finished, the model compares the pre-match direction with the actual result and updates downstream summaries.</p>
+      </section>
       <section id="privacy">
-        <h2>隐私政策</h2>
-        <p>本站使用浏览器本地存储保存用户已解锁的比赛分析状态，不主动收集个人身份信息。接入第三方广告后，广告服务可能依据其隐私政策使用必要的 Cookie 或类似技术。</p>
+        <h2 data-i18n="footer.privacy">Privacy Policy</h2>
+        <p data-i18n="footer.privacyBody">This site uses browser local storage to remember which match analyses you have unlocked and does not actively collect personally identifiable information. Once third-party ads are integrated, those services may use necessary cookies or similar technologies under their own privacy policies.</p>
       </section>
       <section id="contact">
-        <h2>联系我们</h2>
-        <p>如需反馈数据问题、广告合作或内容更正，请联系站点运营者。</p>
+        <h2 data-i18n="footer.contact">Contact Us</h2>
+        <p data-i18n="footer.contactBody">For data corrections, ad partnerships, or content fixes, please contact the site operator.</p>
       </section>
       <section id="disclaimer">
-        <h2>免责声明</h2>
-        <p>本站预测仅供娱乐和数据研究参考，不构成任何收益、投资或财务建议。本站与任何赛事组织不存在隶属、授权或背书关系。</p>
+        <h2 data-i18n="footer.disclaimer">Disclaimer</h2>
+        <p data-i18n="footer.disclaimerBody">Predictions are for entertainment and research only — not betting, investment, or financial advice. This site has no affiliation with, authorization from, or endorsement by any competition organizer.</p>
       </section>
     </footer>
 
     <div class="ad-slot ad-slot-bottom" data-ad-slot="bottom" aria-label="底部广告">
-      <span>广告</span>
-      <strong>底部展示广告位</strong>
+      <span data-i18n="ad.label">Ad</span>
+      <strong data-i18n="ad.bottom">Bottom display ad slot</strong>
     </div>
 
-    <script type="module" src="src/app.js?v=20260613-unlock-storage"></script>
+    <script type="module" src="src/app.js?v=20260613-ads-stable-render"></script>
   </body>
 </html>

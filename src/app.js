@@ -739,6 +739,7 @@ async function handleAdUnlockClick(event) {
 function renderDisplayAds() {
   const config = window.WorldCupAdConfig ?? {};
   const client = config.adsenseClient;
+  ensureAdsenseMeta(client);
   ensureAdSenseScript(client);
   document.querySelectorAll(".ad-slot[data-ad-slot]").forEach((slot) => {
     const placement = slot.dataset.adSlot;
@@ -772,6 +773,17 @@ function renderDisplayAds() {
       }
     });
   });
+}
+
+// Injects the AdSense account meta tag from runtime config so the real
+// publisher ID lives only in server-only config.local.js, never in committed
+// HTML. ads.txt remains the primary site verification.
+function ensureAdsenseMeta(client) {
+  if (!client || document.querySelector('meta[name="google-adsense-account"]')) return;
+  const meta = document.createElement("meta");
+  meta.name = "google-adsense-account";
+  meta.content = client;
+  document.head.appendChild(meta);
 }
 
 function ensureAdSenseScript(client) {

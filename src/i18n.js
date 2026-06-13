@@ -54,8 +54,8 @@ export function applyStaticTranslations(root = document) {
 
 export const STRINGS = {
   // header
-  "app.title": { en: "World Cup Predictor", zh: "世界杯预测控制台" },
-  "app.subtitle": { en: "2026 pre-match data research · Monte Carlo intelligence", zh: "2026 足球赛前数据研究 · 蒙特卡洛情报驾驶舱" },
+  "app.title": { en: "Football Match Research Dashboard", zh: "足球赛前数据研究控制台" },
+  "app.subtitle": { en: "2026 pre-match research · Monte Carlo model", zh: "2026 足球赛前数据研究 · 蒙特卡洛模型" },
   "header.online": { en: "Model online", zh: "模型在线" },
   "header.lastUpdated": { en: "Last updated", zh: "最后更新" },
   "btn.refresh": { en: "Refresh live data", zh: "更新实时数据" },
@@ -74,6 +74,16 @@ export const STRINGS = {
   "ad.home": { en: "Display ad slot", zh: "展示广告位" },
   "ad.bottom": { en: "Bottom display ad slot", zh: "底部展示广告位" },
   "legal.note": { en: "Predictions are for entertainment and research only — not betting, investment, or financial advice.", zh: "本站预测仅供娱乐和数据研究参考，不构成任何收益、投资或财务建议。" },
+  // method guide
+  "guide.eyebrow": { en: "Method", zh: "方法说明" },
+  "guide.title": { en: "Independent pre-match research, updated as fixtures move", zh: "独立赛前研究，随赛程与赛果持续更新" },
+  "guide.body": { en: "This dashboard compares team strength, recent form, coach tendencies, player availability, venue context, travel distance, and public market heat. The free view focuses on fixtures, team context, recent results, head-to-head notes, and a plain-language model readout. Advanced projections are separated behind a compliant rewarded-ad interface when available.", zh: "本站综合球队实力、近期状态、主帅倾向、球员可用性、场地环境、旅行距离和公开市场热度进行赛前研究。免费内容重点展示今日赛程、球队背景、近期表现、历史交锋和模型简析；高级预测在激励广告接口可用时单独解锁展示。" },
+  "guide.card1Title": { en: "Fixture context", zh: "赛程背景" },
+  "guide.card1Body": { en: "Daily matches, local kickoff time, venue, status, and post-match notes when results are final.", zh: "展示每日比赛、北京时间、场地、状态；赛果确认后补充赛后记录。" },
+  "guide.card2Title": { en: "Team research", zh: "球队研究" },
+  "guide.card2Body": { en: "Elo baseline, recent form, coach style, core players, and tactical matchup notes.", zh: "覆盖 Elo 基准、近期状态、教练风格、核心球员和战术对抗。" },
+  "guide.card3Title": { en: "Transparent limits", zh: "边界透明" },
+  "guide.card3Body": { en: "Data sources are mixed public references and manual verification; predictions are estimates, not guarantees.", zh: "数据来自公开资料与人工校验，预测是模型估计，不代表确定结果。" },
   // overview cards
   "ov.topFavorite": { en: "Title favorite", zh: "夺冠头号热门" },
   "calculating": { en: "Calculating", zh: "计算中" },
@@ -163,7 +173,7 @@ export const STRINGS = {
   "policy.combinedSub": { en: "Policy + market", zh: "政策 + 市场" },
   // history
   "hist.eyebrow": { en: "2002 - Now", zh: "2002 - Now" },
-  "hist.title": { en: "World Cup Overview", zh: "世界杯全图分析" },
+  "hist.title": { en: "Tournament Overview", zh: "赛事全图分析" },
   "hist.summary": { en: "2002-2022 finished editions + 2026 current format.", zh: "2002-2022 完赛届 + 2026 当前赛制。" },
   "hist.goalTrend": { en: "Goal trend", zh: "进球趋势" },
   "hist.goalTrendSub": { en: "Total goals / per match", zh: "总进球 / 场均" },
@@ -175,9 +185,12 @@ export const STRINGS = {
   "hist.insights": { en: "Key takeaways", zh: "关键观察" },
   "hist.insightsSub": { en: "Trend summary", zh: "趋势摘要" },
   // footer
+  "footer.about": { en: "About", zh: "关于本站" },
+  "footer.data": { en: "Data Notes", zh: "数据说明" },
   "footer.privacy": { en: "Privacy Policy", zh: "隐私政策" },
   "footer.contact": { en: "Contact Us", zh: "联系我们" },
   "footer.disclaimer": { en: "Disclaimer", zh: "免责声明" },
+  "footer.dataBody": { en: "The dashboard combines public match schedules, historical results, team ratings, recent form notes, coach profiles, player availability, venue and travel context, and market-heat references. When a fixture is finished, the model compares the pre-match direction with the actual result and updates downstream summaries.", zh: "本站综合公开赛程、历史赛果、球队评分、近期状态、教练资料、球员可用性、场地与旅途因素、市场热度参考进行分析。比赛结束后，系统会比较赛前方向与真实结果，并更新后续摘要。" },
   "footer.privacyBody": { en: "This site uses browser local storage to remember which match analyses you have unlocked and does not actively collect personally identifiable information. Once third-party ads are integrated, those services may use necessary cookies or similar technologies under their own privacy policies.", zh: "本站使用浏览器本地存储保存用户已解锁的比赛分析状态，不主动收集个人身份信息。接入第三方广告后，广告服务可能依据其隐私政策使用必要的 Cookie 或类似技术。" },
   "footer.contactBody": { en: "For data corrections, ad partnerships, or content fixes, please contact the site operator.", zh: "如需反馈数据问题、广告合作或内容更正，请联系站点运营者。" },
   "footer.disclaimerBody": { en: "Predictions are for entertainment and research only — not betting, investment, or financial advice. This site has no affiliation with, authorization from, or endorsement by any competition organizer.", zh: "本站预测仅供娱乐和数据研究参考，不构成任何收益、投资或财务建议。本站与任何赛事组织不存在隶属、授权或背书关系。" }
