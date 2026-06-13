@@ -189,3 +189,28 @@ test("officiating / referee factor", async (t) => {
     }
   });
 });
+
+test("climate / heat-stress factor", async (t) => {
+  const { heatStress, climateEloBoost } = await import("../src/climateFactors.js");
+  const { buildGroupMatchAnalysis } = await import("../src/matchAnalysis.js");
+
+  await t.test("scores heat by venue, humidity, kickoff time, and roof", () => {
+    const miamiMidday = heatStress("Hard Rock Stadium", "15:00");
+    assert.equal(miamiMidday.level, "extreme");
+    const roofed = heatStress("AT&T Stadium", "15:00"); // controlled caps it
+    assert.ok(roofed.score <= 1);
+    const seattleEve = heatStress("Lumen Field", "21:00");
+    assert.equal(seattleEve.level, "low");
+  });
+
+  await t.test("boosts only the heat-adapted side under real stress", () => {
+    assert.ok(climateEloBoost("Mexico", "Hard Rock Stadium", "15:00") > 0);
+    assert.equal(climateEloBoost("Germany", "Hard Rock Stadium", "15:00"), 0); // not heat-adapted
+    assert.equal(climateEloBoost("Mexico", "Lumen Field", "21:00"), 0); // no stress
+  });
+
+  await t.test("every match row carries a climate read", () => {
+    const analysis = buildGroupMatchAnalysis(STARTER_GROUPS, { seed: 9 });
+    assert.ok(analysis.matches.every((m) => m.climate && typeof m.climate.score === "number"));
+  });
+});

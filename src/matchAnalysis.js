@@ -5,6 +5,7 @@ import { fuseProbabilities, marketProbabilitiesForMatch } from "./marketFusion.j
 import { fullFixtureByMatchId } from "./fixtureCalendar.js";
 import { venueEloBoost } from "./venueFactors.js";
 import { officiatingFactor } from "./refereeFactors.js";
+import { climateEloBoost, heatStress } from "./climateFactors.js";
 
 const GROUP_PAIRINGS = [
   { matchday: 1, pair: [0, 1] },
@@ -39,8 +40,13 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
       // probability purposes only; displayed base Elo stays untouched.
       const venueBoostA = venueEloBoost(teamA.name, fixtureInfo?.venue);
       const venueBoostB = venueEloBoost(teamB.name, fixtureInfo?.venue);
-      const ratedTeamA = venueBoostA ? { ...teamA, elo: teamA.elo + venueBoostA } : teamA;
-      const ratedTeamB = venueBoostB ? { ...teamB, elo: teamB.elo + venueBoostB } : teamB;
+      // Heat-stress edge to the heat-adapted side (venue climate × kickoff time).
+      const climateBoostA = climateEloBoost(teamA.name, fixtureInfo?.venue, fixtureInfo?.timeET);
+      const climateBoostB = climateEloBoost(teamB.name, fixtureInfo?.venue, fixtureInfo?.timeET);
+      const adjA = venueBoostA + climateBoostA;
+      const adjB = venueBoostB + climateBoostB;
+      const ratedTeamA = adjA ? { ...teamA, elo: teamA.elo + adjA } : teamA;
+      const ratedTeamB = adjB ? { ...teamB, elo: teamB.elo + adjB } : teamB;
       const modelProbabilities = matchProbabilities(ratedTeamA, ratedTeamB, options);
       const marketProbabilities = marketProbabilitiesForMatch(matchId);
       // Published probabilities fuse real market odds when we have them;
@@ -82,6 +88,11 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
             ? { venue: fixtureInfo?.venue, teamA: venueBoostA, teamB: venueBoostB }
             : null,
         officiating,
+        climate: {
+          ...heatStress(fixtureInfo?.venue, fixtureInfo?.timeET),
+          teamA: climateBoostA,
+          teamB: climateBoostB
+        },
         predictedScore,
         tacticalPreview: buildTacticalPreview(matchShell),
         favorite,
