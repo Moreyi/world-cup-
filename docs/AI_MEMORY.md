@@ -184,6 +184,12 @@ Claude and Codex are editing this ONE worktree at the same time, which collides 
 Done & live: data fixes, dynamic Elo, market fusion, 72-match calendar, venue/officiating/climate factors, dark-horse pick+flag, unlock free, finished-match free report, UI polish layer, GitHub boundary secured (pub ID never leaked; ads.txt gitignored).
 Pending (need boss steer or Codex coordination): (a) nginx HTML no-cache to root-fix mobile stale cache — classifier-blocked, needs boss to run/permit; clear-cache workaround works now; (b) English-first UI + Chinese toggle (Codex's files); (c) more attractive layout (Codex's files); (d) parlay/足彩串 data engine — authorized, data-entertainment scope, not yet built; (e) live in-play data → live re-prediction (ESPN live, feasible); (f) deeper player-form/sharpness; (g) automated post-match→model-calibration loop (foundation exists in docs/match-reviews + Brier).
 
+## i18n (2026-06-13, live)
+
+English-first with a Chinese toggle. `src/i18n.js` holds the EN/ZH string table (default EN, persisted in localStorage `worldcup_lang`), `applyStaticTranslations()` swaps every `[data-i18n]` element in index.html, and `t(key)` is for dynamic copy. `localization.js` is now language-aware (English key in EN mode, ZH map in ZH mode) so all team/club/position names switch on re-render. `app.js` applies translations on boot and the `#langToggle` header button flips language + re-renders. Verified both directions live. Remaining: some dynamic strings still built in app.js render functions (match cards, post-match copy) are not yet routed through `t()` — convert incrementally using the existing STRINGS table.
+
+**index.html is blocked from GitHub**: Codex hardcodes the real AdSense pub ID in it (a `<meta google-adsense-account>` + the adsbygoogle loader `?client=ca-pub-…`). Per the public/server boundary that ID must not be committed, so index.html stays deployed-only and out of GitHub. To unblock GitHub sync, move the pub ID into server-only `config.local.js` (inject the meta + loader at runtime) so committed index.html carries no real ID. This is Codex's ad-wiring lane — coordinate before changing.
+
 ## Maintenance Rules
 
 - Keep the app buildless and static unless the user asks for a larger framework.
