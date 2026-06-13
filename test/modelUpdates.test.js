@@ -275,3 +275,40 @@ test("market signal (model-vs-market divergence)", async (t) => {
     assert.ok(!/fix|manipulat|操控|假球/i.test(strong.note)); // never a fixing accusation
   });
 });
+
+test("odds-movement radar", async (t) => {
+  const { computeOddsMovement, oddsMovementForMatch } = await import("../src/oddsMovement.js");
+
+  await t.test("returns null below two snapshots", () => {
+    assert.equal(computeOddsMovement([]), null);
+    assert.equal(computeOddsMovement([{ ts: "t1", moneylines: { home: -120, away: 300, draw: 240 } }]), null);
+  });
+
+  await t.test("grades a sharp pre-match move and names the side", () => {
+    const m = computeOddsMovement([
+      { ts: "t1", home: "USA", away: "Paraguay", moneylines: { home: 150, away: 200, draw: 230 } },
+      { ts: "t2", home: "USA", away: "Paraguay", moneylines: { home: -140, away: 380, draw: 260 } }
+    ]);
+    assert.equal(m.level, "sharp");
+    assert.equal(m.movedToward, "home");
+    assert.equal(m.movedTowardTeam, "USA");
+    assert.ok(!/fix|manipulat|操控|假球/i.test(m.note));
+  });
+
+  await t.test("stable odds read as stable", () => {
+    const m = computeOddsMovement([
+      { ts: "t1", moneylines: { home: -120, away: 300, draw: 240 } },
+      { ts: "t2", moneylines: { home: -122, away: 305, draw: 240 } }
+    ]);
+    assert.equal(m.level, "stable");
+  });
+
+  await t.test("looks up history by matchId", () => {
+    const hist = { matches: { "D-1": [
+      { ts: "t1", moneylines: { home: 150, away: 200, draw: 230 } },
+      { ts: "t2", moneylines: { home: 120, away: 240, draw: 230 } }
+    ] } };
+    assert.ok(oddsMovementForMatch("D-1", hist));
+    assert.equal(oddsMovementForMatch("Z-9", hist), null);
+  });
+});

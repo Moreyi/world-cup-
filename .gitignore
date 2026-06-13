@@ -5,3 +5,5 @@ config.local.js
 *.local.js
 src/adUnlock.js
 ads.txt
+
+data/odds-history.json
