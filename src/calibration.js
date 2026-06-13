@@ -9,7 +9,7 @@
 // Brier score = mean over matches of Σ_outcome (p − actual)², actual ∈ {0,1}.
 // Lower is better; 0 = perfect, ~0.667 = uninformed three-way guess.
 
-import { fuseProbabilities } from "./marketFusion.js?v=20260613-results8";
+import { fuseProbabilities } from "./marketFusion.js?v=20260613-results9";
 
 export function outcomeOfScore(score) {
   if (!score) return null;

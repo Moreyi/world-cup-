@@ -1,4 +1,4 @@
-import { TODAY_DATE } from "./liveResults.js?v=20260613-results8";
+import { TODAY_DATE } from "./liveResults.js?v=20260613-results9";
 
 export const ESPN_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
 
