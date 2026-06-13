@@ -132,28 +132,49 @@ function validateResultTeams(result, matchId, teamA, teamB) {
   );
 }
 
+// Poisson predicted score: derive each side's expected goals (lambda) from the
+// Elo win expectation, then return the most-likely scoreline (modal Poisson
+// pair). Principled and self-consistent with the win/draw/loss probabilities,
+// replacing the old hand-tuned heuristic.
 function predictScore(teamA, teamB, probabilities) {
-  const baseGoals = 1.15 + (1 - probabilities.draw) * 0.55;
-  const attackA = baseGoals * (0.72 + probabilities.teamA * 1.15) + (teamA.host ? 0.14 : 0);
-  const attackB = baseGoals * (0.72 + probabilities.teamB * 1.15) + (teamB.host ? 0.14 : 0);
-  let goalsA = Math.max(0, Math.min(4, Math.round(attackA - 0.35)));
-  let goalsB = Math.max(0, Math.min(4, Math.round(attackB - 0.35)));
-
-  if (probabilities.draw >= Math.max(probabilities.teamA, probabilities.teamB) - 0.04) {
-    const shared = Math.max(1, Math.round((goalsA + goalsB) / 2));
-    goalsA = shared;
-    goalsB = shared;
-  } else if (probabilities.teamA > probabilities.teamB && goalsA <= goalsB) {
-    goalsA = goalsB + 1;
-  } else if (probabilities.teamB > probabilities.teamA && goalsB <= goalsA) {
-    goalsB = goalsA + 1;
-  }
-
+  const expectedA = clampUnit(probabilities.knockoutA ?? probabilities.teamA ?? 0.5);
+  const lambdaA = 1.35 * (0.5 + expectedA) + (teamA.host ? 0.12 : 0);
+  const lambdaB = 1.35 * (0.5 + (1 - expectedA)) + (teamB.host ? 0.12 : 0);
+  const [goalsA, goalsB] = modalScore(lambdaA, lambdaB);
   return {
     teamA: goalsA,
     teamB: goalsB,
-    label: `${goalsA}-${goalsB}`
+    label: `${goalsA}-${goalsB}`,
+    expectedGoals: { teamA: Number(lambdaA.toFixed(2)), teamB: Number(lambdaB.toFixed(2)) }
   };
+}
+
+function poissonPmf(lambda, k) {
+  if (lambda <= 0) return k === 0 ? 1 : 0;
+  let p = Math.exp(-lambda);
+  for (let i = 1; i <= k; i += 1) p *= lambda / i;
+  return p;
+}
+
+// Most-probable (goalsA, goalsB) under two independent Poissons over a 0..6 grid.
+function modalScore(lambdaA, lambdaB) {
+  let best = [0, 0];
+  let bestProb = -1;
+  for (let a = 0; a <= 6; a += 1) {
+    const pa = poissonPmf(lambdaA, a);
+    for (let b = 0; b <= 6; b += 1) {
+      const joint = pa * poissonPmf(lambdaB, b);
+      if (joint > bestProb) {
+        bestProb = joint;
+        best = [a, b];
+      }
+    }
+  }
+  return best;
+}
+
+function clampUnit(x) {
+  return Math.max(0, Math.min(1, x));
 }
 
 function summarizeMatches(matches) {
