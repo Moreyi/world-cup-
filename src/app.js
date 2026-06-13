@@ -11,7 +11,7 @@ import { coachForCountry } from "./teamStaff.js";
 import { TREND_SCENARIOS, buildForecastTrend } from "./trendAnalysis.js";
 import { clubName, countryListName, countryName, localizeCountryText, positionName } from "./localization.js";
 import { isMatchUnlocked, requestRewardedUnlock } from "./adUnlock.js?v=20260613-unlock2";
-import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-compliance";
+import { applyStaticTranslations, getLang, setLang, t } from "./i18n.js?v=20260613-compliance2";
 import { liveWinProbability } from "./liveModel.js";
 import { oddsMovementForMatch } from "./oddsMovement.js?v=20260613-compliance";
 import { recommendMarketWeight } from "./calibration.js";
@@ -757,7 +757,7 @@ function renderLiveProbability(match) {
 }
 
 // Finished matches show the full post-match report for free — once a match is
-// over the prediction has no betting value, so there is nothing to gate.
+// over the forecast is historical analysis, so there is nothing to gate.
 function renderPremiumPostMatch(match) {
   const { postMatch, predictedScore, result, probabilities } = match;
   const actualScore = `${result.score.teamA}-${result.score.teamB}`;
@@ -1288,8 +1288,19 @@ function readOptions() {
     seed: Number(elements.seed.value),
     useFormModel: elements.useFormModel.checked,
     usePolicyModel: elements.usePolicyModel.checked,
-    useOddsModel: elements.useOddsModel.checked
+    useOddsModel: elements.useOddsModel.checked,
+    todayDate: currentEtDate()
   };
+}
+
+// Current calendar date in US-Eastern (fixtures are anchored to ET), as
+// "YYYY-MM-DD", so the "today" rail tracks the real day instead of a frozen one.
+function currentEtDate() {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York" }).format(new Date());
+  } catch (error) {
+    return undefined; // matchAnalysis falls back to the snapshot date
+  }
 }
 
 function allTeams() {

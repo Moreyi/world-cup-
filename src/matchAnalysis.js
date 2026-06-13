@@ -1,12 +1,12 @@
 import { matchProbabilities } from "./simulator.js";
-import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260612-tactic";
+import { RESULT_SNAPSHOT, TODAY_DATE, fixtureByMatchId, resultByMatchId } from "./liveResults.js?v=20260613-compliance";
 import { buildTacticalPreview } from "./teamTactics.js";
 import { fuseProbabilities, marketProbabilitiesForMatch } from "./marketFusion.js";
 import { fullFixtureByMatchId } from "./fixtureCalendar.js";
 import { venueEloBoost } from "./venueFactors.js";
 import { officiatingFactor } from "./refereeFactors.js";
 import { climateEloBoost, heatStress } from "./climateFactors.js";
-import { marketSignal } from "./marketSignal.js";
+import { marketSignal } from "./marketSignal.js?v=20260613-compliance";
 
 const GROUP_PAIRINGS = [
   { matchday: 1, pair: [0, 1] },
@@ -110,11 +110,14 @@ export function buildGroupMatchAnalysis(groups, options = {}) {
     })
   );
 
+  // "Today" is dynamic (US-Eastern, where fixture dates are anchored); falls
+  // back to the manual snapshot date when no override is supplied.
+  const todayDate = options.todayDate || TODAY_DATE;
   return {
     matches,
     summary: summarizeMatches(matches),
-    todayDate: TODAY_DATE,
-    todayMatches: matches.filter((match) => match.fixture?.date === TODAY_DATE),
+    todayDate,
+    todayMatches: matches.filter((match) => match.fixture?.date === todayDate),
     upsetMatches: buildUpsetMatches(matches),
     resultSnapshot: RESULT_SNAPSHOT
   };
