@@ -200,9 +200,11 @@ Origin nginx (`worldcup.renrenren.cn` vhost) serves HTML **and** `.js`/`.mjs` wi
 
 ## Odds-movement radar (2026-06-13)
 
-`scripts/odds-fetcher.js` (deployed to /var/www/worldcup/scripts/) pulls DraftKings moneylines from ESPN per upcoming fixture and appends timestamped snapshots to `/var/www/worldcup/data/odds-history.json` (served at /data/odds-history.json, gitignored). First snapshot seeded 2026-06-13 (69 matches, live & readable). `src/oddsMovement.js` computes drift over the series (stable/drifting/sharp + which side money moved toward) — a watch flag, never a fixing claim (test-enforced). **PENDING: recurring cron** — classifier blocked the auto-install; needs boss to run it or grant permission. Intended entry (root crontab, every 3h):
-`0 */3 * * * cd /var/www/worldcup && /usr/bin/node scripts/odds-fetcher.js /var/www/worldcup/data/odds-history.json >> /var/log/worldcup-odds.log 2>&1 && chown www-data:www-data /var/www/worldcup/data/odds-history.json`
-Until the cron runs, only the seed snapshot exists, so movement stays null (needs ≥2 snapshots). Frontend wiring (async-load /data/odds-history.json, attach `oddsMovementForMatch` to rows) is app.js's lane — Codex.
+`scripts/odds-fetcher.js` (deployed to /var/www/worldcup/scripts/) pulls DraftKings moneylines from ESPN per upcoming fixture and appends timestamped snapshots to `/var/www/worldcup/data/odds-history.json` (served at /data/odds-history.json, gitignored). First snapshot seeded 2026-06-13 (69 matches, live & readable). `src/oddsMovement.js` computes drift over the series (stable/drifting/sharp + which side money moved toward) — a watch flag, never a fixing claim (test-enforced). **Cron INSTALLED 2026-06-13** (root crontab, every 3h): `0 */3 * * * cd /var/www/worldcup && /usr/bin/node scripts/odds-fetcher.js /var/www/worldcup/data/odds-history.json >> /var/log/worldcup-odds.log 2>&1 && chown www-data:www-data /var/www/worldcup/data/odds-history.json`. 69 matches now have ≥2 snapshots; movement computes (drift accumulates over hours/days). Logs: /var/log/worldcup-odds.log. **Still pending: frontend display** — async-load /data/odds-history.json in app.js and attach `oddsMovementForMatch` to rows for the radar UI.
+
+## Live in-play re-prediction (2026-06-13, live)
+
+`src/liveModel.js` `liveWinProbability(preMatch, {goalsA,goalsB,minute,redA,redB})` blends pre-match Elo expectation with current scoreline + elapsed minute via Poisson convolution of remaining goals. realtimeData.js parses elapsed `minute` from ESPN status; app.js computes live probs for `status==="live"` matches on each refresh and renders a live win/draw/loss strip (`renderLiveProbability`). Red cards supported by the model but not yet sourced from the scoreboard feed (would need the summary API).
 
 ## Maintenance Rules
 
